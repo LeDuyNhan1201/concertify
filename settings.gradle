@@ -1,0 +1,18 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+        mavenLocal()
+    }
+    plugins {
+        id "${quarkusPluginId}" version "${quarkusPluginVersion}"
+    }
+}
+
+rootProject.name = 'concertify'
+
+//include 'common'
+//project(':contract').projectDir = file('src/common')
+
+include 'auth'
+project(':auth').projectDir = file('src/auth')

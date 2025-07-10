@@ -1,0 +1,674 @@
+x-kafka-env:
+  &kafka-env
+  CLUSTER_ID: vHCgQyIrRHG8Jv27qI2h3Q
+  KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:SSL,INTERNAL:SASL_SSL,EXTERNAL:SASL_SSL
+  KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+  KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+  KAFKA_PROCESS_ROLES: broker,controller
+  KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker1:19091
+
+  # Logging
+  KAFKA_LOG_RETENTION_HOURS: '1'
+  KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+  KAFKA_LOG_SEGMENT_BYTES: 1073741824
+  KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+  KAFKA_LOG4J_ROOT_LOGLEVEL: INFO # DEBUG
+
+  # Authentication
+  KAFKA_SASL_ENABLED_MECHANISMS: OAUTHBEARER
+  KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: OAUTHBEARER
+  KAFKA_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: ${IDP_TOKEN_ENDPOINT}
+  KAFKA_SASL_OAUTHBEARER_JWKS_ENDPOINT_URL: ${IDP_JWKS_ENDPOINT}
+  KAFKA_SASL_OAUTHBEARER_EXPECTED_AUDIENCE: ${EXPECTED_AUDIENCE}
+  KAFKA_SASL_OAUTHBEARER_EXPECTED_ISSUER: ${IDP_EXPECTED_ISSUER}
+  KAFKA_SASL_OAUTHBEARER_SUB_CLAIM_NAME: ${SUB_CLAIM_NAME}
+  KAFKA_SASL_OAUTHBEARER_SCOPE_CLAIM_NAME: scope
+  KAFKA_PRINCIPAL_BUILDER_CLASS: io.strimzi.kafka.oauth.server.OAuthKafkaPrincipalBuilder
+  KAFKA_SASL_LOGIN_CALLBACK_HANDLER_CLASS: io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler
+  KAFKA_SASL_SERVER_CALLBACK_HANDLER_CLASS: io.strimzi.kafka.oauth.server.JaasServerOauthValidatorCallbackHandler
+  KAFKA_SUPER_USERS: User:${SUPERUSER_CLIENT_ID};User:${SSO_CLIENT_ID}
+  KAFKA_BROKER_USERS: User:${SUPERUSER_CLIENT_ID}
+
+  # Authorizer
+  KAFKA_CONFIG_PROVIDERS: file
+  KAFKA_CONFIG_PROVIDERS_FILE_CLASS: org.apache.kafka.common.config.provider.FileConfigProvider
+
+  # encryption
+  KAFKA_SSL_ENABLED_PROTOCOLS: TLSv1.2
+  KAFKA_SSL_CLIENT_AUTH: 'required'
+  KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: 'https'
+  KAFKA_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/keystore.p12
+  KAFKA_SSL_KEYSTORE_PASSWORD: ${CERT_SECRET}
+  KAFKA_SSL_KEY_PASSWORD: ${CERT_SECRET}
+  KAFKA_SSL_KEYSTORE_TYPE: PKCS12
+  KAFKA_SSL_KEYSTORE_FILENAME: keystore.p12
+  KAFKA_SSL_KEYSTORE_CREDENTIALS: creds.txt
+  KAFKA_SSL_KEY_CREDENTIALS: creds.txt
+  KAFKA_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/truststore.p12
+  KAFKA_SSL_TRUSTSTORE_PASSWORD: ${CERT_SECRET}
+  KAFKA_SSL_TRUSTSTORE_TYPE: PKCS12
+  KAFKA_SSL_TRUSTSTORE_FILENAME: truststore.p12
+  KAFKA_SSL_TRUSTSTORE_CREDENTIALS: creds.txt
+  KAFKA_SSL_CIPHER_SUITES: ${SSL_CIPHER_SUITES}
+
+  # Internal Listener
+  KAFKA_LISTENER_NAME_INTERNAL_SASL_ENABLED_MECHANISMS: OAUTHBEARER
+  KAFKA_LISTENER_NAME_INTERNAL_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: ${IDP_TOKEN_ENDPOINT}
+  KAFKA_LISTENER_NAME_INTERNAL_SASL_OAUTHBEARER_JWKS_ENDPOINT_URL: ${IDP_JWKS_ENDPOINT}
+  KAFKA_LISTENER_NAME_INTERNAL_SASL_OAUTHBEARER_EXPECTED_AUDIENCE: ${EXPECTED_AUDIENCE}
+  KAFKA_LISTENER_NAME_INTERNAL_SASL_OAUTHBEARER_EXPECTED_ISSUER: ${IDP_EXPECTED_ISSUER}
+  KAFKA_LISTENER_NAME_INTERNAL_SASL_OAUTHBEARER_SUB_CLAIM_NAME: ${SUB_CLAIM_NAME}
+  KAFKA_LISTENER_NAME_INTERNAL_SASL_OAUTHBEARER_GROUPS_CLAIM_NAME: ${GROUP_CLAIM_NAME}
+  KAFKA_LISTENER_NAME_INTERNAL_OAUTHBEARER_SASL_JAAS_CONFIG: |
+    org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+        oauth.client.id="${SUPERUSER_CLIENT_ID}" \
+        oauth.client.secret="${SUPERUSER_CLIENT_SECRET}" \
+        oauth.token.endpoint.uri="${IDP_TOKEN_ENDPOINT}" \
+        oauth.jwks.endpoint.uri="${IDP_JWKS_ENDPOINT}" \
+        oauth.expected.audience="${EXPECTED_AUDIENCE}" \
+        oauth.valid.issuer.uri="${IDP_EXPECTED_ISSUER}" \
+        principalClaimName="${SUB_CLAIM_NAME}" \
+        refresh_ms="3000" \
+        oauth.ssl.endpoint.identification.algorithm="https" \
+        oauth.ssl.keystore.type="PKCS12" \
+        oauth.ssl.keystore.location="/etc/kafka/secrets/keystore.p12" \
+        oauth.ssl.keystore.password="${CERT_SECRET}" \
+        oauth.ssl.key.password="${CERT_SECRET}"  \
+        oauth.ssl.truststore.type="PKCS12" \
+        oauth.ssl.truststore.location="/etc/kafka/secrets/truststore.p12" \
+        oauth.ssl.truststore.password="${CERT_SECRET}";
+  KAFKA_LISTENER_NAME_INTERNAL_PRINCIPAL_BUILDER_CLASS: io.strimzi.kafka.oauth.server.OAuthKafkaPrincipalBuilder
+  KAFKA_LISTENER_NAME_INTERNAL_OAUTHBEARER_SASL_LOGIN_CALLBACK_HANDLER_CLASS: io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler
+  KAFKA_LISTENER_NAME_INTERNAL_OAUTHBEARER_SASL_SERVER_CALLBACK_HANDLER_CLASS: io.strimzi.kafka.oauth.server.JaasServerOauthValidatorCallbackHandler
+
+  KAFKA_LISTENER_NAME_INTERNAL_SSL_CLIENT_AUTH: 'required'
+  KAFKA_LISTENER_NAME_INTERNAL_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: 'https'
+  KAFKA_LISTENER_NAME_INTERNAL_SSL_KEYSTORE_TYPE: PKCS12
+  KAFKA_LISTENER_NAME_INTERNAL_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/keystore.p12
+  KAFKA_LISTENER_NAME_INTERNAL_SSL_KEYSTORE_PASSWORD: ${CERT_SECRET}
+  KAFKA_LISTENER_NAME_INTERNAL_SSL_KEY_PASSWORD: ${CERT_SECRET}
+  KAFKA_LISTENER_NAME_INTERNAL_SSL_TRUSTSTORE_TYPE: PKCS12
+  KAFKA_LISTENER_NAME_INTERNAL_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/truststore.p12
+  KAFKA_LISTENER_NAME_INTERNAL_SSL_TRUSTSTORE_PASSWORD: ${CERT_SECRET}
+  KAFKA_LISTENER_NAME_INTERNAL_SSL_PRINCIPAL_MAPPING_RULES: RULE:^CN=([a-zA-Z0-9]*).*$$/$$1/L,DEFAULT
+
+  # Controller Listener
+  KAFKA_LISTENER_NAME_CONTROLLER_SSL_CLIENT_AUTH: 'required'
+  KAFKA_LISTENER_NAME_CONTROLLER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: 'https'
+  KAFKA_LISTENER_NAME_CONTROLLER_SSL_KEYSTORE_TYPE: PKCS12
+  KAFKA_LISTENER_NAME_CONTROLLER_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/keystore.p12
+  KAFKA_LISTENER_NAME_CONTROLLER_SSL_KEYSTORE_PASSWORD: ${CERT_SECRET}
+  KAFKA_LISTENER_NAME_CONTROLLER_SSL_KEY_PASSWORD: ${CERT_SECRET}
+  KAFKA_LISTENER_NAME_CONTROLLER_SSL_TRUSTSTORE_TYPE: PKCS12
+  KAFKA_LISTENER_NAME_CONTROLLER_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/truststore.p12
+  KAFKA_LISTENER_NAME_CONTROLLER_SSL_TRUSTSTORE_PASSWORD: ${CERT_SECRET}
+
+  # External listener
+  KAFKA_LISTENER_NAME_EXTERNAL_SASL_ENABLED_MECHANISMS: OAUTHBEARER
+  KAFKA_LISTENER_NAME_EXTERNAL_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: ${IDP_TOKEN_ENDPOINT}
+  KAFKA_LISTENER_NAME_EXTERNAL_SASL_OAUTHBEARER_JWKS_ENDPOINT_URL: ${IDP_JWKS_ENDPOINT}
+  KAFKA_LISTENER_NAME_EXTERNAL_SASL_OAUTHBEARER_EXPECTED_AUDIENCE: ${EXPECTED_AUDIENCE}
+  KAFKA_LISTENER_NAME_EXTERNAL_SASL_OAUTHBEARER_EXPECTED_ISSUER: ${IDP_EXPECTED_ISSUER}
+  KAFKA_LISTENER_NAME_EXTERNAL_SASL_OAUTHBEARER_SUB_CLAIM_NAME: ${SUB_CLAIM_NAME}
+  KAFKA_LISTENER_NAME_EXTERNAL_SASL_OAUTHBEARER_GROUPS_CLAIM_NAME: ${GROUP_CLAIM_NAME}
+  KAFKA_LISTENER_NAME_EXTERNAL_OAUTHBEARER_SASL_JAAS_CONFIG: |
+    org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+        oauth.client.id="${SUPERUSER_CLIENT_ID}" \
+        oauth.client.secret="${SUPERUSER_CLIENT_SECRET}" \
+        oauth.token.endpoint.uri="${IDP_TOKEN_ENDPOINT}" \
+        oauth.jwks.endpoint.uri="${IDP_JWKS_ENDPOINT}" \
+        oauth.expected.audience="${EXPECTED_AUDIENCE}" \
+        oauth.valid.issuer.uri="${IDP_EXPECTED_ISSUER}" \
+        principalClaimName="${SUB_CLAIM_NAME}" \
+        refresh_ms="3000" \
+        oauth.ssl.endpoint.identification.algorithm="https" \
+        oauth.ssl.keystore.type="PKCS12" \
+        oauth.ssl.keystore.location="/etc/kafka/secrets/keystore.p12" \
+        oauth.ssl.keystore.password="${CERT_SECRET}" \
+        oauth.ssl.key.password="${CERT_SECRET}"  \
+        oauth.ssl.truststore.type="PKCS12" \
+        oauth.ssl.truststore.location="/etc/kafka/secrets/truststore.p12" \
+        oauth.ssl.truststore.password="${CERT_SECRET}";
+  KAFKA_LISTENER_NAME_EXTERNAL_PRINCIPAL_BUILDER_CLASS: io.strimzi.kafka.oauth.server.OAuthKafkaPrincipalBuilder
+  KAFKA_LISTENER_NAME_EXTERNAL_OAUTHBEARER_SASL_LOGIN_CALLBACK_HANDLER_CLASS: io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler
+  KAFKA_LISTENER_NAME_EXTERNAL_OAUTHBEARER_SASL_SERVER_CALLBACK_HANDLER_CLASS: io.strimzi.kafka.oauth.server.JaasServerOauthValidatorCallbackHandler
+
+  KAFKA_LISTENER_NAME_EXTERNAL_SSL_CLIENT_AUTH: 'required'
+  KAFKA_LISTENER_NAME_EXTERNAL_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: 'https'
+  KAFKA_LISTENER_NAME_EXTERNAL_SSL_KEYSTORE_TYPE: PKCS12
+  KAFKA_LISTENER_NAME_EXTERNAL_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/keystore.p12
+  KAFKA_LISTENER_NAME_EXTERNAL_SSL_KEYSTORE_PASSWORD: ${CERT_SECRET}
+  KAFKA_LISTENER_NAME_EXTERNAL_SSL_KEY_PASSWORD: ${CERT_SECRET}
+  KAFKA_LISTENER_NAME_EXTERNAL_SSL_TRUSTSTORE_TYPE: PKCS12
+  KAFKA_LISTENER_NAME_EXTERNAL_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/truststore.p12
+  KAFKA_LISTENER_NAME_EXTERNAL_SSL_TRUSTSTORE_PASSWORD: ${CERT_SECRET}
+  KAFKA_LISTENER_NAME_EXTERNAL_SSL_PRINCIPAL_MAPPING_RULES: RULE:^CN=([a-zA-Z0-9]*).*$$/$$1/L,DEFAULT
+
+  # metrics reporter
+#  KAFKA_JMX_PORT: 9101
+#  KAFKA_JMX_HOSTNAME: localhost
+#  KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=broker1 -Dcom.sun.management.jmxremote.rmi.port=9101
+
+  # Balancer
+  KAFKA_AUTO_CREATE_TOPICS_ENABLED: 'true'
+  KAFKA_DELETE_TOPIC_ENABLED: 'true'
+  KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+  KAFKA_GROUP_MAX_SESSION_TIMEOUT_MS: 300000      # 5 mins
+  KAFKA_DEFAULT_REPLICATION_FACTOR: 1             # 1 brokers
+  KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1          # Đảm bảo có quorum (n - 1) brokers sẵn sàng
+  KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+  KAFKA_MIN_INSYNC_REPLICAS: 2                    # Nên >= 2 khi replication = 3 (tối thiểu 2 replicas sống)
+  KAFKA_REPLICA_LAG_TIME_MAX_MS: 30000            # 30s là hợp lý cho phát hiện lag
+
+  KAFKA_NUM_IO_THREADS: 4                       # Tùy thuộc CPU (thường = số vCPU)
+  KAFKA_NUM_NETWORK_THREADS: 1                  # Một cho mỗi broker là đủ (hoặc = số NIC)
+  KAFKA_NUM_RECOVERY_THREADS_PER_DATA_DIR: 2    # Nếu bạn dùng 1 ổ đĩa: để = 2 giúp phục hồi nhanh hơn
+
+  KAFKA_OFFSETS_COMMIT_TIMEOUT_MS: 10000          # 10s
+  KAFKA_OFFSETS_RETENTION_MINUTES: 10080          # 7 days
+  KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  KAFKA_OFFSETS_TOPIC_COMPRESSION_CODEC: 1      # gzip
+
+#  EXTRA_ARGS: "-javaagent:/usr/bin/jmx/jmx_prometheus_javaagent.jar=1234:/usr/bin/jmx/exporter.yml"
+  KAFKA_OPTS: |
+    -Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=${IDP_JWKS_ENDPOINT},${IDP_TOKEN_ENDPOINT},${IDP_AUTH_ENDPOINT},${IDP_DEVICE_AUTH_ENDPOINT}
+  KAFKA_HEAP_OPTS: "-Xms${BROKER_HEAP} -Xmx${BROKER_HEAP}"
+
+services:
+  # --------- MongoDB ---------
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - 27017:27017
+    networks:
+      - concertify-network
+    healthcheck:
+      test: echo 'db.runCommand({serverStatus:1}).ok' | mongosh admin -u ${MONGODB_USERNAME} -p ${MONGODB_PASSWORD} --quiet | grep 1
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+    volumes:
+      - mongodb-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+
+  # --------- Mongo Express ---------
+  express:
+    image: mongo-express:latest
+    container_name: express
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    ports:
+      - 5051:8081
+    networks:
+      - concertify-network
+    restart: always
+    environment:
+      ME_CONFIG_BASICAUTH: false
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGODB_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGODB_PASSWORD}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/
+
+  # --------- Postgres ---------
+  postgres:
+    image: postgres:${POSTGRES_DOCKER_TAG:-latest}
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - concertify-network
+    command: postgres -c 'max_connections=500'
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d postgres" ]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    restart: always
+    volumes:
+      - ./postgres/init-db:/docker-entrypoint-initdb.d:ro
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+  auth_certgen:
+    build: ./cert-gen
+    container_name: auth_certgen
+    networks:
+      - concertify-network
+    entrypoint: [ "sh", "/app/generate_cert.sh" ]
+    restart: no
+    volumes:
+      - ./scripts/helper/generate_cert.sh:/app/generate_cert.sh
+      - ./certs/ca:/ca
+      - ../src/auth/src/main/resources/certs:/auth
+    environment:
+      - MAIN_DOMAIN=auth
+      - CERT_PASSWORD=${CERT_SECRET}
+
+  keycloak_certgen:
+    build: ./cert-gen
+    container_name: keycloak_certgen
+    networks:
+      - concertify-network
+    entrypoint: [ "sh", "/app/generate_cert.sh" ]
+    restart: no
+    volumes:
+      - ./scripts/helper/generate_cert.sh:/app/generate_cert.sh
+      - ./certs/ca:/ca
+      - ./keycloak/certs:/keycloak
+    environment:
+      - MAIN_DOMAIN=keycloak
+      - CERT_PASSWORD=${CERT_SECRET}
+
+  # --------- Keycloak ---------
+  keycloak:
+    image: quay.io/keycloak/keycloak:${KEYCLOAK_DOCKER_TAG:-latest}
+    container_name: keycloak
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak_certgen:
+        condition: service_completed_successfully
+    ports:
+      - "8443:8443" # HTTPS
+      - "9990:9990" # Management port
+    networks:
+      - concertify-network
+    command: [
+      "start",
+      "--https-certificate-file=/opt/keycloak/conf/cert.pem",
+      "--https-certificate-key-file=/opt/keycloak/conf/key.pem",
+      "--http-enabled=false",
+      "--https-port=8443",
+      "--hostname-strict=false",
+      "--health-enabled=true",
+      "--import-realm"
+    ]
+    restart: always
+    volumes:
+      - ./keycloak/realms-import.json:/opt/keycloak/data/import/realms-import.json
+      - ./keycloak/certs/cert.pem:/opt/keycloak/conf/cert.pem:ro
+      - ./keycloak/certs/key.pem:/opt/keycloak/conf/key.pem:ro
+      - ./keycloak/exports:/opt/keycloak/data/export
+    environment:
+      KC_HTTP_MANAGEMENT_PORT: 9990
+      KC_METRICS_ENABLED: true
+      KC_HEALTH_ENABLED: true
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+      KC_PROXY: edge
+      KC_CORS: 'true'
+      KC_CORS_ORIGINS: '*'
+      KEYCLOAK_IMPORT: /opt/keycloak/data/import/realms-import.json
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_PORT: 5432
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+
+  wait-for-keycloak:
+    image: curlimages/curl
+    container_name: wait-for-keycloak
+    depends_on:
+      - keycloak
+    networks:
+      - concertify-network
+    command: >
+      sh -c '
+        i=0;
+        until curl -kfs https://keycloak:9990/health/ready; do
+          echo "Waiting for Keycloak...";
+          sleep 8;
+          i=$$((i+1));
+          if [ $$i -ge 50 ]; then
+            echo "❌ Timeout: Keycloak not ready after 60s.";
+            exit 1;
+          fi;
+        done;
+        echo "✅ Keycloak is ready!"
+      '
+
+  # --------- Kafka Brokers ---------
+  broker1_certgen:
+    build: ./cert-gen
+    container_name: broker1_certgen
+    networks:
+      - concertify-network
+    entrypoint: [ "sh", "/app/generate_cert.sh" ]
+    restart: no
+    volumes:
+      - ./scripts/helper/generate_cert.sh:/app/generate_cert.sh
+      - ./certs/ca:/ca
+      - ./kafka/broker1/certs:/broker1
+    environment:
+      - MAIN_DOMAIN=broker1
+      - CERT_PASSWORD=${CERT_SECRET}
+
+  broker1:
+    image: confluentinc/cp-kafka:${CONFLUENT_DOCKER_TAG:-latest}
+    container_name: broker1
+    depends_on:
+      wait-for-keycloak:
+        condition: service_completed_successfully
+      broker1_certgen:
+        condition: service_completed_successfully
+#      prometheus:
+#        condition: service_healthy
+    ports:
+      - "9101:9101"
+      - "39091:39091"
+      - "1234:1234"
+    networks:
+      - concertify-network
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "broker1", "39091" ]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    restart: unless-stopped
+    volumes:
+      - broker1-data:/var/lib/kafka/data
+      - ./kafka/broker1/certs:/etc/kafka/secrets
+      - ./kafka/creds.txt:/etc/kafka/secrets/creds.txt
+      - ./kafka/configs/kafka_server_jaas.conf:/etc/kafka/kafka_server_jaas.conf
+      - ./kafka/libs/kafka-oauth-common-0.15.1.jar:/usr/share/java/kafka/kafka-oauth-common-0.15.1.jar
+      - ./kafka/libs/kafka-oauth-server-0.15.1.jar:/usr/share/java/kafka/kafka-oauth-server-0.15.1.jar
+      - ./kafka/libs/kafka-oauth-client-0.15.1.jar:/usr/share/java/kafka/kafka-oauth-client-0.15.1.jar
+      - ./kafka/libs/nimbus-jose-jwt-9.37.2.jar:/usr/share/java/kafka/nimbus-jose-jwt-9.37.2.jar
+      - ./kafka/libs/jmx_prometheus_javaagent.jar:/usr/bin/jmx/jmx_prometheus_javaagent.jar
+      - ./kafka/metrics/exporter.yml:/usr/bin/jmx/exporter.yml
+    environment:
+      << : *kafka-env
+      KAFKA_BROKER_ID: '1'
+      KAFKA_LISTENERS: CONTROLLER://broker1:19091,INTERNAL://broker1:29091,EXTERNAL://broker1:39091
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker1:29091,EXTERNAL://broker1:39091
+
+  # --------- Schema Registry ---------
+  schema-registry1_certgen:
+    build: ./cert-gencerts
+    container_name: schema-registry1_certgen
+    networks:
+      - concertify-network
+    entrypoint: [ "sh", "/app/generate_cert.sh" ]
+    restart: no
+    volumes:
+      - ./certs/ca:/ca
+      - ./kafka/schema-registry1/certs:/schema-registry1
+      - ./scripts/helper/generate_cert.sh:/app/generate_cert.sh
+    environment:
+      - MAIN_DOMAIN=schema-registry1
+      - CERT_PASSWORD=${CERT_SECRET}
+
+  schema-registry1:
+    image: confluentinc/cp-schema-registry:${CONFLUENT_DOCKER_TAG:-latest}
+    container_name: schema-registry1
+    depends_on:
+      broker1:
+        condition: service_healthy
+      schema-registry1_certgen:
+        condition: service_completed_successfully
+    ports:
+      - "8081:8081"
+      - "1237:1234"
+    networks:
+      - concertify-network
+    healthcheck:
+      test: >
+        sh -c 'curl --silent --insecure -o /dev/null -w "%{http_code}" https://localhost:8081/subjects --cert /etc/schema-registry/secrets/cert.pem --key /etc/schema-registry/secrets/key.pem --cacert /tmp/ca/ca.crt | grep -E "^(200|401)$" > /dev/null'
+      start_period: 10s
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    volumes:
+      - ./certs/ca:/tmp/ca
+      - ./kafka/schema-registry1/certs:/etc/schema-registry/secrets
+      - ./kafka/libs/kafka-oauth-common-0.15.1.jar:/usr/share/java/cp-base-new/kafka-oauth-common-0.15.1.jar
+      - ./kafka/libs/kafka-oauth-server-0.15.1.jar:/usr/share/java/cp-base-new/kafka-oauth-server-0.15.1.jar
+      - ./kafka/libs/kafka-oauth-client-0.15.1.jar:/usr/share/java/cp-base-new/kafka-oauth-client-0.15.1.jar
+      - ./kafka/libs/nimbus-jose-jwt-9.37.2.jar:/usr/share/java/cp-base-new/nimbus-jose-jwt-9.37.2.jar
+      - ./kafka/libs/kafka-oauth-common-0.15.1.jar:/usr/share/java/schema-registry/kafka-oauth-common-0.15.1.jar
+      - ./kafka/libs/kafka-oauth-server-0.15.1.jar:/usr/share/java/schema-registry/kafka-oauth-server-0.15.1.jar
+      - ./kafka/libs/kafka-oauth-client-0.15.1.jar:/usr/share/java/schema-registry/kafka-oauth-client-0.15.1.jar
+      - ./kafka/libs/jmx_prometheus_javaagent.jar:/usr/bin/jmx/jmx_prometheus_javaagent.jar
+      - ./kafka/metrics/exporter.yml:/usr/bin/jmx/exporter.yml
+    environment:
+      SCHEMA_REGISTRY_GROUP_ID: "schema-registry-group"
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry1
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC: _schemas
+      SCHEMA_REGISTRY_LISTENERS: https://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: broker1:39091
+
+      SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: INFO
+
+      # Encryption
+      SCHEMA_REGISTRY_INTER_INSTANCE_PROTOCOL: 'https'
+      SCHEMA_REGISTRY_SCHEMA_REGISTRY_INTER_INSTANCE_PROTOCOL: 'https'
+      SCHEMA_REGISTRY_SSL_CLIENT_AUTHENTICATION: 'REQUIRED'
+      SCHEMA_REGISTRY_SSL_KEYSTORE_TYPE: PKCS12
+      SCHEMA_REGISTRY_SSL_KEYSTORE_LOCATION: /etc/schema-registry/secrets/keystore.p12
+      SCHEMA_REGISTRY_SSL_KEYSTORE_PASSWORD: ${CERT_SECRET}
+      SCHEMA_REGISTRY_SSL_KEY_PASSWORD: ${CERT_SECRET}
+      SCHEMA_REGISTRY_SSL_TRUSTSTORE_TYPE: PKCS12
+      SCHEMA_REGISTRY_SSL_TRUSTSTORE_LOCATION: /etc/schema-registry/secrets/truststore.p12
+      SCHEMA_REGISTRY_SSL_TRUSTSTORE_PASSWORD: ${CERT_SECRET}
+      SCHEMA_REGISTRY_SSL_CIPHER_SUITES: ${SSL_CIPHER_SUITES}
+
+      # Schema store
+      SCHEMA_REGISTRY_KAFKASTORE_TIMEOUT_MS: 10000
+      SCHEMA_REGISTRY_KAFKASTORE_INIT_TIMEOUT_MS: 120000
+      SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: SASL_SSL
+      SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM: OAUTHBEARER
+      SCHEMA_REGISTRY_KAFKASTORE_SASL_JAAS_CONFIG: |
+        org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+            oauth.client.id="${SR_CLIENT_ID}" \
+            oauth.client.secret="${SR_CLIENT_SECRET}" \
+            oauth.token.endpoint.uri="${IDP_TOKEN_ENDPOINT}" \
+            principalClaimName="${SUB_CLAIM_NAME}" \
+            refresh_ms="3000" \
+            oauth.ssl.truststore.type="PKCS12" \
+            oauth.ssl.truststore.location="/etc/schema-registry/secrets/truststore.p12" \
+            oauth.ssl.truststore.password="${CERT_SECRET}";
+      SCHEMA_REGISTRY_KAFKASTORE_PRINCIPAL_BUILDER_CLASS: io.strimzi.kafka.oauth.server.OAuthKafkaPrincipalBuilder
+      SCHEMA_REGISTRY_KAFKASTORE_SASL_LOGIN_CALLBACK_HANDLER_CLASS: io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler
+      SCHEMA_REGISTRY_KAFKASTORE_SASL_SERVER_CALLBACK_HANDLER_CLASS: io.strimzi.kafka.oauth.server.JaasServerOauthValidatorCallbackHandler
+      SCHEMA_REGISTRY_KAFKASTORE_UPDATE_HANDLERS: io.confluent.schema.exporter.storage.SchemaExporterUpdateHandler
+
+      SCHEMA_REGISTRY_KAFKASTORE_SSL_KEYSTORE_TYPE: PKCS12
+      SCHEMA_REGISTRY_KAFKASTORE_SSL_KEYSTORE_LOCATION: /etc/schema-registry/secrets/keystore.p12
+      SCHEMA_REGISTRY_KAFKASTORE_SSL_KEYSTORE_PASSWORD: ${CERT_SECRET}
+      SCHEMA_REGISTRY_KAFKASTORE_SSL_KEY_PASSWORD: ${CERT_SECRET}
+      SCHEMA_REGISTRY_KAFKASTORE_SSL_TRUSTSTORE_TYPE: PKCS12
+      SCHEMA_REGISTRY_KAFKASTORE_SSL_TRUSTSTORE_LOCATION: /etc/schema-registry/secrets/truststore.p12
+      SCHEMA_REGISTRY_KAFKASTORE_SSL_TRUSTSTORE_PASSWORD: ${CERT_SECRET}
+
+      SCHEMA_REGISTRY_SASL_MECHANISM: OAUTHBEARER
+      SCHEMA_REGISTRY_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: ${IDP_TOKEN_ENDPOINT}
+      SCHEMA_REGISTRY_OAUTHBEARER_JWKS_ENDPOINT_URL: ${IDP_JWKS_ENDPOINT}
+      SCHEMA_REGISTRY_OAUTHBEARER_EXPECTED_ISSUER: ${IDP_EXPECTED_ISSUER}
+      SCHEMA_REGISTRY_OAUTHBEARER_EXPECTED_AUDIENCE: ${EXPECTED_AUDIENCE}
+      SCHEMA_REGISTRY_OAUTHBEARER_SUB_CLAIM_NAME: ${SUB_CLAIM_NAME}
+      SCHEMA_REGISTRY_OAUTHBEARER_GROUPS_CLAIM_NAME: ${GROUP_CLAIM_NAME}
+      SCHEMA_REGISTRY_SASL_JAAS_CONFIG: |
+        org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+            oauth.client.id="${SR_CLIENT_ID}" \
+            oauth.client.secret="${SR_CLIENT_SECRET}" \
+            oauth.token.endpoint.uri="${IDP_TOKEN_ENDPOINT}" \
+            principalClaimName="${SUB_CLAIM_NAME}" \
+            refresh_ms="3000" \
+            ssl.truststore.type="PKCS12" \
+            ssl.truststore.location="/etc/schema-registry/secrets/truststore.p12" \
+            ssl.truststore.password="${CERT_SECRET}";
+      SCHEMA_REGISTRY_PRINCIPAL_BUILDER_CLASS: io.strimzi.kafka.oauth.server.OAuthKafkaPrincipalBuilder
+      SCHEMA_REGISTRY_SASL_LOGIN_CALLBACK_HANDLER_CLASS: io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler
+      SCHEMA_REGISTRY_SASL_SERVER_CALLBACK_HANDLER_CLASS: io.strimzi.kafka.oauth.server.JaasServerOauthValidatorCallbackHandler
+
+#      SCHEMA_REGISTRY_REST_AUTH_JMX_ENABLED: 'true'
+#      EXTRA_ARGS: "-javaagent:/usr/bin/jmx/jmx_prometheus_javaagent.jar=1234:/usr/bin/jmx/exporter.yml"
+      SCHEMA_REGISTRY_LEADER_ELIGIBILITY: 'true'
+      SCHEMA_REGISTRY_MODE_MUTABILITY: 'true'
+      SCHEMA_REGISTRY_DEBUG: 'true'
+      KAFKA_HEAP_OPTS: "-Xms${SCHEMA_HEAP} -Xmx${SCHEMA_HEAP}"
+
+  # --------- Control Center ---------
+#  control-center_certgen:
+#    build: ./cert-gencerts
+#    container_name: control-center_certgen
+#    networks:
+#      - concertify-network
+#    entrypoint: [ "sh", "/app/generate_cert.sh" ]
+#    restart: no
+#    volumes:
+#      - ./certs/ca:/ca
+#      - ./kafka/control-center/certs:/control-center
+#      - ./scripts/helper/generate_cert.sh:/app/generate_cert.sh
+#    environment:
+#      - MAIN_DOMAIN=control-center
+#      - CERT_PASSWORD=${CERT_SECRET}
+#
+#  control-center:
+#    image: confluentinc/cp-enterprise-control-center:${CONFLUENT_DOCKER_TAG:-latest}
+#    container_name: control-center
+#    depends_on:
+#      #      schema-registry1:
+#      #        condition: service_healthy
+#      control-center_certgen:
+#        condition: service_completed_successfully
+#    #      prometheus:
+#    #        condition: service_healthy
+#    ports:
+#      - "9021:9021"
+#      - "9022:9022"
+#      - "1238:1234"
+#    networks:
+#      - concertify-network
+#    #    command: ["sh", "-c", "while true; do sleep 3600; done"]
+#    #    command: >
+#    #      rm -rf /usr/share/java/confluent-control-center/protobuf-java-util-3.24.4.jar &&
+#    #      /etc/confluent/docker/launch;
+#    healthcheck:
+#      test: curl --fail --silent --insecure https://control-center:9021 --output /dev/null || exit 1
+#      start_period: 10s
+#      interval: 10s
+#      retries: 3
+#    restart: unless-stopped
+#    volumes:
+#      - ./kafka/control-center/certs:/etc/control-center/secrets
+#      - ./kafka/libs/kafka-oauth-common-0.15.1.jar:/usr/share/java/cp-base-new/kafka-oauth-common-0.15.1.jar
+#      - ./kafka/libs/kafka-oauth-server-0.15.1.jar:/usr/share/java/cp-base-new/kafka-oauth-server-0.15.1.jar
+#      - ./kafka/libs/kafka-oauth-client-0.15.1.jar:/usr/share/java/cp-base-new/kafka-oauth-client-0.15.1.jar
+#      - ./kafka/libs/nimbus-jose-jwt-9.37.2.jar:/usr/share/java/cp-base-new/nimbus-jose-jwt-9.37.2.jar
+#      - ./kafka/libs/kafka-oauth-common-0.15.1.jar:/usr/share/java/control-center/kafka-oauth-common-0.15.1.jar
+#      - ./kafka/libs/kafka-oauth-server-0.15.1.jar:/usr/share/java/control-center/kafka-oauth-server-0.15.1.jar
+#      - ./kafka/libs/kafka-oauth-client-0.15.1.jar:/usr/share/java/control-center/kafka-oauth-client-0.15.1.jar
+#      - ./kafka/libs/jmx_prometheus_javaagent.jar:/usr/bin/jmx/jmx_prometheus_javaagent.jar
+#      - ./kafka/metrics/exporter.yml:/usr/bin/jmx/exporter.yml
+#    environment:
+#      CONTROL_CENTER_BOOTSTRAP_SERVERS: SASL_SSL://broker1:39091
+#      CONTROL_CENTER_REPLICATION_FACTOR: 1
+#      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+#      CONTROL_CENTER_LOG4J_ROOT_LOGLEVEL: DEBUG
+#      CONTROL_CENTER_LOG4J_LOGLEVEL: DEBUG
+#
+#      CONTROL_CENTER_INTER_INSTANCE_PROTOCOL: 'https'
+#      CONTROL_CENTER_CONTROL_CENTER_INTER_INSTANCE_PROTOCOL: 'https'
+#      CONTROL_CENTER_SSL_CLIENT_AUTHENTICATION: 'REQUIRED'
+#      CONTROL_CENTER_SSL_KEYSTORE_TYPE: PKCS12
+#      CONTROL_CENTER_SSL_KEYSTORE_LOCATION: /etc/control-center/secrets/keystore.p12
+#      CONTROL_CENTER_SSL_KEYSTORE_PASSWORD: ${CERT_SECRET}
+#      CONTROL_CENTER_SSL_KEY_PASSWORD: ${CERT_SECRET}
+#      CONTROL_CENTER_SSL_TRUSTSTORE_TYPE: PKCS12
+#      CONTROL_CENTER_SSL_TRUSTSTORE_LOCATION: /etc/control-center/secrets/truststore.p12
+#      CONTROL_CENTER_SSL_TRUSTSTORE_PASSWORD: ${CERT_SECRET}
+#      CONTROL_CENTER_SSL_CIPHER_SUITES: ${SSL_CIPHER_SUITES}
+#
+#      CONTROL_CENTER_STREAMS_SECURITY_PROTOCOL: SASL_PLAINTEXT
+#      CONTROL_CENTER_STREAMS_SASL_MECHANISM: OAUTHBEARER
+#      CONTROL_CENTER_STREAMS_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: ${IDP_TOKEN_ENDPOINT}
+#      CONTROL_CENTER_STREAMS_SASL_JAAS_CONFIG: |
+#        org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+#          oauth.client.id="${C3_CLIENT_ID}" \
+#          oauth.client.secret="${C3_CLIENT_SECRET}" \
+#          oauth.token.endpoint.uri="${IDP_TOKEN_ENDPOINT}" \
+#          principalClaimName="sub" \
+#          refresh_ms="3000" \
+#          oauth.ssl.truststore.type="PKCS12" \
+#          oauth.ssl.truststore.location="/etc/control-center/secrets/truststore.p12" \
+#          oauth.ssl.truststore.password="${CERT_SECRET}";
+#      CONTROL_CENTER_STREAMS_SASL_LOGIN_CALLBACK_HANDLER_CLASS: io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler
+#
+#      CONTROL_CENTER_STREAMS_SSL_KEYSTORE_TYPE: PKCS12
+#      CONTROL_CENTER_STREAMS_SSL_KEYSTORE_LOCATION: /etc/control-center/secrets/keystore.p12
+#      CONTROL_CENTER_STREAMS_SSL_KEYSTORE_PASSWORD: ${CERT_SECRET}
+#      CONTROL_CENTER_STREAMS_SSL_KEY_PASSWORD: ${CERT_SECRET}
+#      CONTROL_CENTER_STREAMS_SSL_TRUSTSTORE_TYPE: PKCS12
+#      CONTROL_CENTER_STREAMS_SSL_TRUSTSTORE_LOCATION: /etc/control-center/secrets/truststore.p12
+#      CONTROL_CENTER_STREAMS_SSL_TRUSTSTORE_PASSWORD: ${CERT_SECRET}
+#
+#      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_REPLICATION: 1
+#      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+#      CONTROL_CENTER_MONITORING_INTERCEPTOR_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: ${IDP_TOKEN_ENDPOINT}
+#      CONTROL_CENTER_MONITORING_INTERCEPTOR_SASL_JASS_CONFIG: |
+#        org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+#          oauth.client.id="${C3_CLIENT_ID}" \
+#          oauth.client.secret="${C3_CLIENT_SECRET}" \
+#          oauth.token.endpoint.uri="${IDP_TOKEN_ENDPOINT}" \
+#          principalClaimName="sub" \
+#          refresh_ms="3000" \
+#          oauth.ssl.truststore.type="PKCS12" \
+#          oauth.ssl.truststore.location="/etc/control-center/secrets/truststore.p12" \
+#          oauth.ssl.truststore.password="${CERT_SECRET}";
+#      CONTROL_CENTER_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler
+#
+#      CONTROL_CENTER_MONITORING_INTERCEPTOR_SSL_KEYSTORE_TYPE: PKCS12
+#      CONTROL_CENTER_MONITORING_INTERCEPTOR_SSL_KEYSTORE_LOCATION: /etc/control-center/secrets/keystore.p12
+#      CONTROL_CENTER_MONITORING_INTERCEPTOR_SSL_KEYSTORE_PASSWORD: ${CERT_SECRET}
+#      CONTROL_CENTER_MONITORING_INTERCEPTOR_SSL_KEY_PASSWORD: ${CERT_SECRET}
+#      CONTROL_CENTER_MONITORING_INTERCEPTOR_SSL_TRUSTSTORE_TYPE: PKCS12
+#      CONTROL_CENTER_MONITORING_INTERCEPTOR_SSL_TRUSTSTORE_LOCATION: /etc/control-center/secrets/truststore.p12
+#      CONTROL_CENTER_MONITORING_INTERCEPTOR_SSL_TRUSTSTORE_PASSWORD: ${CERT_SECRET}
+#
+#      CONTROL_CENTER_CONFLUENT_CONTROLCENTER_REST_LISTENERS: https://0.0.0.0:9021
+#      CONTROL_CENTER_CONFLUENT_CONTROLCENTER_REST_ADVERTISED_URL: https://control-center:9021
+#
+#      CONTROL_CENTER_SCHEMA_REGISTRY_URL: https://schema-registry1:8081
+#      CONTROL_CENTER_SCHEMA_REGISTRY_BEARER_AUTH_CREDENTIALS_SOURCE: OAUTHBEARER
+#
+#      CONTROL_CENTER_AUTH_SSO_MODE: oidc
+#      CONTROL_CENTER_CONFLUENT_CONTROLCENTER_LICENCE_MANAGER_ENABLE: "false"
+#
+#      CONTROL_CENTER_STREAMS_CONFLUENT_METADATA_SERVER_URLS_FAIL_ON_401: 'false'
+#      CONTROL_CENTER_STREAMS_CONFLUENT_METADATA_ENABLE_SERVER_URLS_REFRESH: 'false'
+#
+#      CONTROL_CENTER_STREAMS_CACHE_MAX_BYTES_BUFFERING: 100000000
+#      CONTROL_CENTER_STREAMS_CONSUMER_REQUEST_TIMEOUT_MS: "960032"
+#      CONTROL_CENTER_STREAMS_NUM_STREAM_THREADS: 1
+#
+#      CONTROL_CENTER_METRICS_TOPIC_REPLICATION: 1
+#      CONTROL_CENTER_METRICS_TOPIC_PARTITIONS: 1
+#
+#      CUB_CLASSPATH: '/usr/share/java/confluent-control-center/*:/usr/share/java/rest-utils/*:/usr/share/java/confluent-common/*:/usr/share/java/confluent-security/kafka-rest/*:/usr/share/java/kafka-rest/:/usr/share/java/cp-base-new/*'
+#      EXTRA_ARGS: |
+#        -javaagent:/usr/bin/jmx/jmx_prometheus_javaagent.jar=1237:/usr/bin/jmx/exporter.yml
+
+volumes:
+  mongodb-data:
+    driver: local
+  postgres-data:
+    driver: local
+  broker1-data:
+    driver: local
+
+networks:
+  concertify-network:
+    driver: bridge

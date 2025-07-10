@@ -1,0 +1,79 @@
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'io.quarkus'
+}
+
+apply from: 'dependencies.gradle'
+
+allprojects {
+    group = 'org.tma.intern'
+    version = '1.0.0'
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(javaVersion.toInteger())
+        }
+        if (project.name == 'common') {
+            withSourcesJar()
+        }
+    }
+
+    repositories {
+        mavenCentral()
+
+    }
+}
+
+subprojects {
+    if (project.name == 'common') {
+        apply plugin: 'java-library'
+
+        tasks.named("jar") {
+            enabled = true
+        }
+    } else {
+        apply plugin: 'io.quarkus'
+        apply plugin: 'java'
+
+        tasks.withType(JavaCompile).configureEach {
+            options.encoding = 'UTF-8'
+            options.compilerArgs << '-parameters'
+        }
+
+        compileTestJava {
+            options.encoding = 'UTF-8'
+        }
+
+        tasks.named('test') {
+            useJUnitPlatform()
+        }
+
+        test {
+            systemProperty "java.util.logging.manager", "org.jboss.logmanager.LogManager"
+        }
+    }
+
+    dependencies {
+        compileOnly rootProject.ext.libs.lombok
+        annotationProcessor rootProject.ext.libs.lombok
+
+        implementation rootProject.ext.libs.mapstruct
+        annotationProcessor rootProject.ext.libs.mapstructProcessor
+
+        implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
+        implementation rootProject.ext.libs.quarkusArc
+        implementation rootProject.ext.libs.quarkusJackson
+
+        testImplementation rootProject.ext.libs.quarkusJunit
+        testImplementation rootProject.ext.libs.restAssured
+    }
+
+}
+
+tasks.named('jar') {
+    enabled = false
+}
+
+tasks.named('build') {
+    enabled = false
+}

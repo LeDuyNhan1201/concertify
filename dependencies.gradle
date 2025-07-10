@@ -1,0 +1,38 @@
+ext {
+    versions = [
+            lombok   : "1.18.38", // https://mvnrepository.com/artifact/org.projectlombok/lombok
+            dataFaker: "2.4.3", // https://mvnrepository.com/artifact/net.datafaker/datafaker
+            mapstruct: "1.6.3" // https://mvnrepository.com/artifact/org.mapstruct/mapstruct
+    ]
+
+    libs = [
+            lombok               : "org.projectlombok:lombok:${versions.lombok}",
+            mapstruct            : "org.mapstruct:mapstruct:${versions.mapstruct}",
+            mapstructProcessor   : "org.mapstruct:mapstruct-processor:${versions.mapstruct}",
+
+            quarkusArc           : "io.quarkus:quarkus-arc",
+            quarkusRest          : "io.quarkus:quarkus-rest",
+            reactiveRoute        : "io.quarkus:quarkus-reactive-routes",
+            swagger              : "io.quarkus:quarkus-smallrye-openapi",
+
+            postgresDriver       : "io.quarkus:quarkus-reactive-pg-client",
+            mongodbPanache       : "io.quarkus:quarkus-mongodb-panache",
+            validation           : "io.quarkus:quarkus-hibernate-validator",
+            reactivePanache      : "io.quarkus:quarkus-hibernate-reactive-panache",
+
+            keycloakAdmin        : "io.quarkus:quarkus-keycloak-admin-rest-client",
+            quarkusJackson       : "io.quarkus:quarkus-rest-jackson",
+            quarkusSecurity      : "io.quarkus:quarkus-security",
+            quarkusOidc          : "io.quarkus:quarkus-oidc",
+            keycloakAuthorization: "io.quarkus:quarkus-keycloak-authorization",
+
+            messagingKafka       : "io.quarkus:quarkus-messaging-kafka",
+            kafkaOauthClient     : "io.strimzi:kafka-oauth-client",
+            kafkaOauthCommon     : "io.strimzi:kafka-oauth-common",
+
+            quarkusJunit         : "io.quarkus:quarkus-junit5",
+            restAssured          : "io.rest-assured:rest-assured",
+            dataFaker            : "net.datafaker:datafaker:${versions.dataFaker}"
+
+    ]
+}
