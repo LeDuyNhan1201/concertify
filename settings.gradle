@@ -11,8 +11,8 @@ pluginManagement {
 
 rootProject.name = 'concertify'
 
-//include 'common'
-//project(':contract').projectDir = file('src/common')
+include 'common'
+project(':common').projectDir = file('src/common')
 
 include 'auth'
 project(':auth').projectDir = file('src/auth')

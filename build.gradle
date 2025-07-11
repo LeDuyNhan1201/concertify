@@ -63,6 +63,11 @@ subprojects {
         implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
         implementation rootProject.ext.libs.quarkusArc
         implementation rootProject.ext.libs.quarkusJackson
+        implementation rootProject.ext.libs.quarkusRest
+        implementation rootProject.ext.libs.quarkusOidc
+        implementation rootProject.ext.libs.keycloakAuthorization
+        implementation rootProject.ext.libs.swagger
+//        implementation rootProject.ext.libs.reactivePanache
 
         testImplementation rootProject.ext.libs.quarkusJunit
         testImplementation rootProject.ext.libs.restAssured
