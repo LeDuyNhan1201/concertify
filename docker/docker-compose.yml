@@ -190,7 +190,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
-    restart: unless-stopped
+    restart: always
     volumes:
       - mongodb-data:/data/db
     environment:
@@ -375,7 +375,7 @@ services:
       timeout: 10s
       start_period: 30s
       retries: 3
-    restart: unless-stopped
+    restart: always
     volumes:
       - broker1-data:/var/lib/kafka/data
       - ./kafka/broker1/certs:/etc/kafka/secrets
@@ -429,7 +429,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 3
-    restart: unless-stopped
+    restart: always
     volumes:
       - ./certs/ca:/tmp/ca
       - ./kafka/schema-registry1/certs:/etc/schema-registry/secrets
@@ -561,7 +561,7 @@ services:
 #      start_period: 10s
 #      interval: 10s
 #      retries: 3
-#    restart: unless-stopped
+#    restart: always
 #    volumes:
 #      - ./kafka/control-center/certs:/etc/control-center/secrets
 #      - ./kafka/libs/kafka-oauth-common-0.15.1.jar:/usr/share/java/cp-base-new/kafka-oauth-common-0.15.1.jar

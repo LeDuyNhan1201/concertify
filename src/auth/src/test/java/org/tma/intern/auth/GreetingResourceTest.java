@@ -3,7 +3,8 @@ package org.tma.intern.auth;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
-import org.tma.intern.common.helper.MessageTestUtil;
+import org.tma.intern.auth.api.GreetingResource;
+import org.tma.intern.common.helper.StringHelper;
 
 import java.util.Locale;
 
@@ -21,7 +22,7 @@ class GreetingResourceTest {
             .when().get("")
             .then().log().all()
             .statusCode(200)
-            .body(is(MessageTestUtil.getMessage("greeting", Locale.ENGLISH, "Ben")));
+            .body(is(StringHelper.getMessage("greeting", Locale.ENGLISH, "Ben")));
     }
 
 }

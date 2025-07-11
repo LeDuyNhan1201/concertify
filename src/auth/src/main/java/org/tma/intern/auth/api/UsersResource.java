@@ -1,0 +1,130 @@
+package org.tma.intern.auth.api;
+
+import io.quarkus.security.Authenticated;
+import io.smallrye.mutiny.Uni;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
+import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.jboss.resteasy.reactive.NoCache;
+import org.jboss.resteasy.reactive.RestResponse;
+import org.tma.intern.auth.dto.UserRequest;
+import org.tma.intern.auth.dto.UserResponse;
+import org.tma.intern.auth.service.UserService;
+import org.tma.intern.common.base.BaseResource;
+import org.tma.intern.common.dto.CommonResponse;
+
+@SecuritySchemes(value = {
+    @SecurityScheme(securitySchemeName = "bearerToken",
+        type = SecuritySchemeType.HTTP,
+        scheme = "Bearer"
+    )}
+)
+@Path("/v1/users")
+@Tag(name = "Users", description = "User operations")
+@Produces(MediaType.APPLICATION_JSON)
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
+public class UsersResource extends BaseResource {
+
+    UserService userService;
+
+    static final String ROLE_GLOBAL_ADMIN = "global_admin";
+
+    @RolesAllowed(ROLE_GLOBAL_ADMIN)
+    @POST
+    @Path("")
+    @Operation(summary = "Create user", description = "Create a new user")
+    @APIResponse(responseCode = "500", description = "Failed",
+        content = @Content(schema = @Schema(implementation = String.class)))
+    @APIResponse(responseCode = "201", description = "Success",
+        content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    public Uni<RestResponse<CommonResponse<String>>> create(UserRequest.Creation body) {
+        return userService.create(body).onItem().transform(userId ->
+            RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
+                .message(locale.getMessage("Action.Success", "Create", "user"))
+                .data(userId).build()
+            ).build());
+    }
+
+    @RolesAllowed(ROLE_GLOBAL_ADMIN)
+    @GET
+    @Path("/{email}")
+    @NoCache
+    @Operation(summary = "Get user details", description = "API to get details of user by email")
+    @APIResponse(responseCode = "401", description = "Unauthenticated", content = @Content())
+    @APIResponse(responseCode = "403", description = "Invalid resource !!!",
+        content = @Content(schema = @Schema(implementation = String.class)))
+    @APIResponse(responseCode = "200", description = "Success",
+        content = @Content(schema = @Schema(implementation = UserResponse.Details.class)))
+    public Uni<RestResponse<CommonResponse<UserResponse.Details>>> details(@PathParam("email") String email) {
+        return userService.findByEmail(email).onItem().transform(user ->
+            RestResponse.ResponseBuilder.ok(
+                CommonResponse.<UserResponse.Details>builder().data(user).build()
+            ).build());
+    }
+
+    @RolesAllowed(ROLE_GLOBAL_ADMIN)
+    @DELETE
+    @Path("/{id}")
+    @NoCache
+    @Operation(summary = "Delete user", description = "API to get delete user by id")
+    @APIResponse(responseCode = "401", description = "Unauthenticated", content = @Content())
+    @APIResponse(responseCode = "403", description = "Invalid resource !!!",
+        content = @Content(schema = @Schema(implementation = String.class)))
+    @APIResponse(responseCode = "205", description = "Success",
+        content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    public Uni<RestResponse<CommonResponse<String>>> delete(@PathParam("id") String id) {
+        return userService.delete(id).onItem().transform(userId ->
+            RestResponse.ResponseBuilder.create(RestResponse.Status.NO_CONTENT,
+                CommonResponse.<String>builder().data(userId).build()
+            ).build());
+    }
+
+    @GET
+    @Path("/me")
+    @NoCache
+    @Authenticated
+    @Operation(summary = "Get current username", description = "API to get name of current user")
+    @APIResponse(responseCode = "401", description = "Unauthenticated", content = @Content())
+    @APIResponse(responseCode = "403", description = "Invalid resource !!!",
+        content = @Content(schema = @Schema(implementation = String.class)))
+    @APIResponse(responseCode = "200", description = "Success",
+        content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    public Uni<RestResponse<UserResponse.Details>> me() {
+        return Uni.createFrom().item(() ->
+            RestResponse.ResponseBuilder.ok(UserResponse.Details.builder()
+                .id(identityContext.getClaim("sub"))
+                .email(identityContext.getPrincipleName())
+                .roles(identityContext.getRoles()).build()
+            ).build());
+    }
+
+    @GET
+    @Path("/seed/{count}")
+    @NoCache
+    @Operation(summary = "Seed users", description = "API to seed user with [Role]:user.")
+    @APIResponse(responseCode = "500", description = "Seed data failed !!!",
+        content = @Content(schema = @Schema(implementation = String.class)))
+    @APIResponse(responseCode = "200", description = "Success",
+        content = @Content(schema = @Schema(implementation = String.class)))
+    @Produces(MediaType.APPLICATION_JSON)
+    public Uni<Response> seedUsers(@PathParam("count") int count) {
+        return userService.seedUsers(count).onItem()
+            .transform(userIds -> Response.ok(userIds).build());
+    }
+
+}
