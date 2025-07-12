@@ -72,6 +72,8 @@ subprojects {
 
         testImplementation rootProject.ext.libs.quarkusJunit
         testImplementation rootProject.ext.libs.restAssured
+        testImplementation rootProject.ext.libs.testcontainers
+//        testImplementation rootProject.ext.libs.testcontainersKeycloak
     }
 
 }

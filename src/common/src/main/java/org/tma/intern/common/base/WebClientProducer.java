@@ -12,10 +12,10 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @ApplicationScoped
 public class WebClientProducer {
 
-    @ConfigProperty(name = "quarkus.tls.ssl/tls.trust-store.p12.path")
+    @ConfigProperty(name = "%dev.quarkus.tls.ssl-tls.trust-store.p12.path")
     String truststorePath;
 
-    @ConfigProperty(name = "quarkus.tls.ssl/tls.trust-store.p12.password")
+    @ConfigProperty(name = "%dev.quarkus.tls.ssl-tls.trust-store.p12.password")
     String truststorePassword;
 
     @Produces
