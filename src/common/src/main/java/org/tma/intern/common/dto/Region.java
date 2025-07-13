@@ -1,4 +1,4 @@
-package org.tma.intern.auth.data;
+package org.tma.intern.common.dto;
 
 import lombok.AllArgsConstructor;
 

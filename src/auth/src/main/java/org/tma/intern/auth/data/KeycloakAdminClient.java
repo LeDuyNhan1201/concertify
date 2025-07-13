@@ -25,6 +25,7 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 import org.tma.intern.auth.config.OAuth2Config;
+import org.tma.intern.common.dto.Region;
 
 import java.time.Instant;
 import java.util.*;

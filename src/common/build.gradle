@@ -1,6 +1,5 @@
 dependencies {
     api rootProject.ext.libs.validation
     api rootProject.ext.libs.dataFaker
-
-    api rootProject.ext.libs.testKeycloakServer
+    api rootProject.ext.libs.mongodbPanache
 }

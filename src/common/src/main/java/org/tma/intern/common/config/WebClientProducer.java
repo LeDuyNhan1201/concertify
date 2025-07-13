@@ -1,4 +1,4 @@
-package org.tma.intern.common.base;
+package org.tma.intern.common.config;
 
 import io.vertx.core.net.PfxOptions;
 import io.vertx.ext.web.client.WebClientOptions;

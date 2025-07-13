@@ -32,7 +32,7 @@ import org.tma.intern.common.dto.CommonResponse;
         scheme = "Bearer"
     )}
 )
-@Path("/v1/users")
+@Path("/v1")
 @Tag(name = "Users", description = "User operations")
 @Produces(MediaType.APPLICATION_JSON)
 @RequiredArgsConstructor

@@ -24,7 +24,7 @@ public class BaseResource {
 
     protected void checkRegion() {
         if (!identityContext.getClaim("region").equals(locale.getRegion()))
-            throw new HttpException(AppError.AUTH_INFO_INVALID, Response.Status.FORBIDDEN, null);
+            throw new HttpException(AppError.REGION_INVALID, Response.Status.FORBIDDEN, null);
     }
 
 }

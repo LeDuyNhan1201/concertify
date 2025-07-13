@@ -2,7 +2,7 @@ package org.tma.intern.auth.dto;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.tma.intern.auth.data.Region;
+import org.tma.intern.common.dto.Region;
 
 import java.util.List;
 

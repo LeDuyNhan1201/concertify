@@ -15,7 +15,8 @@ public enum AppError {
 
     RESOURCE_NOT_FOUND("common/resource-not-found", "Error.ResourceNotFound"),
     ACTION_FAILED("common/action-failed", "Action.Fail"),
-    AUTH_INFO_INVALID("auth/auth-info_invalid", "Error.AuthInfoInvalid")
+    AUTH_INFO_INVALID("auth/auth-info-invalid", "Error.AuthInfoInvalid"),
+    REGION_INVALID("auth/region-invalid", "Error.RegionInvalid"),
     ;
 
     AppError(String code, String message) {

@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.tma.intern.auth.data.IdentityGroup;
-import org.tma.intern.auth.data.Region;
+import org.tma.intern.common.dto.Region;
 import org.tma.intern.auth.data.IdentityAdminClient;
 import org.tma.intern.auth.data.IdentityUser;
 import org.tma.intern.auth.dto.UserMapper;
@@ -32,7 +32,7 @@ public class UserServiceImpl extends BaseService implements UserService {
 
     UserMapper userMapper;
 
-    Faker faker = new Faker();
+    Faker faker;
 
     @Override
     public Uni<UserResponse.Details> findByEmail(String email) {

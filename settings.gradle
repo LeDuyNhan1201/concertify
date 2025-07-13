@@ -16,3 +16,9 @@ project(':common').projectDir = file('src/common')
 
 include 'auth'
 project(':auth').projectDir = file('src/auth')
+
+include 'concert'
+project(':concert').projectDir = file('src/concert')
+
+include 'booking'
+project(':booking').projectDir = file('src/booking')
