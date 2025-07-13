@@ -34,6 +34,7 @@ ext {
 
             quarkusJunit          : "io.quarkus:quarkus-junit5",
             restAssured           : "io.rest-assured:rest-assured",
+            testKeycloakServer    : "io.quarkus:quarkus-test-keycloak-server",
             testcontainers        : "org.testcontainers:testcontainers:${versions.testcontainers}",
             testcontainersKeycloak: "com.github.dasniko:testcontainers-keycloak:${versions.testcontainersKeycloak}",
             dataFaker             : "net.datafaker:datafaker:${versions.dataFaker}"

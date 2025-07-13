@@ -56,13 +56,10 @@ public class UserServiceImpl extends BaseService implements UserService {
 
     @Override
     public Uni<String> delete(String id) {
-        try {
-            return keycloakAdminClient.deleteUser(id);
-        } catch (Exception exception) {
-            log.error("Keycloak user deletion failed:  {}", exception.getMessage());
-            throw new HttpException(AppError.ACTION_FAILED,
-                Response.Status.NOT_IMPLEMENTED, exception.getCause(), "Delete", "user");
-        }
+        return keycloakAdminClient.deleteUser(id)
+            .onFailure().transform(throwable ->
+                new HttpException(AppError.ACTION_FAILED,
+                    Response.Status.NOT_IMPLEMENTED, throwable, "Delete", "user"));
     }
 
     @Override

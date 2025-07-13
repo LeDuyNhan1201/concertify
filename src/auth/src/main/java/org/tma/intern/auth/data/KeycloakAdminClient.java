@@ -79,7 +79,7 @@ public class KeycloakAdminClient implements IdentityAdminClient {
 
     @Override
     public Uni<String> deleteUser(String id) {
-        return Uni.createFrom().item(() -> deleteUserBlocking(id));
+        return Uni.createFrom().item(() -> deleteUserBlocking(id)).runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
     @Override

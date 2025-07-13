@@ -35,20 +35,17 @@ subprojects {
         apply plugin: 'io.quarkus'
         apply plugin: 'java'
 
+        compileTestJava {
+            options.encoding = 'UTF-8'
+        }
+
         tasks.withType(JavaCompile).configureEach {
             options.encoding = 'UTF-8'
             options.compilerArgs << '-parameters'
         }
 
-        compileTestJava {
-            options.encoding = 'UTF-8'
-        }
-
-        tasks.named('test') {
+        tasks.withType(Test).configureEach {
             useJUnitPlatform()
-        }
-
-        test {
             systemProperty "java.util.logging.manager", "org.jboss.logmanager.LogManager"
         }
     }
@@ -73,7 +70,6 @@ subprojects {
         testImplementation rootProject.ext.libs.quarkusJunit
         testImplementation rootProject.ext.libs.restAssured
         testImplementation rootProject.ext.libs.testcontainers
-//        testImplementation rootProject.ext.libs.testcontainersKeycloak
     }
 
 }

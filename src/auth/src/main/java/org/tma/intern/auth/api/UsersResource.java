@@ -85,12 +85,13 @@ public class UsersResource extends BaseResource {
     @APIResponse(responseCode = "401", description = "Unauthenticated", content = @Content())
     @APIResponse(responseCode = "403", description = "Invalid resource !!!",
         content = @Content(schema = @Schema(implementation = String.class)))
-    @APIResponse(responseCode = "205", description = "Success",
+    @APIResponse(responseCode = "200", description = "Success",
         content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     public Uni<RestResponse<CommonResponse<String>>> delete(@PathParam("id") String id) {
         return userService.delete(id).onItem().transform(userId ->
-            RestResponse.ResponseBuilder.create(RestResponse.Status.NO_CONTENT,
-                CommonResponse.<String>builder().data(userId).build()
+            RestResponse.ResponseBuilder.create(RestResponse.Status.OK, CommonResponse.<String>builder()
+                .message(locale.getMessage("Action.Success", "Delete", "user"))
+                .data(userId).build()
             ).build());
     }
 
