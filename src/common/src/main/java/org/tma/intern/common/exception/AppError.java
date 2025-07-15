@@ -17,6 +17,7 @@ public enum AppError {
     ACTION_FAILED("common/action-failed", "Action.Fail"),
     AUTH_INFO_INVALID("auth/auth-info-invalid", "Error.AuthInfoInvalid"),
     REGION_INVALID("auth/region-invalid", "Error.RegionInvalid"),
+    ROLE_INVALID("auth/role-invalid", "Error.RoleInvalid"),
     ;
 
     AppError(String code, String message) {

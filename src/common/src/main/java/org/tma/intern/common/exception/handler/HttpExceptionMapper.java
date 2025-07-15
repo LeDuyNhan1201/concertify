@@ -28,7 +28,7 @@ public class HttpExceptionMapper implements ExceptionMapper<HttpException> {
             .message((exception.getMoreInfo() != null)
                 ? locale.getMessage(error.getMessage(), exception.getMoreInfo())
                 : locale.getMessage(error.getMessage()))
-            .data((exception.getCause() == null) ? exception.getCause().getMessage() : null)
+            .data((exception.getCause() != null) ? exception.getCause().getMessage() : null)
             .build();
 
         return Response.status(exception.getHttpStatus()).entity(response).build();

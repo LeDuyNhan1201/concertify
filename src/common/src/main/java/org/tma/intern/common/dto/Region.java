@@ -5,10 +5,10 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public enum Region {
 
-    EN("en"),
-    VI("vi")
+    US("en"),
+    VN("vi")
     ;
 
-    public final String value;
+    public final String code;
 
 }

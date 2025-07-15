@@ -38,7 +38,7 @@ public class IdentityContextImpl implements IdentityContext {
     }
 
     @Override
-    public String getClaim(String key) {
+    public <T> T getClaim(String key) {
         return !securityIdentity.isAnonymous() ? jwt.getClaim(key) : null;
     }
 

@@ -1,5 +1,9 @@
 dependencies {
+    implementation rootProject.ext.libs.keycloakAdmin
     api rootProject.ext.libs.validation
     api rootProject.ext.libs.dataFaker
     api rootProject.ext.libs.mongodbPanache
+//    api rootProject.ext.libs.quarkusRestClient
+//    api rootProject.ext.libs.restClientMunity
+//    api rootProject.ext.libs.quarkusRestClientJackson
 }

@@ -8,16 +8,16 @@ import org.jboss.resteasy.reactive.RestResponse;
 import org.junit.jupiter.api.Test;
 import org.tma.intern.common.dto.Region;
 import org.tma.intern.common.helper.StringHelper;
-import org.tma.intern.concert.api.ConcertsResource;
+import org.tma.intern.concert.api.ConcertsResourceV1;
 
 import java.util.Locale;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 
-@TestHTTPEndpoint(ConcertsResource.class)
+@TestHTTPEndpoint(ConcertsResourceV1.class)
 @QuarkusTest
-class ConcertsResourceTest {
+class ConcertsResourceV1Test {
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
@@ -40,14 +40,14 @@ class ConcertsResourceTest {
         String title = "Test Concert";
         String description = "This is a test concert description";
         String location = "Test Location";
-        String region = Region.EN.name();
+        String region = Region.US.name();
         String startTime = "2023-10-01T10:00:00";
         String endTime = "2023-10-01T12:00:00";
 
         Response response = given()
             .auth().oauth2(getAccessToken(ORGANIZER_EN_EMAIL))
             .header("Content-Type", "application/json")
-            .header("Accept-Language", "en")
+            .header("Accept-Language", "en-US")
             .body("""
                 {
                     "title": "%s",
@@ -72,7 +72,7 @@ class ConcertsResourceTest {
             .then().log().all()
             .statusCode(RestResponse.Status.OK.getStatusCode())
             .body("data.id", is(concertId))
-            .body("data.region", is(Region.EN.value));
+            .body("data.region", is(Region.US.name()));
 
 //        given()
 //            .auth().oauth2(getAccessToken(ADMIN_EMAIL))

@@ -2,11 +2,13 @@
 gradle wrapper --gradle-version 8.14
 ./gradlew clean build
 ./gradlew clean build -x test
+./gradlew clean build -Dquarkus.native.enabled=true
 ./gradlew :auth:quarkusDev
 ./gradlew :concert:quarkusDev
 ./gradlew :booking:quarkusDev
 
 sudo tar -czvf concertify.tar.gz concertify
+sudo tar -xzf concertify.tar.gz
 ```
 
 ```shell
@@ -35,4 +37,9 @@ curl --insecure -X POST 'https://localhost:8443/realms/concertify/protocol/openi
 source generate_ca.sh
 sudo ./start.sh
 sudo ./stop.sh
+```
+
+```shell
+kafka-topics --bootstrap-server broker1:39091 --list --command-config /tmp/configs/superuser.properties
+kafka-topics --bootstrap-server broker1:39091 --describe --topic <topic-name> --command-config /tmp/configs/superuser.properties
 ```

@@ -1,20 +1,23 @@
 package org.tma.intern.auth.service;
 
 import io.smallrye.mutiny.Uni;
-import org.tma.intern.auth.data.IdentityGroup;
+import org.tma.intern.common.dto.IdentityGroup;
 import org.tma.intern.auth.dto.UserRequest;
 import org.tma.intern.auth.dto.UserResponse;
+import org.tma.intern.common.dto.Region;
 
 import java.util.List;
 
 public interface UserService {
 
-    Uni<UserResponse.Details> findByEmail(String email);
+    Uni<UserResponse.Detail> findByEmail(String email);
 
     Uni<String> create(UserRequest.Creation request);
 
+    Uni<String> createGroup(UserRequest.GroupCreation request);
+
     Uni<String> delete(String id);
 
-    Uni<List<String>> seedUsers(int count, IdentityGroup... groups);
+    Uni<List<String>> seedUsers(int count, IdentityGroup group, Region region);
 
 }

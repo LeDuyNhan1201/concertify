@@ -23,7 +23,7 @@ public class BaseResource {
     LocaleProvider locale;
 
     protected void checkRegion() {
-        if (!identityContext.getClaim("region").equals(locale.getRegion()))
+        if (!identityContext.getClaim("region").equals(locale.getTag()))
             throw new HttpException(AppError.REGION_INVALID, Response.Status.FORBIDDEN, null);
     }
 

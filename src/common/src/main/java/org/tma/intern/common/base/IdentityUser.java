@@ -1,10 +1,7 @@
-package org.tma.intern.auth.data;
+package org.tma.intern.common.base;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.tma.intern.common.dto.Region;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -20,8 +17,8 @@ public class IdentityUser {
 
     String password;
 
-    Region region;
+    String firstName;
 
-    List<String> roles;
+    String lastName;
 
 }

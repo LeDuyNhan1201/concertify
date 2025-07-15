@@ -2444,19 +2444,6 @@
     "failureFactor" : 30,
     "roles" : {
       "realm" : [ {
-        "id" : "905a9ba8-48ff-4e53-a630-89c2cd0e39e0",
-        "name" : "organizer_admin_vi",
-        "description" : "role_vi_organizer",
-        "composite" : true,
-        "composites" : {
-          "client" : {
-            "concert-service" : [ "concert:create", "concert:view", "concert:edit" ]
-          }
-        },
-        "clientRole" : false,
-        "containerId" : "debd37b6-36b2-404b-90ea-c7bc6dee6f0a",
-        "attributes" : { }
-      }, {
         "id" : "9d255bca-2e46-44af-9a22-412044b6a4e0",
         "name" : "offline_access",
         "description" : "${role_offline-access}",
@@ -2490,15 +2477,12 @@
         "id" : "9e5cc3b5-ddbb-4001-a1e8-137eaa65b0b2",
         "name" : "global_admin",
         "description" : "role_full_access",
-        "composite" : false,
-        "clientRole" : false,
-        "containerId" : "debd37b6-36b2-404b-90ea-c7bc6dee6f0a",
-        "attributes" : { }
-      }, {
-        "id" : "f69ad252-fc03-45b6-aabd-c7a34a80ff62",
-        "name" : "organizer_admin_us",
-        "description" : "role_us_organizer",
-        "composite" : false,
+        "composite" : true,
+        "composites" : {
+          "client" : {
+            "realm-management" : [ "realm-admin" ]
+          }
+        },
         "clientRole" : false,
         "containerId" : "debd37b6-36b2-404b-90ea-c7bc6dee6f0a",
         "attributes" : { }
@@ -2542,6 +2526,22 @@
           "composite" : false,
           "clientRole" : true,
           "containerId" : "b2aea8a5-0e50-4ce2-b2a1-184d89d8ff73",
+          "attributes" : { }
+        } ],
+        "web-app" : [ {
+          "id" : "57412f6e-884c-4a89-af39-d8dfdb892d14",
+          "name" : "uma_protection",
+          "composite" : false,
+          "clientRole" : true,
+          "containerId" : "2d0e232b-0cf9-4f6d-a6e2-33b3aa050104",
+          "attributes" : { }
+        } ],
+        "auth-service" : [ {
+          "id" : "77e6163e-ebfa-4490-831e-ae4e50fc1b10",
+          "name" : "uma_protection",
+          "composite" : false,
+          "clientRole" : true,
+          "containerId" : "84a5e49a-836e-43fe-9b0b-9aa1c15f0bf5",
           "attributes" : { }
         } ],
         "realm-management" : [ {
@@ -2722,14 +2722,6 @@
           "attributes" : { }
         } ],
         "admin-cli" : [ ],
-        "profile-service" : [ {
-          "id" : "57412f6e-884c-4a89-af39-d8dfdb892d14",
-          "name" : "uma_protection",
-          "composite" : false,
-          "clientRole" : true,
-          "containerId" : "2d0e232b-0cf9-4f6d-a6e2-33b3aa050104",
-          "attributes" : { }
-        } ],
         "account-console" : [ ],
         "broker" : [ {
           "id" : "1ab2f2c9-7c0b-4ff4-a799-9cac21bf68a4",
@@ -2821,63 +2813,7 @@
       "id" : "dba67237-9339-415d-8a1e-db686f9a4a5a",
       "name" : "global",
       "path" : "/global",
-      "subGroups" : [ {
-        "id" : "ac9f4aab-3117-4b8a-ad9b-d98a16dd19df",
-        "name" : "us",
-        "path" : "/global/us",
-        "parentId" : "dba67237-9339-415d-8a1e-db686f9a4a5a",
-        "subGroups" : [ {
-          "id" : "176a512c-9469-4263-8155-7082861814e4",
-          "name" : "customers",
-          "path" : "/global/us/customers",
-          "parentId" : "ac9f4aab-3117-4b8a-ad9b-d98a16dd19df",
-          "subGroups" : [ ],
-          "attributes" : { },
-          "realmRoles" : [ ],
-          "clientRoles" : { }
-        }, {
-          "id" : "90df7727-ff36-4557-ab9c-628762c4e34d",
-          "name" : "organizers",
-          "path" : "/global/us/organizers",
-          "parentId" : "ac9f4aab-3117-4b8a-ad9b-d98a16dd19df",
-          "subGroups" : [ ],
-          "attributes" : { },
-          "realmRoles" : [ "organizer_admin_us" ],
-          "clientRoles" : { }
-        } ],
-        "attributes" : { },
-        "realmRoles" : [ ],
-        "clientRoles" : { }
-      }, {
-        "id" : "149b6bbe-eda1-4455-bd4c-77c0d7e8be25",
-        "name" : "vi",
-        "path" : "/global/vi",
-        "parentId" : "dba67237-9339-415d-8a1e-db686f9a4a5a",
-        "subGroups" : [ {
-          "id" : "13f02827-bab2-4b04-9339-9e329ece8ce0",
-          "name" : "customers",
-          "path" : "/global/vi/customers",
-          "parentId" : "149b6bbe-eda1-4455-bd4c-77c0d7e8be25",
-          "subGroups" : [ ],
-          "attributes" : { },
-          "realmRoles" : [ ],
-          "clientRoles" : { }
-        }, {
-          "id" : "51e115f8-acad-43eb-96ed-2329f3261c4d",
-          "name" : "organizers",
-          "path" : "/global/vi/organizers",
-          "parentId" : "149b6bbe-eda1-4455-bd4c-77c0d7e8be25",
-          "subGroups" : [ ],
-          "attributes" : {
-            "name" : [ "vi_organizer" ]
-          },
-          "realmRoles" : [ "organizer_admin_vi" ],
-          "clientRoles" : { }
-        } ],
-        "attributes" : { },
-        "realmRoles" : [ ],
-        "clientRoles" : { }
-      } ],
+      "subGroups" : [ ],
       "attributes" : { },
       "realmRoles" : [ ],
       "clientRoles" : { }
@@ -2923,32 +2859,49 @@
     "webAuthnPolicyPasswordlessAcceptableAaguids" : [ ],
     "webAuthnPolicyPasswordlessExtraOrigins" : [ ],
     "users" : [ {
-      "id" : "41ee27f2-aacf-48b9-bc80-115bc340ff6c",
-      "username" : "3121410359@sv.sgu.edu.vi",
-      "firstName" : "Nhan",
-      "lastName" : "Le",
-      "email" : "3121410359@sv.sgu.edu.vi",
+      "id" : "9fbfd467-2b11-4af8-9a2d-ed4d900f80f7",
+      "username" : "admin@gmail.com",
+      "firstName" : "admin",
+      "lastName" : "admin",
+      "email" : "admin@gmail.com",
       "emailVerified" : true,
       "attributes" : {
-        "region" : [ "vi" ],
-        "phone" : [ "0703361342" ]
+        "region" : [ "vi" ]
       },
-      "createdTimestamp" : 1752042520878,
+      "createdTimestamp" : 1752240641843,
       "enabled" : true,
       "totp" : false,
       "credentials" : [ {
-        "id" : "fcc99d23-e1f1-44dd-963c-540f8e828817",
+        "id" : "9f76cf61-2f11-4156-8d9c-2057b031fd07",
         "type" : "password",
         "userLabel" : "My password",
-        "createdDate" : 1752042713198,
-        "secretData" : "{\"value\":\"x9jSLHq6U0C97CA1PZb8wwSjhKjJe6YBNqcXogJ8TkY=\",\"salt\":\"qWNEKkUqAGZV6HKa4Jtuww==\",\"additionalParameters\":{}}",
+        "createdDate" : 1752240653546,
+        "secretData" : "{\"value\":\"dIiGCGQTy5h+u6j/kjXvJIvJIeDfEe124oPOBe1/RWU=\",\"salt\":\"u5bqcILsQe9lkE/e9ll7vQ==\",\"additionalParameters\":{}}",
         "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
       } ],
       "disableableCredentialTypes" : [ ],
       "requiredActions" : [ ],
-      "realmRoles" : [ "default-roles-concertify" ],
+      "realmRoles" : [ "default-roles-concertify", "global_admin" ],
       "notBefore" : 0,
-      "groups" : [ "/global/vi/organizers" ]
+      "groups" : [ ]
+    }, {
+      "id" : "b6e28f8e-d082-4ecf-a72f-59b1d316fbec",
+      "username" : "service-account-auth-service",
+      "emailVerified" : false,
+      "createdTimestamp" : 1752244010701,
+      "enabled" : true,
+      "totp" : false,
+      "serviceAccountClientId" : "auth-service",
+      "credentials" : [ ],
+      "disableableCredentialTypes" : [ ],
+      "requiredActions" : [ ],
+      "realmRoles" : [ "default-roles-concertify" ],
+      "clientRoles" : {
+        "auth-service" : [ "uma_protection" ],
+        "realm-management" : [ "realm-admin" ]
+      },
+      "notBefore" : 0,
+      "groups" : [ ]
     }, {
       "id" : "c79246be-5311-44f0-ab46-c8bbc0b43a2f",
       "username" : "service-account-booking-service",
@@ -2980,23 +2933,6 @@
       "realmRoles" : [ "default-roles-concertify" ],
       "clientRoles" : {
         "concert-service" : [ "uma_protection" ]
-      },
-      "notBefore" : 0,
-      "groups" : [ ]
-    }, {
-      "id" : "82428c21-144e-4fae-bc70-08fcf3eec8dd",
-      "username" : "service-account-profile-service",
-      "emailVerified" : false,
-      "createdTimestamp" : 1751956778011,
-      "enabled" : true,
-      "totp" : false,
-      "serviceAccountClientId" : "profile-service",
-      "credentials" : [ ],
-      "disableableCredentialTypes" : [ ],
-      "requiredActions" : [ ],
-      "realmRoles" : [ "default-roles-concertify" ],
-      "clientRoles" : {
-        "profile-service" : [ "uma_protection" ]
       },
       "notBefore" : 0,
       "groups" : [ ]
@@ -3113,6 +3049,84 @@
       "defaultClientScopes" : [ "web-origins", "acr", "profile", "roles", "basic", "email" ],
       "optionalClientScopes" : [ "address", "phone", "organization", "offline_access", "microprofile-jwt" ]
     }, {
+      "id" : "84a5e49a-836e-43fe-9b0b-9aa1c15f0bf5",
+      "clientId" : "auth-service",
+      "name" : "client_auth-service",
+      "description" : "Client for Auth Backend Service.",
+      "rootUrl" : "",
+      "adminUrl" : "",
+      "baseUrl" : "",
+      "surrogateAuthRequired" : false,
+      "enabled" : true,
+      "alwaysDisplayInConsole" : false,
+      "clientAuthenticatorType" : "client-secret",
+      "secret" : "X4Y6nlgqf7dX6ajQ449gRRu9fF0gfBw2",
+      "redirectUris" : [ "/*" ],
+      "webOrigins" : [ "/*" ],
+      "notBefore" : 0,
+      "bearerOnly" : false,
+      "consentRequired" : false,
+      "standardFlowEnabled" : false,
+      "implicitFlowEnabled" : false,
+      "directAccessGrantsEnabled" : true,
+      "serviceAccountsEnabled" : true,
+      "authorizationServicesEnabled" : true,
+      "publicClient" : false,
+      "frontchannelLogout" : true,
+      "protocol" : "openid-connect",
+      "attributes" : {
+        "realm_client" : "false",
+        "oidc.ciba.grant.enabled" : "false",
+        "client.secret.creation.time" : "1752244010",
+        "backchannel.logout.session.required" : "true",
+        "standard.token.exchange.enabled" : "false",
+        "frontchannel.logout.session.required" : "true",
+        "post.logout.redirect.uris" : "+",
+        "oauth2.device.authorization.grant.enabled" : "false",
+        "display.on.consent.screen" : "false",
+        "backchannel.logout.revoke.offline.tokens" : "false"
+      },
+      "authenticationFlowBindingOverrides" : { },
+      "fullScopeAllowed" : true,
+      "nodeReRegistrationTimeout" : -1,
+      "defaultClientScopes" : [ "web-origins", "service_account", "acr", "composition_roles", "profile", "roles", "basic", "email" ],
+      "optionalClientScopes" : [ "address", "phone", "organization", "offline_access", "microprofile-jwt" ],
+      "authorizationSettings" : {
+        "allowRemoteResourceManagement" : true,
+        "policyEnforcementMode" : "ENFORCING",
+        "resources" : [ {
+          "name" : "Default Resource",
+          "type" : "urn:auth-service:resources:default",
+          "ownerManagedAccess" : false,
+          "attributes" : { },
+          "uris" : [ "/*" ]
+        } ],
+        "policies" : [ {
+          "name" : "Default Policy",
+          "description" : "A policy that grants access only for users within this realm",
+          "type" : "regex",
+          "logic" : "POSITIVE",
+          "decisionStrategy" : "AFFIRMATIVE",
+          "config" : {
+            "targetContextAttributes" : "false",
+            "pattern" : ".*",
+            "targetClaim" : "sub"
+          }
+        }, {
+          "name" : "Default Permission",
+          "description" : "A permission that applies to the default resource type",
+          "type" : "resource",
+          "logic" : "POSITIVE",
+          "decisionStrategy" : "UNANIMOUS",
+          "config" : {
+            "defaultResourceType" : "urn:auth-service:resources:default",
+            "applyPolicies" : "[\"Default Policy\"]"
+          }
+        } ],
+        "scopes" : [ ],
+        "decisionStrategy" : "UNANIMOUS"
+      }
+    }, {
       "id" : "abf1b1dd-a616-4576-92a3-384dc5dc0811",
       "clientId" : "booking-service",
       "name" : "client_booking-service",
@@ -3130,7 +3144,7 @@
       "notBefore" : 0,
       "bearerOnly" : false,
       "consentRequired" : false,
-      "standardFlowEnabled" : true,
+      "standardFlowEnabled" : false,
       "implicitFlowEnabled" : false,
       "directAccessGrantsEnabled" : false,
       "serviceAccountsEnabled" : true,
@@ -3145,7 +3159,9 @@
         "backchannel.logout.session.required" : "true",
         "standard.token.exchange.enabled" : "false",
         "post.logout.redirect.uris" : "+",
+        "frontchannel.logout.session.required" : "true",
         "oauth2.device.authorization.grant.enabled" : "false",
+        "display.on.consent.screen" : "false",
         "backchannel.logout.revoke.offline.tokens" : "false"
       },
       "authenticationFlowBindingOverrides" : { },
@@ -3230,12 +3246,12 @@
       "alwaysDisplayInConsole" : false,
       "clientAuthenticatorType" : "client-secret",
       "secret" : "ggj3eeGCjmgFsk8Yob5l3PiJ4hieDyod",
-      "redirectUris" : [ "https://localhost:61001/lmao/*", "/*" ],
-      "webOrigins" : [ "https://localhost:61001/lmao/*", "/*" ],
+      "redirectUris" : [ "/*" ],
+      "webOrigins" : [ "/*" ],
       "notBefore" : 0,
       "bearerOnly" : false,
       "consentRequired" : false,
-      "standardFlowEnabled" : true,
+      "standardFlowEnabled" : false,
       "implicitFlowEnabled" : false,
       "directAccessGrantsEnabled" : true,
       "serviceAccountsEnabled" : true,
@@ -3252,6 +3268,7 @@
         "frontchannel.logout.session.required" : "true",
         "post.logout.redirect.uris" : "+",
         "oauth2.device.authorization.grant.enabled" : "false",
+        "use.jwks.url" : "false",
         "backchannel.logout.revoke.offline.tokens" : "false",
         "use.refresh.tokens" : "true",
         "realm_client" : "false",
@@ -3284,34 +3301,13 @@
           "uris" : [ "/*" ]
         } ],
         "policies" : [ {
-          "name" : "Default Policy",
-          "description" : "A policy that grants access only for users within this realm",
-          "type" : "regex",
-          "logic" : "POSITIVE",
-          "decisionStrategy" : "AFFIRMATIVE",
-          "config" : {
-            "targetContextAttributes" : "false",
-            "pattern" : ".*",
-            "targetClaim" : "sub"
-          }
-        }, {
-          "name" : "Allow Concert Creator",
-          "description" : "",
-          "type" : "role",
-          "logic" : "POSITIVE",
-          "decisionStrategy" : "UNANIMOUS",
-          "config" : {
-            "fetchRoles" : "false",
-            "roles" : "[{\"id\":\"concert-service/concert:create\",\"required\":true}]"
-          }
-        }, {
           "name" : "Allow US Organizers",
           "description" : "",
           "type" : "group",
           "logic" : "POSITIVE",
           "decisionStrategy" : "UNANIMOUS",
           "config" : {
-            "groups" : "[{\"path\":\"/global/us/organizers\",\"extendChildren\":false}]",
+            "groups" : "[]",
             "groupsClaim" : "groups"
           }
         }, {
@@ -3321,7 +3317,7 @@
           "logic" : "POSITIVE",
           "decisionStrategy" : "UNANIMOUS",
           "config" : {
-            "groups" : "[{\"path\":\"/global/vi/organizers\",\"extendChildren\":false}]",
+            "groups" : "[]",
             "groupsClaim" : "groups"
           }
         }, {
@@ -3331,7 +3327,7 @@
           "logic" : "POSITIVE",
           "decisionStrategy" : "UNANIMOUS",
           "config" : {
-            "groups" : "[{\"path\":\"/global/vi/customers\",\"extendChildren\":false},{\"path\":\"/global/us/customers\",\"extendChildren\":false}]",
+            "groups" : "[]",
             "groupsClaim" : "groups"
           }
         }, {
@@ -3382,84 +3378,9 @@
           "decisionStrategy" : "UNANIMOUS",
           "config" : {
             "fetchRoles" : "false",
-            "roles" : "[{\"id\":\"organizer_admin_us\",\"required\":false}]"
+            "roles" : "[]"
           }
         }, {
-          "name" : "Allow Organizer Admin VN",
-          "description" : "",
-          "type" : "role",
-          "logic" : "POSITIVE",
-          "decisionStrategy" : "UNANIMOUS",
-          "config" : {
-            "fetchRoles" : "false",
-            "roles" : "[{\"id\":\"organizer_admin_vi\",\"required\":false}]"
-          }
-        }, {
-          "name" : "Default Permission",
-          "description" : "A permission that applies to the default resource type",
-          "type" : "resource",
-          "logic" : "POSITIVE",
-          "decisionStrategy" : "UNANIMOUS",
-          "config" : {
-            "defaultResourceType" : "urn:concert-service:resources:default",
-            "applyPolicies" : "[\"Default Policy\"]"
-          }
-        } ],
-        "scopes" : [ ],
-        "decisionStrategy" : "UNANIMOUS"
-      }
-    }, {
-      "id" : "2d0e232b-0cf9-4f6d-a6e2-33b3aa050104",
-      "clientId" : "profile-service",
-      "name" : "client_profile-service",
-      "description" : "Client for Profile Backend Service.",
-      "rootUrl" : "",
-      "adminUrl" : "",
-      "baseUrl" : "",
-      "surrogateAuthRequired" : false,
-      "enabled" : true,
-      "alwaysDisplayInConsole" : false,
-      "clientAuthenticatorType" : "client-secret",
-      "secret" : "FzZicoZgEzF2incHVcfk5zWXxvfsRnJq",
-      "redirectUris" : [ "/*" ],
-      "webOrigins" : [ "/*" ],
-      "notBefore" : 0,
-      "bearerOnly" : false,
-      "consentRequired" : false,
-      "standardFlowEnabled" : true,
-      "implicitFlowEnabled" : false,
-      "directAccessGrantsEnabled" : false,
-      "serviceAccountsEnabled" : true,
-      "authorizationServicesEnabled" : true,
-      "publicClient" : false,
-      "frontchannelLogout" : true,
-      "protocol" : "openid-connect",
-      "attributes" : {
-        "realm_client" : "false",
-        "oidc.ciba.grant.enabled" : "false",
-        "client.secret.creation.time" : "1751956778",
-        "backchannel.logout.session.required" : "true",
-        "standard.token.exchange.enabled" : "false",
-        "post.logout.redirect.uris" : "+",
-        "oauth2.device.authorization.grant.enabled" : "false",
-        "backchannel.logout.revoke.offline.tokens" : "false"
-      },
-      "authenticationFlowBindingOverrides" : { },
-      "fullScopeAllowed" : true,
-      "nodeReRegistrationTimeout" : -1,
-      "defaultClientScopes" : [ "web-origins", "service_account", "acr", "profile", "roles", "basic", "email" ],
-      "optionalClientScopes" : [ "address", "phone", "organization", "offline_access", "microprofile-jwt" ],
-      "authorizationSettings" : {
-        "allowRemoteResourceManagement" : true,
-        "policyEnforcementMode" : "ENFORCING",
-        "resources" : [ {
-          "name" : "Default Resource",
-          "type" : "urn:profile-service:resources:default",
-          "ownerManagedAccess" : false,
-          "attributes" : { },
-          "uris" : [ "/*" ]
-        } ],
-        "policies" : [ {
           "name" : "Default Policy",
           "description" : "A policy that grants access only for users within this realm",
           "type" : "regex",
@@ -3471,13 +3392,33 @@
             "targetClaim" : "sub"
           }
         }, {
+          "name" : "Allow Concert Creator",
+          "description" : "",
+          "type" : "role",
+          "logic" : "POSITIVE",
+          "decisionStrategy" : "UNANIMOUS",
+          "config" : {
+            "fetchRoles" : "false",
+            "roles" : "[{\"id\":\"concert-service/concert:create\",\"required\":true}]"
+          }
+        }, {
+          "name" : "Allow Organizer Admin VN",
+          "description" : "",
+          "type" : "role",
+          "logic" : "POSITIVE",
+          "decisionStrategy" : "UNANIMOUS",
+          "config" : {
+            "fetchRoles" : "false",
+            "roles" : "[]"
+          }
+        }, {
           "name" : "Default Permission",
           "description" : "A permission that applies to the default resource type",
           "type" : "resource",
           "logic" : "POSITIVE",
           "decisionStrategy" : "UNANIMOUS",
           "config" : {
-            "defaultResourceType" : "urn:profile-service:resources:default",
+            "defaultResourceType" : "urn:concert-service:resources:default",
             "applyPolicies" : "[\"Default Policy\"]"
           }
         } ],
@@ -3561,6 +3502,61 @@
         }
       } ],
       "defaultClientScopes" : [ "web-origins", "acr", "profile", "roles", "basic", "email" ],
+      "optionalClientScopes" : [ "address", "phone", "organization", "offline_access", "microprofile-jwt" ]
+    }, {
+      "id" : "2d0e232b-0cf9-4f6d-a6e2-33b3aa050104",
+      "clientId" : "web-app",
+      "name" : "client_web-app",
+      "description" : "Client for Frontend Web App.",
+      "rootUrl" : "",
+      "adminUrl" : "",
+      "baseUrl" : "",
+      "surrogateAuthRequired" : false,
+      "enabled" : true,
+      "alwaysDisplayInConsole" : false,
+      "clientAuthenticatorType" : "client-secret",
+      "redirectUris" : [ "/*" ],
+      "webOrigins" : [ "/*" ],
+      "notBefore" : 0,
+      "bearerOnly" : false,
+      "consentRequired" : false,
+      "standardFlowEnabled" : true,
+      "implicitFlowEnabled" : false,
+      "directAccessGrantsEnabled" : true,
+      "serviceAccountsEnabled" : false,
+      "publicClient" : true,
+      "frontchannelLogout" : true,
+      "protocol" : "openid-connect",
+      "attributes" : {
+        "client.secret.creation.time" : "1751956778",
+        "request.object.signature.alg" : "any",
+        "request.object.encryption.alg" : "any",
+        "client.introspection.response.allow.jwt.claim.enabled" : "false",
+        "standard.token.exchange.enabled" : "false",
+        "post.logout.redirect.uris" : "+",
+        "frontchannel.logout.session.required" : "true",
+        "oauth2.device.authorization.grant.enabled" : "false",
+        "use.jwks.url" : "false",
+        "backchannel.logout.revoke.offline.tokens" : "false",
+        "use.refresh.tokens" : "true",
+        "realm_client" : "false",
+        "oidc.ciba.grant.enabled" : "false",
+        "client.use.lightweight.access.token.enabled" : "false",
+        "backchannel.logout.session.required" : "true",
+        "request.object.required" : "not required",
+        "client_credentials.use_refresh_token" : "false",
+        "access.token.header.type.rfc9068" : "false",
+        "tls.client.certificate.bound.access.tokens" : "false",
+        "require.pushed.authorization.requests" : "false",
+        "acr.loa.map" : "{}",
+        "display.on.consent.screen" : "false",
+        "request.object.encryption.enc" : "any",
+        "token.response.type.bearer.lower-case" : "false"
+      },
+      "authenticationFlowBindingOverrides" : { },
+      "fullScopeAllowed" : true,
+      "nodeReRegistrationTimeout" : -1,
+      "defaultClientScopes" : [ "web-origins", "acr", "composition_roles", "profile", "roles", "basic", "email" ],
       "optionalClientScopes" : [ "address", "phone", "organization", "offline_access", "microprofile-jwt" ]
     } ],
     "clientScopes" : [ {
@@ -3944,22 +3940,6 @@
           "jsonType.label" : "String"
         }
       }, {
-        "id" : "5e398070-a9fe-45c3-b02e-7e493c98bae0",
-        "name" : "region",
-        "protocol" : "openid-connect",
-        "protocolMapper" : "oidc-usermodel-attribute-mapper",
-        "consentRequired" : false,
-        "config" : {
-          "introspection.token.claim" : "true",
-          "userinfo.token.claim" : "true",
-          "user.attribute" : "region",
-          "id.token.claim" : "true",
-          "lightweight.claim" : "false",
-          "access.token.claim" : "true",
-          "claim.name" : "region",
-          "jsonType.label" : "String"
-        }
-      }, {
         "id" : "be57d1c7-03de-4abc-a6b9-dfce30356d2c",
         "name" : "nickname",
         "protocol" : "openid-connect",
@@ -4294,7 +4274,7 @@
         "subType" : "anonymous",
         "subComponents" : { },
         "config" : {
-          "allowed-protocol-mapper-types" : [ "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "oidc-address-mapper", "saml-user-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-attribute-mapper" ]
+          "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "oidc-full-name-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper" ]
         }
       }, {
         "id" : "f67d9947-c7dd-4aed-bfda-b7d7c08df900",
@@ -4354,7 +4334,7 @@
         "subType" : "authenticated",
         "subComponents" : { },
         "config" : {
-          "allowed-protocol-mapper-types" : [ "saml-role-list-mapper", "saml-user-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "oidc-address-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper" ]
+          "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-address-mapper", "oidc-full-name-mapper", "oidc-usermodel-attribute-mapper", "saml-role-list-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper" ]
         }
       } ],
       "org.keycloak.userprofile.UserProfileProvider" : [ {
@@ -4362,7 +4342,7 @@
         "providerId" : "declarative-user-profile",
         "subComponents" : { },
         "config" : {
-          "kc.user.profile.config" : [ "{\"attributes\":[{\"name\":\"username\",\"displayName\":\"${username}\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"username-prohibited-characters\":{},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"email\",\"displayName\":\"${email}\",\"validations\":{\"email\":{},\"length\":{\"max\":255}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"firstName\",\"displayName\":\"${firstName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"lastName\",\"displayName\":\"${lastName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"region\",\"displayName\":\"${region}\",\"validations\":{\"length\":{\"min\":\"2\",\"max\":\"2\"}},\"annotations\":{},\"required\":{\"roles\":[\"admin\",\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\"]},\"multivalued\":false}],\"groups\":[{\"name\":\"user-metadata\",\"displayHeader\":\"User metadata\",\"displayDescription\":\"Attributes, which refer to user metadata\"}]}" ]
+          "kc.user.profile.config" : [ "{\"attributes\":[{\"name\":\"username\",\"displayName\":\"${username}\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"username-prohibited-characters\":{},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"email\",\"displayName\":\"${email}\",\"validations\":{\"email\":{},\"length\":{\"max\":255}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"firstName\",\"displayName\":\"${firstName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"lastName\",\"displayName\":\"${lastName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false}],\"groups\":[{\"name\":\"user-metadata\",\"displayHeader\":\"User metadata\",\"displayDescription\":\"Attributes, which refer to user metadata\"}]}" ]
         }
       } ],
       "org.keycloak.keys.KeyProvider" : [ {

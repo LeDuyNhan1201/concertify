@@ -41,7 +41,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @Slf4j
-public class ConcertsResource extends BaseResource {
+public class ConcertsResourceV1 extends BaseResource {
 
     ConcertService concertService;
 
@@ -53,7 +53,7 @@ public class ConcertsResource extends BaseResource {
         content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     @Consumes(MediaType.APPLICATION_JSON)
     public Uni<RestResponse<CommonResponse<String>>> create(ConcertRequest.Body body) {
-        checkRegion();
+//        checkRegion();
         return concertService.create(body).onItem().transform(id ->
             RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
                 .message(locale.getMessage("Action.Success", "Create", "concert"))
@@ -114,11 +114,11 @@ public class ConcertsResource extends BaseResource {
     @NoCache
     @Operation(summary = "Get concert details", description = "API to get details of a concert by id.")
     @APIResponse(responseCode = "200", description = "Success",
-        content = @Content(schema = @Schema(implementation = ConcertResponse.Details.class)))
-    public Uni<RestResponse<CommonResponse<ConcertResponse.Details>>> details(@PathParam("id") String id) {
+        content = @Content(schema = @Schema(implementation = ConcertResponse.Detail.class)))
+    public Uni<RestResponse<CommonResponse<ConcertResponse.Detail>>> details(@PathParam("id") String id) {
         return concertService.findById(id).onItem().transform(concert ->
             RestResponse.ResponseBuilder.ok(
-                CommonResponse.<ConcertResponse.Details>builder().data(concert).build()
+                CommonResponse.<ConcertResponse.Detail>builder().data(concert).build()
             ).build());
     }
 

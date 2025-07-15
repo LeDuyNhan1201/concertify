@@ -20,15 +20,20 @@ public class LocaleProvider {
     HttpHeaders headers;
 
     public Locale getLocale() {
-        return Locale.forLanguageTag(headers.getAcceptableLanguages()
-                .stream().map(Locale::getLanguage)
+        return headers.getAcceptableLanguages()
+                .stream()
                 .findFirst()
-                .orElse(Locale.getDefault().getLanguage()));
+                .orElse(Locale.getDefault());
     }
 
-    public String getRegion() {
-        log.info("[{}] Current Locale: {}", LocaleProvider.class.getName(), getLocale());
+    public String getTag() {
+        log.info("[{}] Current tag: {}", LocaleProvider.class.getName(), getLocale());
         return getLocale().toLanguageTag();
+    }
+
+    public String getCountry() {
+        log.info("[{}] Current country: {}", LocaleProvider.class.getName(), getLocale());
+        return getLocale().getCountry();
     }
 
     public String getMessage(String key) {

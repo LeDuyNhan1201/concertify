@@ -20,11 +20,13 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.NoCache;
 import org.jboss.resteasy.reactive.RestResponse;
+import org.tma.intern.common.dto.IdentityGroup;
 import org.tma.intern.auth.dto.UserRequest;
 import org.tma.intern.auth.dto.UserResponse;
 import org.tma.intern.auth.service.UserService;
 import org.tma.intern.common.base.BaseResource;
 import org.tma.intern.common.dto.CommonResponse;
+import org.tma.intern.common.dto.Region;
 
 @SecuritySchemes(value = {
     @SecurityScheme(securitySchemeName = "bearerToken",
@@ -38,11 +40,27 @@ import org.tma.intern.common.dto.CommonResponse;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
-public class UsersResource extends BaseResource {
+public class UsersResourceV1 extends BaseResource {
 
     UserService userService;
 
     static final String ROLE_GLOBAL_ADMIN = "global_admin";
+
+    @RolesAllowed(ROLE_GLOBAL_ADMIN)
+    @POST
+    @Path("/groups")
+    @Operation(summary = "Create group", description = "Create a new group")
+    @APIResponse(responseCode = "500", description = "Failed",
+        content = @Content(schema = @Schema(implementation = String.class)))
+    @APIResponse(responseCode = "201", description = "Success",
+        content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    public Uni<RestResponse<CommonResponse<String>>> createGroup(UserRequest.GroupCreation body) {
+        return userService.createGroup(body).onItem().transform(groupId ->
+            RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
+                .message(locale.getMessage("Action.Success", "Create", "group"))
+                .data(groupId).build()
+            ).build());
+    }
 
     @RolesAllowed(ROLE_GLOBAL_ADMIN)
     @POST
@@ -69,11 +87,11 @@ public class UsersResource extends BaseResource {
     @APIResponse(responseCode = "403", description = "Invalid resource !!!",
         content = @Content(schema = @Schema(implementation = String.class)))
     @APIResponse(responseCode = "200", description = "Success",
-        content = @Content(schema = @Schema(implementation = UserResponse.Details.class)))
-    public Uni<RestResponse<CommonResponse<UserResponse.Details>>> details(@PathParam("email") String email) {
+        content = @Content(schema = @Schema(implementation = UserResponse.Detail.class)))
+    public Uni<RestResponse<CommonResponse<UserResponse.Detail>>> details(@PathParam("email") String email) {
         return userService.findByEmail(email).onItem().transform(user ->
             RestResponse.ResponseBuilder.ok(
-                CommonResponse.<UserResponse.Details>builder().data(user).build()
+                CommonResponse.<UserResponse.Detail>builder().data(user).build()
             ).build());
     }
 
@@ -95,19 +113,19 @@ public class UsersResource extends BaseResource {
             ).build());
     }
 
+    @Authenticated
     @GET
     @Path("/me")
     @NoCache
-    @Authenticated
     @Operation(summary = "Get current username", description = "API to get name of current user")
     @APIResponse(responseCode = "401", description = "Unauthenticated", content = @Content())
     @APIResponse(responseCode = "403", description = "Invalid resource !!!",
         content = @Content(schema = @Schema(implementation = String.class)))
     @APIResponse(responseCode = "200", description = "Success",
         content = @Content(schema = @Schema(implementation = CommonResponse.class)))
-    public Uni<RestResponse<UserResponse.Details>> me() {
+    public Uni<RestResponse<UserResponse.Detail>> me() {
         return Uni.createFrom().item(() ->
-            RestResponse.ResponseBuilder.ok(UserResponse.Details.builder()
+            RestResponse.ResponseBuilder.ok(UserResponse.Detail.builder()
                 .id(identityContext.getClaim("sub"))
                 .email(identityContext.getPrincipleName())
                 .roles(identityContext.getRoles()).build()
@@ -124,7 +142,7 @@ public class UsersResource extends BaseResource {
         content = @Content(schema = @Schema(implementation = String.class)))
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Response> seedUsers(@PathParam("count") int count) {
-        return userService.seedUsers(count).onItem()
+        return userService.seedUsers(count, IdentityGroup.CUSTOMERS, Region.US).onItem()
             .transform(userIds -> Response.ok(userIds).build());
     }
 

@@ -11,7 +11,6 @@ echo "Removing certs..."
 
 rm -f ../kafka/broker1/certs/*
 rm -f ../kafka/schema-registry1/certs/*
-rm -f ../kafka/control-center/certs/*
 rm -f ../keycloak/certs/*
 rm -rf ../../src/auth/src/main/resources/certs/*
 

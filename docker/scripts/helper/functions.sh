@@ -1,5 +1,10 @@
 #!/bin/bash
 
+create_client_files() {
+  echo "Creating client files"
+  cat ../templates/superuser.template | envsubst > ../kafka/configs/superuser.properties
+}
+
 create_env_file() {
     # Xóa nội dung file trước khi ghi
     : > ../.env

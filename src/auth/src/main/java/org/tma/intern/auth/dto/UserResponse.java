@@ -14,7 +14,7 @@ public class UserResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    public static class Details {
+    public static class Detail {
 
         String id;
 

@@ -1,6 +1,7 @@
 package org.tma.intern.concert.service;
 
 import io.quarkus.panache.common.Page;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.core.Response;
@@ -12,6 +13,7 @@ import net.datafaker.Faker;
 import org.bson.types.ObjectId;
 import org.tma.intern.common.base.BaseService;
 import org.tma.intern.common.dto.PageResponse;
+import org.tma.intern.common.dto.Region;
 import org.tma.intern.common.exception.AppError;
 import org.tma.intern.common.exception.HttpException;
 import org.tma.intern.concert.data.Concert;
@@ -31,6 +33,8 @@ import java.util.stream.IntStream;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ConcertServiceImpl extends BaseService implements ConcertService {
 
+    SeatService seatService;
+
     ConcertRepository concertRepository;
 
     ConcertMapper concertMapper;
@@ -39,21 +43,59 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
 
     @Override
     public Uni<List<String>> seedData(int count) {
-        List<Concert> concerts = IntStream.range(0, count).mapToObj(i -> createRandomConcert()).toList();
-        return concertRepository.persist(concerts).replaceWith(concerts)
-            .onItem().transformToUni(list ->
-                Uni.createFrom().item(list.stream().map(concert -> concert.getId().toHexString()).toList()));
+        List<Concert> concerts = IntStream.range(0, count)
+            .mapToObj(i -> createRandomConcert())
+            .toList();
+
+        return concertRepository.persist(concerts)
+            .replaceWith(concerts)
+            .flatMap(concertList ->
+                    Multi.createFrom().iterable(concertList)
+                        .onItem().transformToUniAndMerge(concert ->
+                                seatService.generateSeatsForConcert(concert.getId())
+//                            .onItem().invoke(seatIds ->
+//                                seatIds.forEach(id ->
+//                                    log.info("Seat {} is created.", id)
+//                                )
+//                            )
+                                    .onFailure().call(throwable -> {
+                                        log.error("Failed to generate seats for concert {}", concert.getId(), throwable);
+                                        return concertRepository.deleteById(concert.getId());
+                                    })
+                                    .replaceWith(Void.TYPE)
+                        )
+                        .collect().asList()
+                        .replaceWith(concertList.stream().map(c -> c.getId().toHexString()).toList())
+            )
+            .onFailure().transform(throwable -> new HttpException(AppError.ACTION_FAILED,
+                Response.Status.NOT_IMPLEMENTED, throwable, "Seed", "concerts"
+            ));
     }
 
     @Override
     public Uni<String> create(ConcertRequest.Body request) {
         Concert entity = concertMapper.toEntity(request);
-        entity.setRegion(locale.getRegion());
-        entity.setCreatedBy(identityContext.getPrincipleName());
+        entity.setRegion(Region.valueOf(locale.getCountry().toUpperCase()));
+        entity.setCreatedBy(identityContext.getClaim("sub"));
+
         return concertRepository.persist(entity)
-            .onItem().transform(result -> result.getId().toHexString())
-            .onFailure().transform(throwable -> new HttpException(
-                AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, throwable, "Create", "Concert"));
+            .flatMap(saved ->
+                seatService.generateSeatsForConcert(saved.getId())
+                    .replaceWith(saved.getId().toHexString())
+                    .onFailure().call(throwable ->
+                        concertRepository.deleteById(saved.getId()).onItem().transform(result -> {
+                            if (!result) {
+                                log.error("Rollback create concert failed !!!");
+                                throw new HttpException(AppError.ACTION_FAILED,
+                                    Response.Status.NOT_IMPLEMENTED, null, "Delete", "concert"
+                                );
+                            }
+                            return saved.getId();
+                        }))
+            )
+            .onFailure().transform(throwable -> new HttpException(AppError.ACTION_FAILED,
+                Response.Status.NOT_IMPLEMENTED, throwable, "Create", "concert"
+            ));
     }
 
     @Override
@@ -61,7 +103,7 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
         return findById(id).onItem().ifNotNull().transformToUni(concert -> {
             Concert entity = concertMapper.toEntity(request);
             entity.setUpdatedAt(Instant.now());
-            entity.setUpdatedBy(identityContext.getPrincipleName());
+            entity.setUpdatedBy(identityContext.getClaim("sub"));
             return concertRepository.persist(concertMapper.toEntity(request))
                 .onItem().transform(result -> result.getId().toHexString())
                 .onFailure().transform(throwable -> new HttpException(
@@ -75,7 +117,7 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
             concertRepository.persist(Concert.builder().id(new ObjectId(concert.getId()))
                     .isApproved(true)
                     .updatedAt(Instant.now())
-                    .updatedBy(identityContext.getPrincipleName()).build())
+                    .updatedBy(identityContext.getClaim("sub")).build())
                 .onItem().transform(result -> result.getId().toHexString())
                 .onFailure().transform(throwable -> new HttpException(
                     AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, throwable, "Approve", "concert")));
@@ -88,18 +130,18 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
                     .id(new ObjectId(concert.getId()))
                     .isDeleted(true)
                     .updatedAt(Instant.now())
-                    .updatedBy(identityContext.getPrincipleName()).build())
+                    .updatedBy(identityContext.getClaim("sub")).build())
                 .onItem().transform(result -> result.getId().toHexString())
                 .onFailure().transform(throwable -> new HttpException(
                     AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, throwable, "Soft delete", "concert")));
     }
 
     @Override
-    public Uni<ConcertResponse.Details> findById(String id) {
+    public Uni<ConcertResponse.Detail> findById(String id) {
         return concertRepository.findById(new ObjectId(id))
             .onItem().ifNotNull().transform(concertMapper::toDetailsDto)
             .onItem().ifNull().failWith(() -> new HttpException(
-                AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, new NullPointerException(), "Concert"));
+                AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, new NullPointerException(), "concert"));
     }
 
     @Override
@@ -119,9 +161,10 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
         Instant endTime = startTime.plus(faker.number().numberBetween(1, 7 * 24 * 60 * 60), ChronoUnit.SECONDS);
 
         return Concert.builder()
+            .id(new ObjectId())
             .title(faker.book().title())
             .location(faker.location().building())
-            .region(faker.languageCode().iso639())
+            .region(Region.valueOf(faker.languageCode().iso639().toUpperCase()))
             .startTime(startTime)
             .endTime(endTime)
             .build();

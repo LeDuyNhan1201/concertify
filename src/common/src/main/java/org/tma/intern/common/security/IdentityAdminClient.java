@@ -1,0 +1,25 @@
+package org.tma.intern.common.security;
+
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
+import org.tma.intern.common.base.IdentityUser;
+import org.tma.intern.common.dto.IdentityGroup;
+import org.tma.intern.common.dto.Region;
+
+import java.util.List;
+
+public interface IdentityAdminClient {
+
+    Multi<String> getRoles();
+
+    Uni<String> createGroup(IdentityGroup group, Region region);
+
+    Uni<IdentityUser> getUserByEmail(String email);
+
+    Uni<String> createUser(IdentityUser entity, IdentityGroup group, Region region);
+
+    Uni<String> deleteUser(String id);
+
+    Multi<String> createUsers(List<IdentityUser> entities, IdentityGroup groups, Region region);
+
+}

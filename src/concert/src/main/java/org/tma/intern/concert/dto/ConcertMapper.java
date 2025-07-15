@@ -10,7 +10,7 @@ public interface ConcertMapper extends BaseMapper {
 
     ConcertResponse.Preview toPreviewDto(Concert entity);
 
-    ConcertResponse.Details toDetailsDto(Concert entity);
+    ConcertResponse.Detail toDetailsDto(Concert entity);
 
     Concert toEntity(ConcertRequest.Body dto);
 

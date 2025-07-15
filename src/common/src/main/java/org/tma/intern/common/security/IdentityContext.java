@@ -10,6 +10,6 @@ public interface IdentityContext {
 
     List<String> getRoles();
 
-    String getClaim(String key);
+    <T> T getClaim(String key);
 
 }

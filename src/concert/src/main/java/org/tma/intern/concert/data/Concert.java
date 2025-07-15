@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.tma.intern.common.base.AuditCollection;
+import org.tma.intern.common.dto.Region;
 
 import java.time.Instant;
 
@@ -22,7 +23,7 @@ public class Concert extends AuditCollection {
     String title;
 
     @BsonProperty(value = "region")
-    String region;
+    Region region;
 
     @BsonProperty(value = "location")
     String location;

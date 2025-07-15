@@ -17,7 +17,7 @@ public interface ConcertService {
 
     Uni<String> softDelete(String id);
 
-    Uni<ConcertResponse.Details> findById(String id);
+    Uni<ConcertResponse.Detail> findById(String id);
 
     Uni<PageResponse<ConcertResponse.Preview>> findAll(int page, int limit);
 
