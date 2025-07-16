@@ -1,10 +1,9 @@
-package org.tma.intern.common.security;
+package org.tma.intern.auth.data;
 
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
-import org.tma.intern.common.base.IdentityUser;
-import org.tma.intern.common.dto.IdentityGroup;
-import org.tma.intern.common.dto.Region;
+import org.tma.intern.common.type.identity.IdentityGroup;
+import org.tma.intern.common.type.Region;
 
 import java.util.List;
 

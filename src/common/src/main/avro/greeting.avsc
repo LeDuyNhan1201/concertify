@@ -1,0 +1,11 @@
+{
+  "namespace": "org.tma.intern.common.contract",
+  "type": "record",
+  "name": "Greeting",
+  "fields": [
+    {
+      "name": "message",
+      "type": "string"
+    }
+  ]
+}

@@ -2,7 +2,10 @@ package org.tma.intern.concert.dto;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.tma.intern.common.dto.Region;
+import org.tma.intern.common.type.Region;
+import org.tma.intern.common.type.SeatType;
+
+import java.util.List;
 
 public class ConcertResponse {
 
@@ -28,12 +31,26 @@ public class ConcertResponse {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     public static class Detail {
         String id;
-        String name;
+        String title;
         String startTime;
         String endTime;
         String location;
         Region region;
         boolean isApproved;
+        List<PreviewSeat> seats;
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @FieldDefaults(level = AccessLevel.PRIVATE)
+    public static class PreviewSeat {
+        String id;
+        String name;
+        SeatType type;
+        double price;
     }
 
 }

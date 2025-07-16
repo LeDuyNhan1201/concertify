@@ -16,7 +16,7 @@ import org.tma.intern.booking.repository.BookingRepository;
 import org.tma.intern.booking.dto.BookingMapper;
 import org.tma.intern.booking.dto.BookingRequest;
 import org.tma.intern.common.base.BaseService;
-import org.tma.intern.common.dto.BookingStatus;
+import org.tma.intern.common.type.BookingStatus;
 import org.tma.intern.common.dto.PageResponse;
 import org.tma.intern.common.exception.AppError;
 import org.tma.intern.common.exception.HttpException;
@@ -77,7 +77,7 @@ public class BookingServiceImpl extends BaseService implements BookingService {
                             if (!result) {
                                 log.error("Rollback create booking failed !!!");
                                 throw new HttpException(AppError.ACTION_FAILED,
-                                    Response.Status.NOT_IMPLEMENTED, null, "Delete", "booking"
+                                    Response.Status.NOT_IMPLEMENTED, throwable, "Delete", "booking"
                                 );
                             }
                             return saved.getId();

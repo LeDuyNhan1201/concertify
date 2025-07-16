@@ -1,4 +1,4 @@
-package org.tma.intern.common.dto;
+package org.tma.intern.common.type.identity;
 
 import lombok.AllArgsConstructor;
 
@@ -10,6 +10,6 @@ public enum IdentityRole {
     ADMINISTRATOR("administrator"),
     ;
 
-    public final String value;
+    public final String prefix;
 
 }

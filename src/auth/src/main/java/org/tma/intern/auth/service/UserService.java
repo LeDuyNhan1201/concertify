@@ -1,10 +1,10 @@
 package org.tma.intern.auth.service;
 
 import io.smallrye.mutiny.Uni;
-import org.tma.intern.common.dto.IdentityGroup;
+import org.tma.intern.common.type.identity.IdentityGroup;
 import org.tma.intern.auth.dto.UserRequest;
 import org.tma.intern.auth.dto.UserResponse;
-import org.tma.intern.common.dto.Region;
+import org.tma.intern.common.type.Region;
 
 import java.util.List;
 

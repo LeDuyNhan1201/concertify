@@ -53,7 +53,6 @@ public class ConcertsResourceV1 extends BaseResource {
         content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     @Consumes(MediaType.APPLICATION_JSON)
     public Uni<RestResponse<CommonResponse<String>>> create(ConcertRequest.Body body) {
-//        checkRegion();
         return concertService.create(body).onItem().transform(id ->
             RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
                 .message(locale.getMessage("Action.Success", "Create", "concert"))
@@ -126,13 +125,13 @@ public class ConcertsResourceV1 extends BaseResource {
     @GET
     @Path("")
     @NoCache
-    @Operation(summary = "Get concerts page", description = "API to get a page of concerts by index & limit.")
+    @Operation(summary = "Get concerts page", description = "API to get a page of concerts by offset & limit.")
     @APIResponse(responseCode = "200", description = "Success",
         content = @Content(schema = @Schema(implementation = PageResponse.class)))
     public Uni<RestResponse<PageResponse<ConcertResponse.Preview>>> paging(
-        @QueryParam("index") int index,
+        @QueryParam("offset") int offset,
         @QueryParam("limit") int limit) {
-        return concertService.findAll(index, limit).onItem().transform(page ->
+        return concertService.findAll(offset, limit).onItem().transform(page ->
             RestResponse.ResponseBuilder.ok(page).build());
     }
 

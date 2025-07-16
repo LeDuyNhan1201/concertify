@@ -47,19 +47,6 @@
   "failureFactor" : 30,
   "roles" : {
     "realm" : [ {
-      "id" : "905a9ba8-48ff-4e53-a630-89c2cd0e39e0",
-      "name" : "organizer_admin_vi",
-      "description" : "role_vi_organizer",
-      "composite" : true,
-      "composites" : {
-        "client" : {
-          "concert-service" : [ "concert:create", "concert:view", "concert:edit" ]
-        }
-      },
-      "clientRole" : false,
-      "containerId" : "debd37b6-36b2-404b-90ea-c7bc6dee6f0a",
-      "attributes" : { }
-    }, {
       "id" : "9d255bca-2e46-44af-9a22-412044b6a4e0",
       "name" : "offline_access",
       "description" : "${role_offline-access}",
@@ -90,27 +77,39 @@
       "containerId" : "debd37b6-36b2-404b-90ea-c7bc6dee6f0a",
       "attributes" : { }
     }, {
-      "id" : "9e5cc3b5-ddbb-4001-a1e8-137eaa65b0b2",
-      "name" : "global_admin",
-      "description" : "role_full_access",
+      "id" : "8e9a0faf-9bbd-4745-bbd7-d2cbf44aed0f",
+      "name" : "customer_vi",
       "composite" : true,
       "composites" : {
         "client" : {
-          "concert-service" : [ "concert:approve" ],
-          "realm-management" : [ "manage-users", "query-users", "view-users" ]
+          "concert-service" : [ "concert:view" ],
+          "booking-service" : [ "booking:update", "booking:view", "booking:create", "booking:read", "booking:delete" ]
         }
       },
       "clientRole" : false,
       "containerId" : "debd37b6-36b2-404b-90ea-c7bc6dee6f0a",
       "attributes" : { }
     }, {
-      "id" : "f69ad252-fc03-45b6-aabd-c7a34a80ff62",
-      "name" : "organizer_admin_en",
-      "description" : "role_en_organizer",
+      "id" : "e74449fa-7fe5-42de-92f0-8a2e94fec00c",
+      "name" : "organizer_vi",
       "composite" : true,
       "composites" : {
         "client" : {
-          "concert-service" : [ "concert:create", "concert:view", "concert:edit" ]
+          "concert-service" : [ "concert:read", "concert:delete", "concert:create", "concert:view", "concert:update" ],
+          "booking-service" : [ "booking:update", "booking:view", "booking:read" ]
+        }
+      },
+      "clientRole" : false,
+      "containerId" : "debd37b6-36b2-404b-90ea-c7bc6dee6f0a",
+      "attributes" : { }
+    }, {
+      "id" : "9e5cc3b5-ddbb-4001-a1e8-137eaa65b0b2",
+      "name" : "global_admin",
+      "description" : "role_full_access",
+      "composite" : true,
+      "composites" : {
+        "client" : {
+          "realm-management" : [ "realm-admin" ]
         }
       },
       "clientRole" : false,
@@ -119,6 +118,22 @@
     } ],
     "client" : {
       "concert-service" : [ {
+        "id" : "2aac0f74-9b9a-4f64-9588-4a16213a2eef",
+        "name" : "concert:delete",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "b2aea8a5-0e50-4ce2-b2a1-184d89d8ff73",
+        "attributes" : { }
+      }, {
+        "id" : "622dd96b-b6f8-44ff-849d-1c434ae42910",
+        "name" : "concert:read",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "b2aea8a5-0e50-4ce2-b2a1-184d89d8ff73",
+        "attributes" : { }
+      }, {
         "id" : "120a2ecb-9728-4a16-9aae-41d448cac789",
         "name" : "concert:create",
         "description" : "",
@@ -135,8 +150,8 @@
         "containerId" : "b2aea8a5-0e50-4ce2-b2a1-184d89d8ff73",
         "attributes" : { }
       }, {
-        "id" : "49ed93dc-60cc-4317-93c0-0ad5fa5b3c3d",
-        "name" : "concert:edit",
+        "id" : "c6bc6fc5-4545-41d9-8a0a-ad9f3e9fe673",
+        "name" : "concert:update",
         "description" : "",
         "composite" : false,
         "clientRole" : true,
@@ -350,6 +365,46 @@
         "clientRole" : true,
         "containerId" : "abf1b1dd-a616-4576-92a3-384dc5dc0811",
         "attributes" : { }
+      }, {
+        "id" : "5f77bc9e-18bc-48e6-a704-c381b9f74b4b",
+        "name" : "booking:update",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "abf1b1dd-a616-4576-92a3-384dc5dc0811",
+        "attributes" : { }
+      }, {
+        "id" : "2887448e-be83-4615-a13b-7236a24d9aaa",
+        "name" : "booking:view",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "abf1b1dd-a616-4576-92a3-384dc5dc0811",
+        "attributes" : { }
+      }, {
+        "id" : "3ee440b0-9bbb-44fd-ad13-b0ffc3ff34fd",
+        "name" : "booking:create",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "abf1b1dd-a616-4576-92a3-384dc5dc0811",
+        "attributes" : { }
+      }, {
+        "id" : "e142a16b-b132-467f-b1a6-d967c0f83ae6",
+        "name" : "booking:read",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "abf1b1dd-a616-4576-92a3-384dc5dc0811",
+        "attributes" : { }
+      }, {
+        "id" : "6093474b-fdb5-4c15-ab70-8cc3e46a0524",
+        "name" : "booking:delete",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "abf1b1dd-a616-4576-92a3-384dc5dc0811",
+        "attributes" : { }
       } ],
       "admin-cli" : [ ],
       "account-console" : [ ],
@@ -444,56 +499,27 @@
     "name" : "global",
     "path" : "/global",
     "subGroups" : [ {
-      "id" : "ac9f4aab-3117-4b8a-ad9b-d98a16dd19df",
-      "name" : "en",
-      "path" : "/global/en",
-      "parentId" : "dba67237-9339-415d-8a1e-db686f9a4a5a",
-      "subGroups" : [ {
-        "id" : "176a512c-9469-4263-8155-7082861814e4",
-        "name" : "customers",
-        "path" : "/global/en/customers",
-        "parentId" : "ac9f4aab-3117-4b8a-ad9b-d98a16dd19df",
-        "subGroups" : [ ],
-        "attributes" : { },
-        "realmRoles" : [ ],
-        "clientRoles" : { }
-      }, {
-        "id" : "90df7727-ff36-4557-ab9c-628762c4e34d",
-        "name" : "organizers",
-        "path" : "/global/en/organizers",
-        "parentId" : "ac9f4aab-3117-4b8a-ad9b-d98a16dd19df",
-        "subGroups" : [ ],
-        "attributes" : { },
-        "realmRoles" : [ "organizer_admin_en" ],
-        "clientRoles" : { }
-      } ],
-      "attributes" : { },
-      "realmRoles" : [ ],
-      "clientRoles" : { }
-    }, {
-      "id" : "149b6bbe-eda1-4455-bd4c-77c0d7e8be25",
+      "id" : "43bb1aee-5fd9-4b5a-9d29-362feedd0c03",
       "name" : "vi",
       "path" : "/global/vi",
       "parentId" : "dba67237-9339-415d-8a1e-db686f9a4a5a",
       "subGroups" : [ {
-        "id" : "13f02827-bab2-4b04-9339-9e329ece8ce0",
+        "id" : "0ce4ce6d-a9ad-4a92-9fef-fd7137c1b03e",
         "name" : "customers",
         "path" : "/global/vi/customers",
-        "parentId" : "149b6bbe-eda1-4455-bd4c-77c0d7e8be25",
+        "parentId" : "43bb1aee-5fd9-4b5a-9d29-362feedd0c03",
         "subGroups" : [ ],
         "attributes" : { },
-        "realmRoles" : [ ],
+        "realmRoles" : [ "customer_vi" ],
         "clientRoles" : { }
       }, {
-        "id" : "51e115f8-acad-43eb-96ed-2329f3261c4d",
+        "id" : "c338baa7-1db4-42a2-ae06-5e2eaf5492b0",
         "name" : "organizers",
         "path" : "/global/vi/organizers",
-        "parentId" : "149b6bbe-eda1-4455-bd4c-77c0d7e8be25",
+        "parentId" : "43bb1aee-5fd9-4b5a-9d29-362feedd0c03",
         "subGroups" : [ ],
-        "attributes" : {
-          "name" : [ "vi_organizer" ]
-        },
-        "realmRoles" : [ "organizer_admin_vi" ],
+        "attributes" : { },
+        "realmRoles" : [ "organizer_vi" ],
         "clientRoles" : { }
       } ],
       "attributes" : { },
@@ -571,50 +597,20 @@
     "notBefore" : 0,
     "groups" : [ ]
   }, {
-    "id" : "327dd906-95c3-4fe7-bf4b-3fe7ae95b284",
-    "username" : "customer.en@gmail.com",
-    "firstName" : "Customer",
-    "lastName" : "EN",
-    "email" : "customer.en@gmail.com",
-    "emailVerified" : true,
-    "attributes" : {
-      "region" : [ "en" ]
-    },
-    "createdTimestamp" : 1752247375589,
-    "enabled" : true,
-    "totp" : false,
-    "credentials" : [ {
-      "id" : "5880c62b-204a-419b-acec-7d68919d61e1",
-      "type" : "password",
-      "userLabel" : "My password",
-      "createdDate" : 1752247385790,
-      "secretData" : "{\"value\":\"i2XMRBhgy0kL0mTLeI9pcNbyQucf2tvLMvcMj1tWiRQ=\",\"salt\":\"xE7X5QefY9zUujbRZ6gI7g==\",\"additionalParameters\":{}}",
-      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
-    } ],
-    "disableableCredentialTypes" : [ ],
-    "requiredActions" : [ ],
-    "realmRoles" : [ "default-roles-concertify" ],
-    "notBefore" : 0,
-    "groups" : [ "/global/en/customers" ]
-  }, {
-    "id" : "302062d4-2e9d-431a-9d01-c0e69293aa8f",
+    "id" : "52d580d0-0970-478d-a25d-c5ee289fe4fb",
     "username" : "customer.vi@gmail.com",
     "firstName" : "Customer",
-    "lastName" : "VI",
+    "lastName" : "VN",
     "email" : "customer.vi@gmail.com",
     "emailVerified" : true,
-    "attributes" : {
-      "region" : [ "vi" ]
-    },
-    "createdTimestamp" : 1752247311734,
+    "createdTimestamp" : 1752660384008,
     "enabled" : true,
     "totp" : false,
     "credentials" : [ {
-      "id" : "8757e068-020d-461f-847e-8ffc4f189303",
+      "id" : "106e1493-2648-4e9b-9e28-a82f1c29800c",
       "type" : "password",
-      "userLabel" : "My password",
-      "createdDate" : 1752247320949,
-      "secretData" : "{\"value\":\"L02hvb+Nk22pCTNkRKTY1pvXNIHtvcKQjZ16eITWWy8=\",\"salt\":\"bUOgy/dwwkCuXG0Z1MCUbQ==\",\"additionalParameters\":{}}",
+      "createdDate" : 1752660384185,
+      "secretData" : "{\"value\":\"SyNzpS6ZsF+Rtyb/HaNlGzOPdXIFFDdHZqEkV1pWmaQ=\",\"salt\":\"aOUGKG+Q5UxRI5IwrR8VTQ==\",\"additionalParameters\":{}}",
       "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
     } ],
     "disableableCredentialTypes" : [ ],
@@ -623,50 +619,20 @@
     "notBefore" : 0,
     "groups" : [ "/global/vi/customers" ]
   }, {
-    "id" : "69d84a68-915d-4bd7-8002-32f3b61a72d6",
-    "username" : "organizer.en@gmail.com",
-    "firstName" : "Organizer",
-    "lastName" : "EN",
-    "email" : "organizer.en@gmail.com",
-    "emailVerified" : true,
-    "attributes" : {
-      "region" : [ "en" ]
-    },
-    "createdTimestamp" : 1752247520403,
-    "enabled" : true,
-    "totp" : false,
-    "credentials" : [ {
-      "id" : "8e703c5e-35b9-4c42-9e08-64c0171df5c1",
-      "type" : "password",
-      "userLabel" : "My password",
-      "createdDate" : 1752247530301,
-      "secretData" : "{\"value\":\"b91AC+5DTZdTGAKCHn4W/IMpw8UJyxOo4/9RVlncCPg=\",\"salt\":\"99hV3A9ADJ2Q3Z5PZ8sQpQ==\",\"additionalParameters\":{}}",
-      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
-    } ],
-    "disableableCredentialTypes" : [ ],
-    "requiredActions" : [ ],
-    "realmRoles" : [ "default-roles-concertify" ],
-    "notBefore" : 0,
-    "groups" : [ "/global/en/organizers" ]
-  }, {
-    "id" : "50da4f04-c912-4c11-8755-46ba03d026bc",
+    "id" : "2eeaa8d4-f733-4073-bb01-9cd3a9be20ee",
     "username" : "organizer.vi@gmail.com",
     "firstName" : "Organizer",
-    "lastName" : "VI",
+    "lastName" : "VN",
     "email" : "organizer.vi@gmail.com",
     "emailVerified" : true,
-    "attributes" : {
-      "region" : [ "vi" ]
-    },
-    "createdTimestamp" : 1752247450277,
+    "createdTimestamp" : 1752660787469,
     "enabled" : true,
     "totp" : false,
     "credentials" : [ {
-      "id" : "e0226a96-97f7-4ae5-9715-e94700f1546e",
+      "id" : "ff7ce48d-e731-4119-b7a1-94d1007646e2",
       "type" : "password",
-      "userLabel" : "My password",
-      "createdDate" : 1752247460349,
-      "secretData" : "{\"value\":\"PqAolGlmMsLdmEPuDIiDoFdPb3gEb8ldgYOQYnsvGss=\",\"salt\":\"5BLK6wQQnPKWROFjUIQnHw==\",\"additionalParameters\":{}}",
+      "createdDate" : 1752660787693,
+      "secretData" : "{\"value\":\"/8V6SlqBokX/Xis6LzFYmLDlspIBYWVtNIwahy3Kx1k=\",\"salt\":\"md8ryHEL2/H+1/zJQ83l/A==\",\"additionalParameters\":{}}",
       "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
     } ],
     "disableableCredentialTypes" : [ ],
@@ -687,9 +653,8 @@
     "requiredActions" : [ ],
     "realmRoles" : [ "default-roles-concertify" ],
     "clientRoles" : {
-      "realm-management" : [ "query-users", "manage-users", "view-users", "query-groups" ],
       "auth-service" : [ "uma_protection" ],
-      "account" : [ "view-groups" ]
+      "realm-management" : [ "realm-admin" ]
     },
     "notBefore" : 0,
     "groups" : [ ]
@@ -1092,34 +1057,13 @@
         "uris" : [ "/*" ]
       } ],
       "policies" : [ {
-        "name" : "Default Policy",
-        "description" : "A policy that grants access only for users within this realm",
-        "type" : "regex",
-        "logic" : "POSITIVE",
-        "decisionStrategy" : "AFFIRMATIVE",
-        "config" : {
-          "targetContextAttributes" : "false",
-          "pattern" : ".*",
-          "targetClaim" : "sub"
-        }
-      }, {
-        "name" : "Allow Concert Creator",
-        "description" : "",
-        "type" : "role",
-        "logic" : "POSITIVE",
-        "decisionStrategy" : "UNANIMOUS",
-        "config" : {
-          "fetchRoles" : "false",
-          "roles" : "[{\"id\":\"concert-service/concert:create\",\"required\":true}]"
-        }
-      }, {
         "name" : "Allow US Organizers",
         "description" : "",
         "type" : "group",
         "logic" : "POSITIVE",
         "decisionStrategy" : "UNANIMOUS",
         "config" : {
-          "groups" : "[{\"path\":\"/global/en/organizers\",\"extendChildren\":false}]",
+          "groups" : "[]",
           "groupsClaim" : "groups"
         }
       }, {
@@ -1129,7 +1073,7 @@
         "logic" : "POSITIVE",
         "decisionStrategy" : "UNANIMOUS",
         "config" : {
-          "groups" : "[{\"path\":\"/global/vi/organizers\",\"extendChildren\":false}]",
+          "groups" : "[]",
           "groupsClaim" : "groups"
         }
       }, {
@@ -1139,7 +1083,7 @@
         "logic" : "POSITIVE",
         "decisionStrategy" : "UNANIMOUS",
         "config" : {
-          "groups" : "[{\"path\":\"/global/vi/customers\",\"extendChildren\":false},{\"path\":\"/global/en/customers\",\"extendChildren\":false}]",
+          "groups" : "[]",
           "groupsClaim" : "groups"
         }
       }, {
@@ -1150,7 +1094,7 @@
         "decisionStrategy" : "UNANIMOUS",
         "config" : {
           "fetchRoles" : "false",
-          "roles" : "[{\"id\":\"concert-service/concert:edit\",\"required\":false}]"
+          "roles" : "[]"
         }
       }, {
         "name" : "Allow Concert Approver",
@@ -1190,7 +1134,28 @@
         "decisionStrategy" : "UNANIMOUS",
         "config" : {
           "fetchRoles" : "false",
-          "roles" : "[{\"id\":\"organizer_admin_en\",\"required\":false}]"
+          "roles" : "[]"
+        }
+      }, {
+        "name" : "Default Policy",
+        "description" : "A policy that grants access only for users within this realm",
+        "type" : "regex",
+        "logic" : "POSITIVE",
+        "decisionStrategy" : "AFFIRMATIVE",
+        "config" : {
+          "targetContextAttributes" : "false",
+          "pattern" : ".*",
+          "targetClaim" : "sub"
+        }
+      }, {
+        "name" : "Allow Concert Creator",
+        "description" : "",
+        "type" : "role",
+        "logic" : "POSITIVE",
+        "decisionStrategy" : "UNANIMOUS",
+        "config" : {
+          "fetchRoles" : "false",
+          "roles" : "[{\"id\":\"concert-service/concert:create\",\"required\":true}]"
         }
       }, {
         "name" : "Allow Organizer Admin VN",
@@ -1200,7 +1165,7 @@
         "decisionStrategy" : "UNANIMOUS",
         "config" : {
           "fetchRoles" : "false",
-          "roles" : "[{\"id\":\"organizer_admin_vi\",\"required\":false}]"
+          "roles" : "[]"
         }
       }, {
         "name" : "Default Permission",
@@ -1731,22 +1696,6 @@
         "jsonType.label" : "String"
       }
     }, {
-      "id" : "5e398070-a9fe-45c3-b02e-7e493c98bae0",
-      "name" : "region",
-      "protocol" : "openid-connect",
-      "protocolMapper" : "oidc-usermodel-attribute-mapper",
-      "consentRequired" : false,
-      "config" : {
-        "introspection.token.claim" : "true",
-        "userinfo.token.claim" : "true",
-        "user.attribute" : "region",
-        "id.token.claim" : "true",
-        "lightweight.claim" : "false",
-        "access.token.claim" : "true",
-        "claim.name" : "region",
-        "jsonType.label" : "String"
-      }
-    }, {
       "id" : "be57d1c7-03de-4abc-a6b9-dfce30356d2c",
       "name" : "nickname",
       "protocol" : "openid-connect",
@@ -2081,7 +2030,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-usermodel-property-mapper", "saml-user-property-mapper", "oidc-full-name-mapper", "oidc-usermodel-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-address-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-full-name-mapper", "oidc-address-mapper" ]
       }
     }, {
       "id" : "f67d9947-c7dd-4aed-bfda-b7d7c08df900",
@@ -2141,7 +2090,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "saml-user-property-mapper", "oidc-full-name-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "oidc-address-mapper", "oidc-usermodel-property-mapper" ]
       }
     } ],
     "org.keycloak.userprofile.UserProfileProvider" : [ {
@@ -2149,7 +2098,7 @@
       "providerId" : "declarative-user-profile",
       "subComponents" : { },
       "config" : {
-        "kc.user.profile.config" : [ "{\"attributes\":[{\"name\":\"username\",\"displayName\":\"${username}\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"username-prohibited-characters\":{},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"email\",\"displayName\":\"${email}\",\"validations\":{\"email\":{},\"length\":{\"max\":255}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"firstName\",\"displayName\":\"${firstName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"lastName\",\"displayName\":\"${lastName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"region\",\"displayName\":\"${region}\",\"validations\":{\"length\":{\"min\":\"2\",\"max\":\"2\"}},\"annotations\":{},\"required\":{\"roles\":[\"admin\",\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\"]},\"multivalued\":false}],\"groups\":[{\"name\":\"user-metadata\",\"displayHeader\":\"User metadata\",\"displayDescription\":\"Attributes, which refer to user metadata\"}]}" ]
+        "kc.user.profile.config" : [ "{\"attributes\":[{\"name\":\"username\",\"displayName\":\"${username}\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"username-prohibited-characters\":{},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"email\",\"displayName\":\"${email}\",\"validations\":{\"email\":{},\"length\":{\"max\":255}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"firstName\",\"displayName\":\"${firstName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"lastName\",\"displayName\":\"${lastName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false}],\"groups\":[{\"name\":\"user-metadata\",\"displayHeader\":\"User metadata\",\"displayDescription\":\"Attributes, which refer to user metadata\"}]}" ]
       }
     } ],
     "org.keycloak.keys.KeyProvider" : [ {

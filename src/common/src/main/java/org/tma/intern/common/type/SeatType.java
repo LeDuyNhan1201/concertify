@@ -1,4 +1,4 @@
-package org.tma.intern.common.dto;
+package org.tma.intern.common.type;
 
 import lombok.AllArgsConstructor;
 

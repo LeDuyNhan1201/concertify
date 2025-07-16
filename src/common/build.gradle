@@ -1,8 +1,22 @@
+plugins {
+    id 'com.github.davidmc24.gradle.plugin.avro' version "${apacheAvroVersion}"
+}
+
 dependencies {
-    implementation rootProject.ext.libs.keycloakAdmin
+    implementation rootProject.ext.libs.apacheAvro
     api rootProject.ext.libs.validation
     api rootProject.ext.libs.dataFaker
     api rootProject.ext.libs.mongodbPanache
+
+    api rootProject.ext.libs.messagingKafka
+    api rootProject.ext.libs.registryAvro
+    api(rootProject.ext.libs.confluentAvro) {
+        exclude group: "jakarta.ws.rs", module: "jakarta.ws.rs-api"
+    }
+    api rootProject.ext.libs.dataFormatCsv
+    api rootProject.ext.libs.kafkaOauthClient
+    api rootProject.ext.libs.kafkaOauthCommon
+
 //    api rootProject.ext.libs.quarkusRestClient
 //    api rootProject.ext.libs.restClientMunity
 //    api rootProject.ext.libs.quarkusRestClientJackson

@@ -8,16 +8,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
-import org.tma.intern.common.dto.IdentityGroup;
-import org.tma.intern.common.dto.Region;
-import org.tma.intern.common.security.IdentityAdminClient;
-import org.tma.intern.common.base.IdentityUser;
 import org.tma.intern.auth.dto.UserMapper;
 import org.tma.intern.auth.dto.UserRequest;
 import org.tma.intern.auth.dto.UserResponse;
 import org.tma.intern.common.base.BaseService;
+import org.tma.intern.auth.data.IdentityUser;
 import org.tma.intern.common.exception.AppError;
 import org.tma.intern.common.exception.HttpException;
+import org.tma.intern.auth.data.IdentityAdminClient;
+import org.tma.intern.common.type.identity.IdentityGroup;
+import org.tma.intern.common.type.Region;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -47,8 +47,7 @@ public class UserServiceImpl extends BaseService implements UserService {
 
     @Override
     public Uni<String> create(UserRequest.Creation request) {
-        return keycloakAdminClient.createUser(userMapper.toEntity(request),
-                request.group(), Region.valueOf(locale.getCountry()))
+        return keycloakAdminClient.createUser(userMapper.toEntity(request), request.group(), request.region())
             .onFailure().transform(throwable -> {
                 log.error("Failed to create user: {} caused by {}", request.email(), throwable.getMessage());
                 throw new HttpException(AppError.ACTION_FAILED,
@@ -61,7 +60,7 @@ public class UserServiceImpl extends BaseService implements UserService {
         return keycloakAdminClient.createGroup(request.group(), request.region())
             .onFailure().transform(throwable -> {
                 log.error("Failed to create group: {} caused by {}",
-                    request.region().code + "/" + request.group().type, throwable.getMessage());
+                    request.region().country + "/" + request.group().type, throwable.getMessage());
                 throw new HttpException(AppError.ACTION_FAILED,
                     Response.Status.NOT_IMPLEMENTED, throwable, "Create", "group");
             });

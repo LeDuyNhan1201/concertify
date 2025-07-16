@@ -7,8 +7,8 @@ import io.restassured.response.Response;
 import org.jboss.resteasy.reactive.RestResponse;
 import org.junit.jupiter.api.Test;
 import org.tma.intern.auth.api.UsersResourceV1;
-import org.tma.intern.common.dto.IdentityGroup;
-import org.tma.intern.common.dto.Region;
+import org.tma.intern.common.type.identity.IdentityGroup;
+import org.tma.intern.common.type.Region;
 import org.tma.intern.common.helper.StringHelper;
 
 import java.util.Locale;
@@ -60,9 +60,10 @@ class UsersResourceV1Test {
                     "password": "%s",
                     "firstName": "Test",
                     "lastName": "User",
-                    "group": "%s"
+                    "group": "%s",
+                    "region": "%s"
                 }
-                """.formatted(email, password, IdentityGroup.ORGANIZERS.name()))
+                """.formatted(email, password, IdentityGroup.ORGANIZERS.name(), Region.US.name()))
             .when().post()
             .then().log().all()
             .statusCode(RestResponse.Status.CREATED.getStatusCode())

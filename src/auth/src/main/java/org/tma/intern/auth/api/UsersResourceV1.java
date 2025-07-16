@@ -20,13 +20,13 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.NoCache;
 import org.jboss.resteasy.reactive.RestResponse;
-import org.tma.intern.common.dto.IdentityGroup;
+import org.tma.intern.common.type.identity.IdentityGroup;
 import org.tma.intern.auth.dto.UserRequest;
 import org.tma.intern.auth.dto.UserResponse;
 import org.tma.intern.auth.service.UserService;
 import org.tma.intern.common.base.BaseResource;
 import org.tma.intern.common.dto.CommonResponse;
-import org.tma.intern.common.dto.Region;
+import org.tma.intern.common.type.Region;
 
 @SecuritySchemes(value = {
     @SecurityScheme(securitySchemeName = "bearerToken",

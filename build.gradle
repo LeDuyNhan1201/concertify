@@ -19,8 +19,11 @@ allprojects {
     }
 
     repositories {
+        gradlePluginPortal()
         mavenCentral()
-
+        maven {
+            url "https://packages.confluent.io/maven/"
+        }
     }
 }
 

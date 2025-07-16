@@ -7,7 +7,7 @@ import lombok.experimental.SuperBuilder;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 import org.tma.intern.common.base.AuditCollection;
-import org.tma.intern.common.dto.SeatType;
+import org.tma.intern.common.type.SeatType;
 
 @MongoEntity(database = "concert-service", collection = "seats")
 @Getter

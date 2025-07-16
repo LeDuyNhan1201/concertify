@@ -2,7 +2,7 @@ package org.tma.intern.booking.dto;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.tma.intern.common.dto.BookingStatus;
+import org.tma.intern.common.type.BookingStatus;
 
 import java.util.List;
 

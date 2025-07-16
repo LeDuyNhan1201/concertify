@@ -77,6 +77,19 @@
       "containerId" : "debd37b6-36b2-404b-90ea-c7bc6dee6f0a",
       "attributes" : { }
     }, {
+      "id" : "4f13bba6-ed7d-4557-8157-56768949518f",
+      "name" : "organizer_vn",
+      "composite" : true,
+      "composites" : {
+        "client" : {
+          "concert-service" : [ "concert:delete", "concert:read", "concert:create", "concert:view", "concert:update" ],
+          "booking-service" : [ "booking:update", "booking:view", "booking:read" ]
+        }
+      },
+      "clientRole" : false,
+      "containerId" : "debd37b6-36b2-404b-90ea-c7bc6dee6f0a",
+      "attributes" : { }
+    }, {
       "id" : "9e5cc3b5-ddbb-4001-a1e8-137eaa65b0b2",
       "name" : "global_admin",
       "description" : "role_full_access",
@@ -92,6 +105,22 @@
     } ],
     "client" : {
       "concert-service" : [ {
+        "id" : "2aac0f74-9b9a-4f64-9588-4a16213a2eef",
+        "name" : "concert:delete",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "b2aea8a5-0e50-4ce2-b2a1-184d89d8ff73",
+        "attributes" : { }
+      }, {
+        "id" : "622dd96b-b6f8-44ff-849d-1c434ae42910",
+        "name" : "concert:read",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "b2aea8a5-0e50-4ce2-b2a1-184d89d8ff73",
+        "attributes" : { }
+      }, {
         "id" : "120a2ecb-9728-4a16-9aae-41d448cac789",
         "name" : "concert:create",
         "description" : "",
@@ -108,8 +137,8 @@
         "containerId" : "b2aea8a5-0e50-4ce2-b2a1-184d89d8ff73",
         "attributes" : { }
       }, {
-        "id" : "49ed93dc-60cc-4317-93c0-0ad5fa5b3c3d",
-        "name" : "concert:edit",
+        "id" : "c6bc6fc5-4545-41d9-8a0a-ad9f3e9fe673",
+        "name" : "concert:update",
         "description" : "",
         "composite" : false,
         "clientRole" : true,
@@ -323,6 +352,46 @@
         "clientRole" : true,
         "containerId" : "abf1b1dd-a616-4576-92a3-384dc5dc0811",
         "attributes" : { }
+      }, {
+        "id" : "5f77bc9e-18bc-48e6-a704-c381b9f74b4b",
+        "name" : "booking:update",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "abf1b1dd-a616-4576-92a3-384dc5dc0811",
+        "attributes" : { }
+      }, {
+        "id" : "2887448e-be83-4615-a13b-7236a24d9aaa",
+        "name" : "booking:view",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "abf1b1dd-a616-4576-92a3-384dc5dc0811",
+        "attributes" : { }
+      }, {
+        "id" : "3ee440b0-9bbb-44fd-ad13-b0ffc3ff34fd",
+        "name" : "booking:create",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "abf1b1dd-a616-4576-92a3-384dc5dc0811",
+        "attributes" : { }
+      }, {
+        "id" : "e142a16b-b132-467f-b1a6-d967c0f83ae6",
+        "name" : "booking:read",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "abf1b1dd-a616-4576-92a3-384dc5dc0811",
+        "attributes" : { }
+      }, {
+        "id" : "6093474b-fdb5-4c15-ab70-8cc3e46a0524",
+        "name" : "booking:delete",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "abf1b1dd-a616-4576-92a3-384dc5dc0811",
+        "attributes" : { }
       } ],
       "admin-cli" : [ ],
       "account-console" : [ ],
@@ -416,7 +485,25 @@
     "id" : "dba67237-9339-415d-8a1e-db686f9a4a5a",
     "name" : "global",
     "path" : "/global",
-    "subGroups" : [ ],
+    "subGroups" : [ {
+      "id" : "b3912afe-36e7-4b25-8fad-128ea5dad0bb",
+      "name" : "vn",
+      "path" : "/global/vn",
+      "parentId" : "dba67237-9339-415d-8a1e-db686f9a4a5a",
+      "subGroups" : [ {
+        "id" : "bfe00586-a2f1-43f4-8cde-02daeba11f18",
+        "name" : "organizers",
+        "path" : "/global/vn/organizers",
+        "parentId" : "b3912afe-36e7-4b25-8fad-128ea5dad0bb",
+        "subGroups" : [ ],
+        "attributes" : { },
+        "realmRoles" : [ "organizer_vn" ],
+        "clientRoles" : { }
+      } ],
+      "attributes" : { },
+      "realmRoles" : [ ],
+      "clientRoles" : { }
+    } ],
     "attributes" : { },
     "realmRoles" : [ ],
     "clientRoles" : { }
@@ -487,6 +574,28 @@
     "realmRoles" : [ "default-roles-concertify", "global_admin" ],
     "notBefore" : 0,
     "groups" : [ ]
+  }, {
+    "id" : "86ebfb38-f1bd-4eab-aeea-e69b4f7c9cc0",
+    "username" : "organizer.vi@gmail.com",
+    "firstName" : "Organizer",
+    "lastName" : "VN",
+    "email" : "organizer.vi@gmail.com",
+    "emailVerified" : true,
+    "createdTimestamp" : 1752679511887,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "e7629b8b-00bb-48ae-a4ca-7e386e08b14b",
+      "type" : "password",
+      "createdDate" : 1752679512066,
+      "secretData" : "{\"value\":\"Mh3o5jNhkKD+UqWHGb8cqYTzUMDMKpYf/ZJFIqCj6NI=\",\"salt\":\"cEKhPDeTvVmAQd1qEO/esQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-concertify" ],
+    "notBefore" : 0,
+    "groups" : [ "/global/vn/organizers" ]
   }, {
     "id" : "b6e28f8e-d082-4ecf-a72f-59b1d316fbec",
     "username" : "service-account-auth-service",
@@ -941,7 +1050,7 @@
         "decisionStrategy" : "UNANIMOUS",
         "config" : {
           "fetchRoles" : "false",
-          "roles" : "[{\"id\":\"concert-service/concert:edit\",\"required\":false}]"
+          "roles" : "[]"
         }
       }, {
         "name" : "Allow Concert Approver",
@@ -1877,7 +1986,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "oidc-full-name-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper" ]
       }
     }, {
       "id" : "f67d9947-c7dd-4aed-bfda-b7d7c08df900",
@@ -1937,7 +2046,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-address-mapper", "oidc-full-name-mapper", "oidc-usermodel-attribute-mapper", "saml-role-list-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper", "saml-role-list-mapper", "saml-user-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper" ]
       }
     } ],
     "org.keycloak.userprofile.UserProfileProvider" : [ {

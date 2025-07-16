@@ -22,7 +22,7 @@ import org.tma.intern.booking.dto.BookingRequest;
 import org.tma.intern.booking.dto.BookingResponse;
 import org.tma.intern.booking.service.BookingService;
 import org.tma.intern.common.base.BaseResource;
-import org.tma.intern.common.dto.BookingStatus;
+import org.tma.intern.common.type.BookingStatus;
 import org.tma.intern.common.dto.CommonResponse;
 import org.tma.intern.common.dto.PageResponse;
 

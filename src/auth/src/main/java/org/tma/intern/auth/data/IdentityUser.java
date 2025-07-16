@@ -1,4 +1,4 @@
-package org.tma.intern.common.base;
+package org.tma.intern.auth.data;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

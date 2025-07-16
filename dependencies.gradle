@@ -5,6 +5,8 @@ ext {
             mapstruct             : "1.6.3", // https://mvnrepository.com/artifact/org.mapstruct/mapstruct
             testcontainers        : "1.21.3", // // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
             testcontainersKeycloak: "3.8.0", // https://mvnrepository.com/artifact/com.github.dasniko/testcontainers-keycloak
+            confluentAvro         : "8.0.0", // https://mvnrepository.com/artifact/io.confluent/kafka-avro-serializer
+            apacheAvro            : "1.12.0", // https://mvnrepository.com/artifact/org.apache.avro/avro
     ]
 
     libs = [
@@ -33,6 +35,10 @@ ext {
             keycloakAuthorization   : "io.quarkus:quarkus-keycloak-authorization",
 
             messagingKafka          : "io.quarkus:quarkus-messaging-kafka",
+            registryAvro            : "io.quarkus:quarkus-confluent-registry-avro",
+            apacheAvro              : "org.apache.avro:avro:${versions.apacheAvro}",
+            confluentAvro           : "io.confluent:kafka-avro-serializer:${versions.confluentAvro}",
+            dataFormatCsv           : "com.fasterxml.jackson.dataformat:jackson-dataformat-csv",
             kafkaOauthClient        : "io.strimzi:kafka-oauth-client",
             kafkaOauthCommon        : "io.strimzi:kafka-oauth-common",
 

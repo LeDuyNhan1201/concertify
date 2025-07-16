@@ -13,7 +13,7 @@ import net.datafaker.Faker;
 import org.bson.types.ObjectId;
 import org.tma.intern.common.base.BaseService;
 import org.tma.intern.common.dto.PageResponse;
-import org.tma.intern.common.dto.Region;
+import org.tma.intern.common.type.Region;
 import org.tma.intern.common.exception.AppError;
 import org.tma.intern.common.exception.HttpException;
 import org.tma.intern.concert.data.Concert;
@@ -75,7 +75,7 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
     @Override
     public Uni<String> create(ConcertRequest.Body request) {
         Concert entity = concertMapper.toEntity(request);
-        entity.setRegion(Region.valueOf(locale.getCountry().toUpperCase()));
+        entity.setRegion(Region.valueOf(locale.getCountry()));
         entity.setCreatedBy(identityContext.getClaim("sub"));
 
         return concertRepository.persist(entity)
@@ -139,9 +139,14 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
     @Override
     public Uni<ConcertResponse.Detail> findById(String id) {
         return concertRepository.findById(new ObjectId(id))
-            .onItem().ifNotNull().transform(concertMapper::toDetailsDto)
-            .onItem().ifNull().failWith(() -> new HttpException(
-                AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, new NullPointerException(), "concert"));
+            .onItem().ifNotNull().transform(concertMapper::toDetailDto)
+            .onItem().ifNotNull().transformToUni(detail ->
+                seatService.findByConcertId(detail.getId())
+                    .invoke(detail::setSeats)
+                    .replaceWith(detail))
+            .onFailure().recoverWithUni(Uni.createFrom().failure(
+                new HttpException(AppError.RESOURCE_NOT_FOUND,
+                    Response.Status.NOT_FOUND, new NullPointerException(), "concert")));
     }
 
     @Override

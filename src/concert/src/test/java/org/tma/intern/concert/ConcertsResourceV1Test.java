@@ -6,7 +6,7 @@ import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.response.Response;
 import org.jboss.resteasy.reactive.RestResponse;
 import org.junit.jupiter.api.Test;
-import org.tma.intern.common.dto.Region;
+import org.tma.intern.common.type.Region;
 import org.tma.intern.common.helper.StringHelper;
 import org.tma.intern.concert.api.ConcertsResourceV1;
 
@@ -36,7 +36,7 @@ class ConcertsResourceV1Test {
     static final String CUSTOMER_EN_EMAIL = "customer.en@gmail.com";
 
     @Test
-    void testCreate() {
+    void create_withRoleOrganizerAndRegionUS_success() {
         String title = "Test Concert";
         String description = "This is a test concert description";
         String location = "Test Location";
