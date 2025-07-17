@@ -46,6 +46,61 @@ curl --insecure -X POST 'https://localhost:8443/realms/concertify/protocol/openi
 --data-urlencode 'password=123' \
 --data-urlencode 'client_id=web-app' \
 --data-urlencode 'grant_type=password'
+
+curl -X 'POST' \
+  'https://localhost:61002/auth/v1' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer ' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "customer.vi@gmail.com",
+  "password": "123",
+  "firstName": "Customer",
+  "lastName": "VN",
+  "group": "CUSTOMERS",
+  "region": "VN"
+}'
+
+curl -X 'POST' \
+  'https://localhost:62002/concerts/v1' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer ' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "title": "Test",
+  "description": "string",
+  "location": "Ho Chi Minh",
+  "startTime": "2022-03-10T12:15:50",
+  "endTime": "2022-03-10T12:15:50"
+}'
+
+curl -X 'POST' \
+  'https://localhost:63002/bookings/v1' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer ' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "concertId": "6878b745bde590c4bd6befe2",
+  "concertOwnerId": "86ebfb38-f1bd-4eab-aeea-e69b4f7c9cc0",
+  "items": [
+    {
+      "seatId": "6878b745bde590c4bd6befe3",
+      "price": 120
+    },
+    {
+      "seatId": "6878b745bde590c4bd6befe4",
+      "price": 120
+    },
+    {
+      "seatId": "6878b745bde590c4bd6bf09b",
+      "price": 60
+    },
+    {
+      "seatId": "6878b745bde590c4bd6bf09c",
+      "price": 60
+    }
+  ]
+}'
 ```
 
 ```shell
@@ -60,5 +115,5 @@ curl --insecure https://localhost:8081/subjects --cert Desktop/Projects/concerti
 kafka-topics --bootstrap-server broker1:39091 --list --command-config /tmp/configs/superuser.properties
 kafka-topics --bootstrap-server broker1:39091 --describe --topic 'greeting' --command-config /tmp/configs/superuser.properties
 kafka-console-producer --bootstrap-server broker1:39091 --topic 'greeting' --producer-property group.id=greeting-group --producer.config /tmp/configs/superuser.properties
-kafka-console-consumer --bootstrap-server broker1:39091 --topic 'greeting' --group 'greeting-group' --consumer.config /tmp/configs/superuser.properties
+kafka-console-consumer --bootstrap-server broker1:39091 --topic 'booking.created' --group 'concert_service.booking.created' --consumer.config /tmp/configs/superuser.properties
 ```

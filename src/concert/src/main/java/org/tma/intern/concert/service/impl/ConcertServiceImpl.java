@@ -1,4 +1,4 @@
-package org.tma.intern.concert.service;
+package org.tma.intern.concert.service.impl;
 
 import io.quarkus.panache.common.Page;
 import io.smallrye.mutiny.Multi;
@@ -17,10 +17,12 @@ import org.tma.intern.common.type.Region;
 import org.tma.intern.common.exception.AppError;
 import org.tma.intern.common.exception.HttpException;
 import org.tma.intern.concert.data.Concert;
-import org.tma.intern.concert.data.ConcertRepository;
+import org.tma.intern.concert.repository.ConcertRepository;
 import org.tma.intern.concert.dto.ConcertMapper;
 import org.tma.intern.concert.dto.ConcertRequest;
 import org.tma.intern.concert.dto.ConcertResponse;
+import org.tma.intern.concert.service.ConcertService;
+import org.tma.intern.concert.service.SeatService;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -76,6 +78,7 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
     public Uni<String> create(ConcertRequest.Body request) {
         Concert entity = concertMapper.toEntity(request);
         entity.setRegion(Region.valueOf(locale.getCountry()));
+        entity.setCreatedAt(Instant.now());
         entity.setCreatedBy(identityContext.getClaim("sub"));
 
         return concertRepository.persist(entity)
@@ -84,18 +87,15 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
                     .replaceWith(saved.getId().toHexString())
                     .onFailure().call(throwable ->
                         concertRepository.deleteById(saved.getId()).onItem().transform(result -> {
-                            if (!result) {
-                                log.error("Rollback create concert failed !!!");
-                                throw new HttpException(AppError.ACTION_FAILED,
-                                    Response.Status.NOT_IMPLEMENTED, null, "Delete", "concert"
-                                );
-                            }
-                            return saved.getId();
+                            if (!result)
+                                log.warn("Roll back failed: delete created concert failed caused by {}", throwable.getMessage());
+
+                            throw new HttpException(AppError.ACTION_FAILED,
+                                Response.Status.NOT_IMPLEMENTED, throwable, "Create", "concert");
                         }))
             )
             .onFailure().transform(throwable -> new HttpException(AppError.ACTION_FAILED,
-                Response.Status.NOT_IMPLEMENTED, throwable, "Create", "concert"
-            ));
+                Response.Status.NOT_IMPLEMENTED, throwable, "Create", "concert"));
     }
 
     @Override

@@ -1,9 +1,12 @@
-package org.tma.intern.booking.dto;
+package org.tma.intern.booking.dto.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.tma.intern.common.type.BookingStatus;
 
-public class BookingItemResponse {
+import java.util.List;
+
+public class BookingResponse {
 
     @Getter
     @Setter
@@ -13,8 +16,9 @@ public class BookingItemResponse {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     public static class Detail {
         String id;
-        String seatId;
-        double price;
+        String createdBy;
+        BookingStatus status;
+        List<BookingItemResponse.Detail> items;
     }
 
 }

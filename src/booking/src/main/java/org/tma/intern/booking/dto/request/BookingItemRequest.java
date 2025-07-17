@@ -1,4 +1,4 @@
-package org.tma.intern.booking.dto;
+package org.tma.intern.booking.dto.request;
 
 public class BookingItemRequest {
 

@@ -21,4 +21,8 @@ public interface BaseMapper {
         return instant == null ? null : instant.toHexString();
     }
 
+    default ObjectId map(String instant) {
+        return instant == null ? null : new ObjectId(instant);
+    }
+
 }

@@ -35,6 +35,7 @@ public class ConcertResponse {
         String startTime;
         String endTime;
         String location;
+        String ownerId;
         Region region;
         boolean isApproved;
         List<PreviewSeat> seats;

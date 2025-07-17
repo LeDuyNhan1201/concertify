@@ -1,4 +1,4 @@
-package org.tma.intern.concert.service;
+package org.tma.intern.concert.service.impl;
 
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -13,9 +13,10 @@ import org.tma.intern.common.type.SeatType;
 import org.tma.intern.common.exception.AppError;
 import org.tma.intern.common.exception.HttpException;
 import org.tma.intern.concert.data.Seat;
-import org.tma.intern.concert.data.SeatRepository;
+import org.tma.intern.concert.repository.SeatRepository;
 import org.tma.intern.concert.dto.ConcertMapper;
 import org.tma.intern.concert.dto.ConcertResponse;
+import org.tma.intern.concert.service.SeatService;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -18,8 +18,8 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.NoCache;
 import org.jboss.resteasy.reactive.RestResponse;
-import org.tma.intern.booking.dto.BookingRequest;
-import org.tma.intern.booking.dto.BookingResponse;
+import org.tma.intern.booking.dto.request.BookingRequest;
+import org.tma.intern.booking.dto.response.BookingResponse;
 import org.tma.intern.booking.service.BookingService;
 import org.tma.intern.common.base.BaseResource;
 import org.tma.intern.common.type.BookingStatus;
@@ -54,7 +54,6 @@ public class BookingsResourceV1 extends BaseResource {
         content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     @Consumes(MediaType.APPLICATION_JSON)
     public Uni<RestResponse<CommonResponse<String>>> create(BookingRequest.Body body) {
-        checkRegion();
         return bookingService.create(body).onItem().transform(id ->
             RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
                 .message(locale.getMessage("Action.Success", "Create", "booking"))
@@ -62,7 +61,7 @@ public class BookingsResourceV1 extends BaseResource {
             ).build());
     }
 
-    @RolesAllowed("booking:edit")
+    @RolesAllowed("booking:update")
     @PUT
     @Path("/{id}")
     @Operation(summary = "Update booking", description = "API to update an exist booking by id.")
@@ -70,7 +69,6 @@ public class BookingsResourceV1 extends BaseResource {
         content = @Content(schema = @Schema(implementation = String.class)))
     @Consumes(MediaType.APPLICATION_JSON)
     public Uni<RestResponse<CommonResponse<String>>> update(@PathParam("id") String id, BookingRequest.Update body) {
-        checkRegion();
         return bookingService.update(id, body).onItem().transform(resultId ->
             RestResponse.ResponseBuilder.ok(CommonResponse.<String>builder()
                 .message(locale.getMessage("Action.Success", "Update", "booking"))
@@ -79,7 +77,7 @@ public class BookingsResourceV1 extends BaseResource {
 
     }
 
-    @RolesAllowed("booking:edit")
+    @RolesAllowed("booking:update")
     @PATCH
     @Path("/{id}/{status}")
     @Operation(summary = "Update booking", description = "API to update an exist booking by id.")
@@ -96,9 +94,9 @@ public class BookingsResourceV1 extends BaseResource {
 
     }
 
-    @RolesAllowed("booking:edit")
+    @RolesAllowed("booking:update")
     @DELETE
-    @Path("/{id}")
+    @Path("/{id}/soft")
     @Operation(summary = "Delete booking", description = "API to soft delete a booking by id.")
     @APIResponse(responseCode = "200", description = "Success",
         content = @Content(schema = @Schema(implementation = String.class)))
@@ -106,6 +104,21 @@ public class BookingsResourceV1 extends BaseResource {
         return bookingService.softDelete(id).onItem().transform(resultId ->
             RestResponse.ResponseBuilder.ok(CommonResponse.<String>builder()
                 .message(locale.getMessage("Action.Success", "Soft delete", "booking"))
+                .data(id).build()
+            ).build());
+
+    }
+
+    @RolesAllowed("booking:delete")
+    @DELETE
+    @Path("/{id}")
+    @Operation(summary = "Delete booking", description = "API to soft delete a booking by id.")
+    @APIResponse(responseCode = "200", description = "Success",
+        content = @Content(schema = @Schema(implementation = String.class)))
+    public Uni<RestResponse<CommonResponse<String>>> delete(@PathParam("id") String id) {
+        return bookingService.delete(id).onItem().transform(resultId ->
+            RestResponse.ResponseBuilder.ok(CommonResponse.<String>builder()
+                .message(locale.getMessage("Action.Success", "Delete", "booking"))
                 .data(id).build()
             ).build());
 

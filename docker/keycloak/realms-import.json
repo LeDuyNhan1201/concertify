@@ -2487,6 +2487,19 @@
         "containerId" : "debd37b6-36b2-404b-90ea-c7bc6dee6f0a",
         "attributes" : { }
       }, {
+        "id" : "57334437-e3d3-4007-90b9-ccc0bf380718",
+        "name" : "customer_vn",
+        "composite" : true,
+        "composites" : {
+          "client" : {
+            "concert-service" : [ "concert:view" ],
+            "booking-service" : [ "booking:update", "booking:view", "booking:create", "booking:read", "booking:delete" ]
+          }
+        },
+        "clientRole" : false,
+        "containerId" : "debd37b6-36b2-404b-90ea-c7bc6dee6f0a",
+        "attributes" : { }
+      }, {
         "id" : "9e5cc3b5-ddbb-4001-a1e8-137eaa65b0b2",
         "name" : "global_admin",
         "description" : "role_full_access",
@@ -2888,6 +2901,15 @@
         "path" : "/global/vn",
         "parentId" : "dba67237-9339-415d-8a1e-db686f9a4a5a",
         "subGroups" : [ {
+          "id" : "c4aeb274-f9ca-4d44-8364-7361b10d7a87",
+          "name" : "customers",
+          "path" : "/global/vn/customers",
+          "parentId" : "b3912afe-36e7-4b25-8fad-128ea5dad0bb",
+          "subGroups" : [ ],
+          "attributes" : { },
+          "realmRoles" : [ "customer_vn" ],
+          "clientRoles" : { }
+        }, {
           "id" : "bfe00586-a2f1-43f4-8cde-02daeba11f18",
           "name" : "organizers",
           "path" : "/global/vn/organizers",
@@ -2971,6 +2993,28 @@
       "realmRoles" : [ "default-roles-concertify", "global_admin" ],
       "notBefore" : 0,
       "groups" : [ ]
+    }, {
+      "id" : "2023d670-125f-4186-99e0-f25befae2f6e",
+      "username" : "customer.vi@gmail.com",
+      "firstName" : "Customer",
+      "lastName" : "VN",
+      "email" : "customer.vi@gmail.com",
+      "emailVerified" : true,
+      "createdTimestamp" : 1752735977917,
+      "enabled" : true,
+      "totp" : false,
+      "credentials" : [ {
+        "id" : "28332314-dbc9-40a4-a69e-226639b3abdc",
+        "type" : "password",
+        "createdDate" : 1752735978215,
+        "secretData" : "{\"value\":\"kGOzh3gUT95YNJUlJpnvzl1MtB8Iwcl0SMUVgGGJjoU=\",\"salt\":\"L5cKDGckSr4x5GIPPxnqHw==\",\"additionalParameters\":{}}",
+        "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+      } ],
+      "disableableCredentialTypes" : [ ],
+      "requiredActions" : [ ],
+      "realmRoles" : [ "default-roles-concertify" ],
+      "notBefore" : 0,
+      "groups" : [ "/global/vn/customers" ]
     }, {
       "id" : "86ebfb38-f1bd-4eab-aeea-e69b4f7c9cc0",
       "username" : "organizer.vi@gmail.com",
@@ -3715,15 +3759,32 @@
         "consent.screen.text" : ""
       },
       "protocolMappers" : [ {
-        "id" : "d6c6d08e-e990-4240-884d-09de42fbbc68",
-        "name" : "Client role",
+        "id" : "34fad20b-ea01-4870-a07b-a6cc8a01ddc0",
+        "name" : "Booking Service role",
         "protocol" : "openid-connect",
         "protocolMapper" : "oidc-usermodel-client-role-mapper",
         "consentRequired" : false,
         "config" : {
-          "introspection.token.claim" : "true",
+          "introspection.token.claim" : "false",
           "multivalued" : "true",
-          "userinfo.token.claim" : "false",
+          "userinfo.token.claim" : "true",
+          "id.token.claim" : "false",
+          "lightweight.claim" : "false",
+          "access.token.claim" : "true",
+          "claim.name" : "roles",
+          "jsonType.label" : "String",
+          "usermodel.clientRoleMapping.clientId" : "booking-service"
+        }
+      }, {
+        "id" : "a2295369-7c90-4916-a9f9-649b910e03ef",
+        "name" : "Concert Service role",
+        "protocol" : "openid-connect",
+        "protocolMapper" : "oidc-usermodel-client-role-mapper",
+        "consentRequired" : false,
+        "config" : {
+          "introspection.token.claim" : "false",
+          "multivalued" : "true",
+          "userinfo.token.claim" : "true",
           "id.token.claim" : "false",
           "lightweight.claim" : "false",
           "access.token.claim" : "true",
@@ -4383,7 +4444,7 @@
         "subType" : "anonymous",
         "subComponents" : { },
         "config" : {
-          "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper" ]
+          "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "saml-role-list-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper" ]
         }
       }, {
         "id" : "f67d9947-c7dd-4aed-bfda-b7d7c08df900",
@@ -4443,7 +4504,7 @@
         "subType" : "authenticated",
         "subComponents" : { },
         "config" : {
-          "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper", "saml-role-list-mapper", "saml-user-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper" ]
+          "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "saml-user-property-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "saml-role-list-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-attribute-mapper" ]
         }
       } ],
       "org.keycloak.userprofile.UserProfileProvider" : [ {

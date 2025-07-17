@@ -34,7 +34,7 @@ import org.tma.intern.common.type.Region;
         scheme = "Bearer"
     )}
 )
-@Path("/v1")
+@Path("/v1/users")
 @Tag(name = "Users", description = "User operations")
 @Produces(MediaType.APPLICATION_JSON)
 @RequiredArgsConstructor
