@@ -16,7 +16,9 @@ public class BookingResponse {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     public static class Detail {
         String id;
-        String createdBy;
+        String concertId;
+        String concertOwnerId;
+        String ownerId;
         BookingStatus status;
         List<BookingItemResponse.Detail> items;
     }

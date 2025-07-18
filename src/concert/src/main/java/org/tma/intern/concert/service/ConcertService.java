@@ -19,7 +19,7 @@ public interface ConcertService {
 
     Uni<ConcertResponse.Detail> findById(String id);
 
-    Uni<PageResponse<ConcertResponse.Preview>> findAll(int page, int limit);
+    Uni<PageResponse<ConcertResponse.Preview>> findAll(int offset, int limit);
 
     Uni<List<String>> seedData(int count);
 

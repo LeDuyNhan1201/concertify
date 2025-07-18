@@ -14,6 +14,7 @@ public class BookingItemResponse {
     public static class Detail {
         String id;
         String seatId;
+        String seatName;
         double price;
     }
 

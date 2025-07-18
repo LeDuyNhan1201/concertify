@@ -5,7 +5,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 import org.bson.codecs.pojo.annotations.BsonProperty;
-import org.bson.types.ObjectId;
 import org.tma.intern.common.base.AuditCollection;
 import org.tma.intern.common.type.SeatType;
 
@@ -19,7 +18,7 @@ import org.tma.intern.common.type.SeatType;
 public class Seat extends AuditCollection {
 
     @BsonProperty(value = "concert_id")
-    ObjectId concertId;
+    String concertId;
 
     @BsonProperty(value = "name")
     String name;

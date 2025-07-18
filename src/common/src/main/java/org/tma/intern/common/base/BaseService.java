@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.bson.types.ObjectId;
 import org.tma.intern.common.locale.LocaleProvider;
 import org.tma.intern.common.security.IdentityContext;
 

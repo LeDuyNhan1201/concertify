@@ -4,6 +4,7 @@ public class BookingItemRequest {
 
     public record Body(
         String seatId,
+        String seatName,
         long price
     ) {
     }

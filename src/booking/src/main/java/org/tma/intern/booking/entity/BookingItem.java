@@ -26,6 +26,9 @@ public class BookingItem {
     @BsonProperty(value = "seat_id")
     String seatId;
 
+    @BsonProperty(value = "seat_name")
+    String seatName;
+
     @BsonProperty(value = "price")
     long price;
 

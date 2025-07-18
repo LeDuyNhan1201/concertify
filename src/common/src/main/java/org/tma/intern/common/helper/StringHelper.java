@@ -1,5 +1,7 @@
 package org.tma.intern.common.helper;
 
+import org.bson.types.ObjectId;
+
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -28,6 +30,15 @@ public class StringHelper {
             return input;
         }
         return input.substring(0, 1).toUpperCase() + input.substring(1);
+    }
+
+    public static ObjectId safeParse(String strId) {
+        if (strId == null || strId.isEmpty()) return null;
+        try {
+            return new ObjectId(strId);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid Bson ObjectId format: " + strId, e);
+        }
     }
 
 }

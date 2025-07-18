@@ -10,8 +10,6 @@ import java.util.List;
 
 public interface BookingItemService {
 
-    Uni<Boolean> isExisted(String seatId);
-
     Uni<Boolean> isAnyExisted(List<String> seatIds);
 
     Uni<List<String>> create(ObjectId bookingId, List<BookingItem> items);
