@@ -20,26 +20,29 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.NoCache;
 import org.jboss.resteasy.reactive.RestResponse;
-import org.tma.intern.common.type.identity.IdentityGroup;
 import org.tma.intern.auth.dto.UserRequest;
 import org.tma.intern.auth.dto.UserResponse;
 import org.tma.intern.auth.service.UserService;
 import org.tma.intern.common.base.BaseResource;
 import org.tma.intern.common.dto.CommonResponse;
 import org.tma.intern.common.type.Region;
+import org.tma.intern.common.type.identity.IdentityGroup;
 
+@Path("/v1/users")
 @SecuritySchemes(value = {
     @SecurityScheme(securitySchemeName = "bearerToken",
         type = SecuritySchemeType.HTTP,
         scheme = "Bearer"
     )}
 )
-@Path("/v1/users")
 @Tag(name = "Users", description = "User operations")
 @Produces(MediaType.APPLICATION_JSON)
+@APIResponse(responseCode = "401", description = "Unauthenticated", content = @Content())
+@APIResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(implementation = String.class)))
+@APIResponse(responseCode = "501", description = "Failed", content = @Content(schema = @Schema(implementation = String.class)))
+@Slf4j
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Slf4j
 public class UsersResourceV1 extends BaseResource {
 
     UserService userService;
@@ -50,10 +53,8 @@ public class UsersResourceV1 extends BaseResource {
     @POST
     @Path("/groups")
     @Operation(summary = "Create group", description = "Create a new group")
-    @APIResponse(responseCode = "500", description = "Failed",
-        content = @Content(schema = @Schema(implementation = String.class)))
-    @APIResponse(responseCode = "201", description = "Success",
-        content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    @APIResponse(responseCode = "501", description = "Failed", content = @Content(schema = @Schema(implementation = String.class)))
+    @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     public Uni<RestResponse<CommonResponse<String>>> createGroup(UserRequest.GroupCreation body) {
         return userService.createGroup(body).onItem().transform(groupId ->
             RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
@@ -66,10 +67,8 @@ public class UsersResourceV1 extends BaseResource {
     @POST
     @Path("")
     @Operation(summary = "Create user", description = "Create a new user")
-    @APIResponse(responseCode = "500", description = "Failed",
-        content = @Content(schema = @Schema(implementation = String.class)))
-    @APIResponse(responseCode = "201", description = "Success",
-        content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    @APIResponse(responseCode = "501", description = "Failed", content = @Content(schema = @Schema(implementation = String.class)))
+    @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     public Uni<RestResponse<CommonResponse<String>>> create(UserRequest.Creation body) {
         return userService.create(body).onItem().transform(userId ->
             RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
@@ -83,11 +82,7 @@ public class UsersResourceV1 extends BaseResource {
     @Path("/{email}")
     @NoCache
     @Operation(summary = "Get user details", description = "API to get details of user by email")
-    @APIResponse(responseCode = "401", description = "Unauthenticated", content = @Content())
-    @APIResponse(responseCode = "403", description = "Invalid resource !!!",
-        content = @Content(schema = @Schema(implementation = String.class)))
-    @APIResponse(responseCode = "200", description = "Success",
-        content = @Content(schema = @Schema(implementation = UserResponse.Detail.class)))
+    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = UserResponse.Detail.class)))
     public Uni<RestResponse<CommonResponse<UserResponse.Detail>>> details(@PathParam("email") String email) {
         return userService.findByEmail(email).onItem().transform(user ->
             RestResponse.ResponseBuilder.ok(
@@ -100,11 +95,7 @@ public class UsersResourceV1 extends BaseResource {
     @Path("/{id}")
     @NoCache
     @Operation(summary = "Delete user", description = "API to get delete user by id")
-    @APIResponse(responseCode = "401", description = "Unauthenticated", content = @Content())
-    @APIResponse(responseCode = "403", description = "Invalid resource !!!",
-        content = @Content(schema = @Schema(implementation = String.class)))
-    @APIResponse(responseCode = "200", description = "Success",
-        content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     public Uni<RestResponse<CommonResponse<String>>> delete(@PathParam("id") String id) {
         return userService.delete(id).onItem().transform(userId ->
             RestResponse.ResponseBuilder.create(RestResponse.Status.OK, CommonResponse.<String>builder()
@@ -118,32 +109,23 @@ public class UsersResourceV1 extends BaseResource {
     @Path("/me")
     @NoCache
     @Operation(summary = "Get current username", description = "API to get name of current user")
-    @APIResponse(responseCode = "401", description = "Unauthenticated", content = @Content())
-    @APIResponse(responseCode = "403", description = "Invalid resource !!!",
-        content = @Content(schema = @Schema(implementation = String.class)))
-    @APIResponse(responseCode = "200", description = "Success",
-        content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     public Uni<RestResponse<UserResponse.Detail>> me() {
-        return Uni.createFrom().item(() ->
-            RestResponse.ResponseBuilder.ok(UserResponse.Detail.builder()
-                .id(identityContext.getClaim("sub"))
-                .email(identityContext.getPrincipleName())
-                .roles(identityContext.getRoles()).build()
-            ).build());
+        return Uni.createFrom().item(() -> RestResponse.ResponseBuilder.ok(UserResponse.Detail.builder()
+            .id(identityContext.getClaim("sub"))
+            .email(identityContext.getPrincipleName())
+            .roles(identityContext.getRoles()).build()
+        ).build());
     }
 
     @GET
     @Path("/seed/{count}")
     @NoCache
     @Operation(summary = "Seed users", description = "API to seed user with [Role]:user.")
-    @APIResponse(responseCode = "500", description = "Seed data failed !!!",
-        content = @Content(schema = @Schema(implementation = String.class)))
-    @APIResponse(responseCode = "200", description = "Success",
-        content = @Content(schema = @Schema(implementation = String.class)))
+    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Response> seedUsers(@PathParam("count") int count) {
-        return userService.seedUsers(count, IdentityGroup.CUSTOMERS, Region.US).onItem()
-            .transform(userIds -> Response.ok(userIds).build());
+        return userService.seedUsers(count, IdentityGroup.CUSTOMERS, Region.US).map(userIds -> Response.ok(userIds).build());
     }
 
 }
