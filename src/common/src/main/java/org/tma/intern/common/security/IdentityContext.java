@@ -1,5 +1,7 @@
 package org.tma.intern.common.security;
 
+import org.tma.intern.common.type.Region;
+
 import java.util.List;
 
 public interface IdentityContext {
@@ -11,5 +13,11 @@ public interface IdentityContext {
     List<String> getRoles();
 
     <T> T getClaim(String key);
+
+    boolean hasAllRoles(List<String> roles);
+
+    boolean hasAnyRole(List<String> roles);
+
+    Region getRegion();
 
 }

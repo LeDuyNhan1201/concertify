@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public enum IdentityClient {
 
-    AUTH("auth-service", "user"),
+    AUTH("auth-service", "auth"),
     CONCERT("concert-service", "concert"),
     BOOKING("booking-service", "booking")
     ;

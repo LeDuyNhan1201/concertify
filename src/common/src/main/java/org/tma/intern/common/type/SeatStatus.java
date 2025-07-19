@@ -3,11 +3,11 @@ package org.tma.intern.common.type;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum BookingStatus {
+public enum SeatStatus {
 
-    PENDING,
-    CONFIRMED,
-    CANCELED
+    AVAILABLE,
+    HELD,
+    BOOKED
     ;
 
 }

@@ -90,6 +90,12 @@ public class KeycloakAdminClient implements IdentityAdminClient {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
+    @Override
+    public Uni<String> assignClientRole(IdentityClient client, ClientScope scope, String realmRoleName) {
+        return Uni.createFrom().item(() -> assignClientScopeToRealmRole(client, scope, realmRoleName))
+            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+    }
+
 //    @Override
 //    public Uni<List<IdentityUser>> getUsersByGroup(IdentityGroup group) {
 //        return Uni.createFrom().item(() ->
@@ -116,10 +122,12 @@ public class KeycloakAdminClient implements IdentityAdminClient {
         int status = response.getStatus();
         if (status == Response.Status.CREATED.getStatusCode()) {
             String location = response.getHeaderString("Location");
-            if (location == null) throw new RuntimeException(entityName + " creation succeeded but no Location header returned");
+            if (location == null)
+                throw new RuntimeException(entityName + " creation succeeded but no Location header returned");
             return location.substring(location.lastIndexOf('/') + 1);
 
-        } else throw new RuntimeException("Keycloak " + entityName + " creation failed with status: " + status + " - " + response.readEntity(String.class));
+        } else
+            throw new RuntimeException("Keycloak " + entityName + " creation failed with status: " + status + " - " + response.readEntity(String.class));
     }
 
     private CredentialRepresentation createPasswordCredential(String password) {
@@ -204,7 +212,8 @@ public class KeycloakAdminClient implements IdentityAdminClient {
         GroupsResource groups = keycloak.realm(REALM).groups();
         Optional<GroupRepresentation> checkRegionGroup = findGroupByPath(MessageFormat.format("{0}/{1}", GROUP_PREFIX, region.country));
 
-        if (checkRegionGroup.isPresent()) return createSpecificGroup(groups, group, region, checkRegionGroup.get().getId());
+        if (checkRegionGroup.isPresent())
+            return createSpecificGroup(groups, group, region, checkRegionGroup.get().getId());
         else {
             // Không có /global/{region}
             Optional<GroupRepresentation> globalGroup = findGroupByPath(GROUP_PREFIX);
@@ -266,16 +275,16 @@ public class KeycloakAdminClient implements IdentityAdminClient {
         };
     }
 
-    private List<ClientScope> generateClientScopeBaseOnRole(IdentityClient identityClient, IdentityRole role) {
+    private List<ClientScope> generateClientScopesBaseOnRole(IdentityClient identityClient, IdentityRole role) {
         return switch (role) {
             case CUSTOMER -> switch (identityClient) {
-                case AUTH -> List.of(ClientScope.READ, ClientScope.UPDATE);
-                case CONCERT -> List.of(ClientScope.VIEW);
+                case AUTH -> List.of(ClientScope.USER_READ, ClientScope.USER_UPDATE);
+                case CONCERT -> List.of(ClientScope.VIEW, ClientScope.SEAT_UPDATE);
                 case BOOKING ->
                     List.of(ClientScope.VIEW, ClientScope.READ, ClientScope.CREATE, ClientScope.UPDATE, ClientScope.DELETE);
             };
             case ORGANIZER -> switch (identityClient) {
-                case AUTH -> List.of(ClientScope.READ, ClientScope.UPDATE);
+                case AUTH -> List.of(ClientScope.USER_READ, ClientScope.USER_UPDATE);
                 case CONCERT ->
                     List.of(ClientScope.VIEW, ClientScope.READ, ClientScope.CREATE, ClientScope.UPDATE, ClientScope.DELETE);
                 case BOOKING -> List.of(ClientScope.VIEW, ClientScope.READ, ClientScope.UPDATE);
@@ -319,6 +328,7 @@ public class KeycloakAdminClient implements IdentityAdminClient {
 
             RoleRepresentation createdRealmRole = roles.get(roleName).toRepresentation();
             try {
+                assignClientRolesToRealmRole(IdentityClient.AUTH, roleType, createdRealmRole.getName());
                 assignClientRolesToRealmRole(IdentityClient.CONCERT, roleType, createdRealmRole.getName());
                 assignClientRolesToRealmRole(IdentityClient.BOOKING, roleType, createdRealmRole.getName());
             } catch (Exception assignedFailedException) {
@@ -331,17 +341,19 @@ public class KeycloakAdminClient implements IdentityAdminClient {
     }
 
     private void assignClientRolesToRealmRole(IdentityClient client, IdentityRole role, String realmRoleName) {
-        generateClientScopeBaseOnRole(client, role).forEach(clientScope -> {
-            // Get the client role
-            String clientRoleName = MessageFormat.format("{0}:{1}", client.rolePrefix, clientScope.value);
-            RoleRepresentation clientRole = getClientRole(client.id, clientRoleName);
+        generateClientScopesBaseOnRole(client, role).forEach(clientScope ->
+            assignClientScopeToRealmRole(client, clientScope, realmRoleName)
+        );
+    }
 
-            // Add as composite to realm role
-            keycloak.realm(REALM).roles().get(realmRoleName).addComposites(List.of(clientRole));
+    private String assignClientScopeToRealmRole(IdentityClient client, ClientScope scope, String realmRoleName) {
+        String clientRoleName = MessageFormat.format("{0}:{1}", client.rolePrefix, scope.value);
+        RoleRepresentation clientRole = getClientRole(client.id, clientRoleName);
 
-            log.info("Added client role '{}' from client '{}' to realm role '{}'",
-                clientRoleName, client.id, realmRoleName);
-        });
+        // Add as composite to realm role
+        keycloak.realm(REALM).roles().get(realmRoleName).addComposites(List.of(clientRole));
+        log.info("Added client role '{}' from client '{}' to realm role '{}'", clientRoleName, client.id, realmRoleName);
+        return clientRole.getId();
     }
 
     /* --------- Private methods for [KEYCLOAK RESOURCES] --------- */

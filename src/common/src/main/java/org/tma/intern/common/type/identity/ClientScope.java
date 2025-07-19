@@ -10,6 +10,11 @@ public enum ClientScope {
     CREATE("create"),
     UPDATE("update"),
     DELETE("delete"),
+
+    SEAT_UPDATE("seat:update"),
+
+    USER_READ("user:read"),
+    USER_UPDATE("user:update"),
     ;
 
     public final String value;

@@ -24,18 +24,16 @@ import org.tma.intern.booking.service.BookingService;
 import org.tma.intern.common.base.BaseResource;
 import org.tma.intern.common.dto.CommonResponse;
 import org.tma.intern.common.dto.PageResponse;
-import org.tma.intern.common.type.BookingStatus;
+import org.tma.intern.common.type.identity.IdentityRole;
 
-import java.util.List;
-
-@Path("/v1")
+@Path("/v1/bookings")
 @SecuritySchemes(value = {
     @SecurityScheme(securitySchemeName = "bearerToken",
         type = SecuritySchemeType.HTTP,
         scheme = "Bearer"
     )}
 )
-@Tag(name = "Bookings", description = "Booking operations")
+@Tag(name = "Bookings for Customer", description = "Booking for Customer operations")
 @Produces(MediaType.APPLICATION_JSON)
 @APIResponse(responseCode = "401", description = "Unauthenticated", content = @Content())
 @APIResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(implementation = String.class)))
@@ -43,17 +41,18 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class BookingsResourceV1 extends BaseResource {
+public class CustomerBookingsResourceV1 extends BaseResource {
 
     BookingService bookingService;
 
-    @RolesAllowed("booking:create")
+    @RolesAllowed("booking:create") // Only Customers
     @POST
     @Path("")
     @Operation(summary = "Create booking", description = "API to create a new booking.")
     @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     @Consumes(MediaType.APPLICATION_JSON)
     public Uni<RestResponse<CommonResponse<String>>> create(BookingRequest.Body body) {
+        hasOnlyRole(IdentityRole.CUSTOMER);
         return bookingService.create(body).onItem().transform(id ->
             RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
                 .message(locale.getMessage("Action.Success", "Create", "booking"))
@@ -61,13 +60,15 @@ public class BookingsResourceV1 extends BaseResource {
             ).build());
     }
 
-    @RolesAllowed("booking:update")
+    @RolesAllowed("booking:update") // Only Customers
     @PUT
     @Path("/{id}")
     @Operation(summary = "Update booking", description = "API to update an exist booking by id.")
     @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
     @Consumes(MediaType.APPLICATION_JSON)
     public Uni<RestResponse<CommonResponse<String>>> update(@PathParam("id") String id, BookingRequest.Update body) {
+        // Check owner of booking
+        hasOnlyRole(IdentityRole.CUSTOMER);
         return bookingService.update(id, body).onItem().transform(resultId ->
             RestResponse.ResponseBuilder.ok(CommonResponse.<String>builder()
                 .message(locale.getMessage("Action.Success", "Update", "booking"))
@@ -76,28 +77,14 @@ public class BookingsResourceV1 extends BaseResource {
 
     }
 
-    @RolesAllowed("booking:update")
-    @PATCH
-    @Path("/{id}/{status}")
-    @Operation(summary = "Update booking", description = "API to update an exist booking by id.")
-    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Uni<RestResponse<CommonResponse<String>>> update(@PathParam("id") String id, @PathParam("status") BookingStatus status) {
-        checkRegion();
-        return bookingService.update(id, status).onItem().transform(resultId ->
-            RestResponse.ResponseBuilder.ok(CommonResponse.<String>builder()
-                .message(locale.getMessage("Action.Success", "Update", "booking"))
-                .data(id).build()
-            ).build());
-
-    }
-
-    @RolesAllowed("booking:update")
+    @RolesAllowed("booking:update") // Only Customers
     @DELETE
     @Path("/{id}/soft")
     @Operation(summary = "Delete booking", description = "API to soft delete a booking by id.")
     @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
     public Uni<RestResponse<CommonResponse<String>>> softDelete(@PathParam("id") String id) {
+        // Check owner of booking
+        hasOnlyRole(IdentityRole.CUSTOMER);
         return bookingService.softDelete(id).onItem().transform(resultId ->
             RestResponse.ResponseBuilder.ok(CommonResponse.<String>builder()
                 .message(locale.getMessage("Action.Success", "Soft delete", "booking"))
@@ -106,12 +93,14 @@ public class BookingsResourceV1 extends BaseResource {
 
     }
 
-    @RolesAllowed("booking:delete")
+    @RolesAllowed("booking:delete") // Only Customers
     @DELETE
     @Path("/{id}")
     @Operation(summary = "Delete booking", description = "API to soft delete a booking by id.")
     @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
     public Uni<RestResponse<CommonResponse<String>>> delete(@PathParam("id") String id) {
+        // Check owner of booking
+        hasOnlyRole(IdentityRole.CUSTOMER);
         return bookingService.delete(id).onItem().transform(resultId ->
             RestResponse.ResponseBuilder.ok(CommonResponse.<String>builder()
                 .message(locale.getMessage("Action.Success", "Delete", "booking"))
@@ -119,37 +108,31 @@ public class BookingsResourceV1 extends BaseResource {
             ).build());
     }
 
-    @RolesAllowed("booking:view")
+    @RolesAllowed("booking:view") // Only Customers
     @GET
     @Path("/{id}")
     @NoCache
-    @Operation(summary = "Get booking details", description = "API to get details of a booking by id.")
-    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = BookingResponse.Detail.class)))
-    public Uni<RestResponse<CommonResponse<BookingResponse.Detail>>> details(@PathParam("id") String id) {
-        return bookingService.findById(id).onItem().transform(booking ->
-            RestResponse.ResponseBuilder.ok(CommonResponse.<BookingResponse.Detail>builder().data(booking).build()).build()
+    @Operation(summary = "Get my booking details", description = "API to get details of a booking of mine by id.")
+    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = BookingResponse.Details.class)))
+    public Uni<RestResponse<CommonResponse<BookingResponse.Details>>> myBooking(@PathParam("id") String id) {
+        // Check owner of booking
+        hasOnlyRole(IdentityRole.CUSTOMER);
+        return bookingService.details(id).onItem().transform(booking ->
+            RestResponse.ResponseBuilder.ok(CommonResponse.<BookingResponse.Details>builder().data(booking).build()).build()
         );
     }
 
-    @RolesAllowed("booking:view")
+    @RolesAllowed("booking:view") // Only Customers
     @GET
     @Path("")
     @NoCache
-    @Operation(summary = "Get bookings page", description = "API to get a page of bookings by index & limit.")
+    @Operation(summary = "Search my bookings", description = "API to search my bookings.")
     @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = PageResponse.class)))
-    public Uni<RestResponse<PageResponse<BookingResponse.Detail>>> paging(
+    public Uni<RestResponse<PageResponse<BookingResponse.Details>>> searchMyBookings(
         @QueryParam("index") int index,
         @QueryParam("limit") int limit) {
-        return bookingService.findAll(index, limit).map(page -> RestResponse.ResponseBuilder.ok(page).build());
-    }
-
-    @GET
-    @Path("/seed/{count}")
-    @NoCache
-    @Operation(summary = "Seed bookings", description = "API to seed bookings with count.")
-    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = Integer.class)))
-    public Uni<RestResponse<CommonResponse<List<String>>>> seed(int count) {
-        return bookingService.seedData(count).map(ids -> RestResponse.ok(CommonResponse.<List<String>>builder().data(ids).build()));
+        hasOnlyRole(IdentityRole.CUSTOMER);
+        return bookingService.search(index, limit).map(page -> RestResponse.ResponseBuilder.ok(page).build());
     }
 
 }

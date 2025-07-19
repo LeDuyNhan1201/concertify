@@ -18,6 +18,7 @@ public enum AppError {
     AUTH_INFO_INVALID("auth/auth-info-invalid", "Error.AuthInfoInvalid"),
     REGION_INVALID("auth/region-invalid", "Error.RegionInvalid"),
     ROLE_INVALID("auth/role-invalid", "Error.RoleInvalid"),
+    CANNOT_ACCESS("common/cannot-access-resource", "Error.CannotAccess"),
     ;
 
     AppError(String code, String message) {

@@ -16,6 +16,8 @@ public interface UserService {
 
     Uni<String> createGroup(UserRequest.GroupCreation request);
 
+    Uni<String> assignClientRole(UserRequest.ClientRoleScope request);
+
     Uni<String> delete(String id);
 
     Uni<List<String>> seedUsers(int count, IdentityGroup group, Region region);

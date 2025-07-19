@@ -20,9 +20,13 @@ public interface BookingService {
 
     Uni<String> delete(String id);
 
-    Uni<BookingResponse.Detail> findById(String id);
+    Uni<BookingResponse.Details> details(String id);
 
-    Uni<PageResponse<BookingResponse.Detail>> findAll(int page, int limit);
+    Uni<BookingResponse.Preview> preview(String id);
+
+    Uni<PageResponse<BookingResponse.Details>> search(int page, int limit);
+
+    Uni<PageResponse<BookingResponse.Details>> bookingsOfMyConcerts(int index, int limit);
 
     Uni<List<String>> seedData(int count);
 

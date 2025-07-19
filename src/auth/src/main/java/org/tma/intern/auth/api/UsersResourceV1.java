@@ -47,22 +47,6 @@ public class UsersResourceV1 extends BaseResource {
 
     UserService userService;
 
-    static final String ROLE_GLOBAL_ADMIN = "global_admin";
-
-    @RolesAllowed(ROLE_GLOBAL_ADMIN)
-    @POST
-    @Path("/groups")
-    @Operation(summary = "Create group", description = "Create a new group")
-    @APIResponse(responseCode = "501", description = "Failed", content = @Content(schema = @Schema(implementation = String.class)))
-    @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
-    public Uni<RestResponse<CommonResponse<String>>> createGroup(UserRequest.GroupCreation body) {
-        return userService.createGroup(body).onItem().transform(groupId ->
-            RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
-                .message(locale.getMessage("Action.Success", "Create", "group"))
-                .data(groupId).build()
-            ).build());
-    }
-
     @RolesAllowed(ROLE_GLOBAL_ADMIN)
     @POST
     @Path("")
@@ -77,7 +61,7 @@ public class UsersResourceV1 extends BaseResource {
             ).build());
     }
 
-    @RolesAllowed(ROLE_GLOBAL_ADMIN)
+    @Authenticated
     @GET
     @Path("/{email}")
     @NoCache

@@ -40,8 +40,4 @@ public class AuditCollection {
     @Builder.Default
     Instant updatedAt = Instant.now();
 
-    @BsonProperty(value = "version")
-    @Builder.Default
-    long version = 1;
-
 }

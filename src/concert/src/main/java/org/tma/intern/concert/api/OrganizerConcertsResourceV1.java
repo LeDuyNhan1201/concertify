@@ -21,13 +21,14 @@ import org.jboss.resteasy.reactive.RestResponse;
 import org.tma.intern.common.base.BaseResource;
 import org.tma.intern.common.dto.CommonResponse;
 import org.tma.intern.common.dto.PageResponse;
+import org.tma.intern.common.type.identity.IdentityRole;
 import org.tma.intern.concert.dto.ConcertRequest;
 import org.tma.intern.concert.dto.ConcertResponse;
 import org.tma.intern.concert.service.ConcertService;
 
 import java.util.List;
 
-@Path("/v1")
+@Path("/v1/organizer/concerts")
 @SecuritySchemes(value = {
     @SecurityScheme(securitySchemeName = "bearerToken",
         type = SecuritySchemeType.HTTP,
@@ -42,39 +43,13 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class ConcertsResourceV1 extends BaseResource {
+public class OrganizerConcertsResourceV1 extends BaseResource {
 
     ConcertService concertService;
 
-    @RolesAllowed("concert:create")
-    @POST
-    @Path("")
-    @Operation(summary = "Create concert", description = "API to create a new concert.")
-    @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Uni<RestResponse<CommonResponse<String>>> create(ConcertRequest.Body body) {
-        return concertService.create(body).onItem().transform(id ->
-            RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
-                .message(locale.getMessage("Action.Success", "Create", "concert"))
-                .data(id).build()
-            ).build());
-    }
-
-    @RolesAllowed("concert:edit")
-    @PUT
-    @Path("/{id}")
-    @Operation(summary = "Update concert", description = "API to update an exist concert by id.")
-    @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Uni<RestResponse<CommonResponse<String>>> update(@PathParam("id") String id, ConcertRequest.Body body) {
-        checkRegion();
-        return concertService.update(id, body).onItem().transform(resultId ->
-            RestResponse.ResponseBuilder.ok(CommonResponse.<String>builder()
-                .message(locale.getMessage("Action.Success", "Update", "concert"))
-                .data(id).build()
-            ).build());
-
-    }
+    static final String CREATE_ROLE = "concert:create";
+    static final String UPDATE_ROLE = "concert:edit";
+    static final String VIEW_ROLE = "concert:view";
 
     @RolesAllowed("global_admin")
     @PATCH
@@ -90,12 +65,46 @@ public class ConcertsResourceV1 extends BaseResource {
 
     }
 
-    @RolesAllowed("concert:edit")
+    @RolesAllowed(CREATE_ROLE) // Only organizers
+    @POST
+    @Path("")
+    @Operation(summary = "Create concert", description = "API to create a new concert.")
+    @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Uni<RestResponse<CommonResponse<String>>> create(ConcertRequest.Info info) {
+        hasOnlyRole(IdentityRole.ORGANIZER);
+        return concertService.create(info).onItem().transform(id ->
+            RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
+                .message(locale.getMessage("Action.Success", "Create", "concert"))
+                .data(id).build()
+            ).build());
+    }
+
+    @RolesAllowed(UPDATE_ROLE) // Only organizers
+    @PUT
+    @Path("/{id}")
+    @Operation(summary = "Update concert", description = "API to update an exist concert by id.")
+    @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Uni<RestResponse<CommonResponse<String>>> update(@PathParam("id") String id, ConcertRequest.Info info) {
+        // Check owner of concert
+        hasOnlyRole(IdentityRole.ORGANIZER);
+        return concertService.update(id, info).onItem().transform(resultId ->
+            RestResponse.ResponseBuilder.ok(CommonResponse.<String>builder()
+                .message(locale.getMessage("Action.Success", "Update", "concert"))
+                .data(id).build()
+            ).build());
+
+    }
+
+    @RolesAllowed(UPDATE_ROLE) // Only organizers
     @DELETE
     @Path("/{id}")
     @Operation(summary = "Delete concert", description = "API to soft delete a concert by id.")
     @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
     public Uni<RestResponse<CommonResponse<String>>> softDelete(@PathParam("id") String id) {
+        // Check owner of concert
+        hasOnlyRole(IdentityRole.ORGANIZER);
         return concertService.softDelete(id).onItem().transform(resultId ->
             RestResponse.ResponseBuilder.ok(CommonResponse.<String>builder()
                 .message(locale.getMessage("Action.Success", "Soft delete", "concert"))
@@ -103,27 +112,30 @@ public class ConcertsResourceV1 extends BaseResource {
             ).build());
     }
 
-    @RolesAllowed("concert:view")
+    @RolesAllowed(VIEW_ROLE) // Only organizers
     @GET
     @Path("/{id}")
     @NoCache
-    @Operation(summary = "Get concert details", description = "API to get details of a concert by id.")
-    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = ConcertResponse.Detail.class)))
-    public Uni<RestResponse<CommonResponse<ConcertResponse.Detail>>> details(@PathParam("id") String id) {
-        return concertService.findById(id).onItem().transform(concert ->
-            RestResponse.ResponseBuilder.ok(CommonResponse.<ConcertResponse.Detail>builder().data(concert).build()).build());
+    @Operation(summary = "Get my concert details", description = "API to get details of a concert of mine by id.")
+    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = ConcertResponse.DetailsWithSeats.class)))
+    public Uni<RestResponse<CommonResponse<ConcertResponse.DetailsWithSeats>>> details(@PathParam("id") String id) {
+        // Check owner of concert
+        hasOnlyRole(IdentityRole.ORGANIZER);
+        return concertService.details(id).onItem().transform(concert ->
+            RestResponse.ResponseBuilder.ok(CommonResponse.<ConcertResponse.DetailsWithSeats>builder().data(concert).build()).build());
     }
 
-    @RolesAllowed("concert:view")
+    @RolesAllowed(VIEW_ROLE) // Only organizers
     @GET
     @Path("")
     @NoCache
-    @Operation(summary = "Get concerts page", description = "API to get a page of concerts by offset & limit.")
+    @Operation(summary = "Search my concerts", description = "API to search my concerts.")
     @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = PageResponse.class)))
-    public Uni<RestResponse<PageResponse<ConcertResponse.Preview>>> paging(
+    public Uni<RestResponse<PageResponse<ConcertResponse.Preview>>> myConcerts(
         @QueryParam("offset") int offset,
         @QueryParam("limit") int limit) {
-        return concertService.findAll(offset, limit).map(page -> RestResponse.ResponseBuilder.ok(page).build());
+        hasOnlyRole(IdentityRole.ORGANIZER);
+        return concertService.myConcerts(offset, limit).map(page -> RestResponse.ResponseBuilder.ok(page).build());
     }
 
     @GET

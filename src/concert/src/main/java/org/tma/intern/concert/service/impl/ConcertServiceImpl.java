@@ -1,5 +1,6 @@
 package org.tma.intern.concert.service.impl;
 
+import com.mongodb.client.model.Filters;
 import io.quarkus.panache.common.Page;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
@@ -48,9 +49,9 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
     static public String ROLLBACK_FAILED_MESSAGE = "Rollback failed: could not {} {}";
 
     @Override
-    public Uni<String> create(ConcertRequest.Body request) {
+    public Uni<String> create(ConcertRequest.Info request) {
         Concert concert = concertMapper.toEntity(request);
-        concert.setRegion(Region.valueOf(locale.getCountry()));
+        concert.setRegion(identityContext.getRegion());
         concert.setCreatedAt(Instant.now());
         concert.setCreatedBy(identityContext.getClaim("sub"));
         return concertRepository.persist(concert).flatMap(this::generateSeatsOrRollback)
@@ -60,11 +61,12 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
     }
 
     @Override
-    public Uni<String> update(String id, ConcertRequest.Body request) {
+    public Uni<String> update(String id, ConcertRequest.Info request) {
         return concertRepository.findById(StringHelper.safeParse(id))
             .onItem().ifNull().failWith(() ->
                 new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, new NullPointerException(), "concert")
-            ).flatMap(existingConcert -> {
+            ).invoke(concert -> checkRegion(concert.getRegion()))
+            .flatMap(existingConcert -> {
                 existingConcert.setTitle(request.title());
                 existingConcert.setLocation(request.location());
                 existingConcert.setStartTime(TimeHelper.toInstant(request.startTime()));
@@ -95,7 +97,8 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
         return concertRepository.findById(StringHelper.safeParse(id))
             .onItem().ifNull().failWith(() ->
                 new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, new NullPointerException(), "concert")
-            ).flatMap(existingConcert -> {
+            ).invoke(concert -> checkRegion(concert.getRegion()))
+            .flatMap(existingConcert -> {
                 existingConcert.setDeleted(!existingConcert.isDeleted());
                 updateAuditing(existingConcert);
                 return concertRepository.persist(existingConcert).map(saved -> saved.getId().toHexString());
@@ -105,22 +108,50 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
     }
 
     @Override
-    public Uni<ConcertResponse.Detail> findById(String id) {
+    public Uni<ConcertResponse.PreviewWithSeats> preview(String id) {
         return concertRepository.findById(StringHelper.safeParse(id))
             .onItem().ifNull().failWith(() ->
-                new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, new NullPointerException(), "concert")
-            ).map(concertMapper::toDetailDto).flatMap(detail ->
+                new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, new NullPointerException(), "Concert")
+            ).invoke(concert -> checkRegion(concert.getRegion()))
+            .map(concertMapper::toPreviewWithSeatsDto).flatMap(detail ->
                 seatService.findByConcertId(detail.getId()).invoke(detail::setSeats).replaceWith(detail)
             ).onFailure().transform(error ->
-                new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, error, "concert")
+                new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, error, "Concert")
             );
     }
 
     @Override
-    public Uni<PageResponse<ConcertResponse.Preview>> findAll(int offset, int limit) {
+    public Uni<ConcertResponse.DetailsWithSeats> details(String id) {
+        return concertRepository.findById(StringHelper.safeParse(id))
+            .onItem().ifNull().failWith(() ->
+                new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, new NullPointerException(), "Concert")
+            ).invoke(concert -> checkOwner(concert.getCreatedBy()))
+            .map(concertMapper::toDetailsWithSeatsDto).flatMap(detail ->
+                seatService.findByConcertId(detail.getId()).invoke(detail::setSeats).replaceWith(detail)
+            ).onFailure().transform(error ->
+                new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, error, "Concert")
+            );
+    }
+
+    @Override
+    public Uni<PageResponse<ConcertResponse.Preview>> search(int offset, int limit) {
         return Uni.combine().all().unis(
-            concertRepository.find("is_deleted", false).page(Page.of(offset, limit)).list(),
-            concertRepository.count("is_deleted", false)
+            concertRepository.find("deleted", false).page(Page.of(offset, limit)).list(),
+            concertRepository.count("deleted", false)
+        ).asTuple().map(tuple -> PageResponse.of(
+            tuple.getItem1().stream().map(concertMapper::toPreviewDto).toList(), offset, limit, tuple.getItem2()
+        ));
+    }
+
+    @Override
+    public Uni<PageResponse<ConcertResponse.Preview>> myConcerts(int offset, int limit) {
+        var query = Filters.and(
+            Filters.eq("created_by", identityContext.getClaim("sub")),
+            Filters.eq("deleted", false)
+        );
+        return Uni.combine().all().unis(
+            concertRepository.find(query).page(Page.of(offset, limit)).list(),
+            concertRepository.count(query)
         ).asTuple().map(tuple -> PageResponse.of(
             tuple.getItem1().stream().map(concertMapper::toPreviewDto).toList(), offset, limit, tuple.getItem2()
         ));
@@ -137,7 +168,7 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
             .flatMap(concertList ->
                     Multi.createFrom().iterable(concertList)
                         .onItem().transformToUniAndMerge(concert ->
-                                seatService.generateSeatsForConcert(concert.getId())
+                                seatService.generateForConcert(concert.getId())
 //                            .onItem().invoke(seatIds ->
 //                                seatIds.forEach(id ->
 //                                    log.info("Seat {} is created.", id)
@@ -159,7 +190,7 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
 
     /* --------- Private methods for [CREATE] --------- */
     private Uni<String> generateSeatsOrRollback(Concert concert) {
-        return seatService.generateSeatsForConcert(concert.getId()).replaceWith(concert.getId().toHexString())
+        return seatService.generateForConcert(concert.getId()).replaceWith(concert.getId().toHexString())
             .onFailure().call(error -> concertRepository.deleteById(concert.getId())
                 .onFailure().invoke(rollbackError ->
                     log.error("Rollback create seats Error: {}", rollbackError.getMessage(), rollbackError)
@@ -188,7 +219,6 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
 
     /* --------- Private methods for [UPDATE] --------- */
     public void updateAuditing(Concert concert) {
-        concert.setVersion(concert.getVersion() + 1);
         concert.setUpdatedAt(Instant.now());
         concert.setUpdatedBy(identityContext.getClaim("sub"));
     }

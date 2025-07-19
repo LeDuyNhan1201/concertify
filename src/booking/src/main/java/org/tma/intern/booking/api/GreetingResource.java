@@ -12,7 +12,7 @@ import org.jboss.resteasy.reactive.RestStreamElementType;
 import org.tma.intern.common.contract.Greeting;
 import org.tma.intern.common.locale.LocaleProvider;
 
-@Path("/hello")
+@Path("/v1/hello")
 public class GreetingResource {
 
     private final LocaleProvider locale;

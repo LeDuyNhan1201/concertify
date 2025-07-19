@@ -1,5 +1,9 @@
 package org.tma.intern.concert.service.impl;
 
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Indexes;
+import com.mongodb.client.model.Updates;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.core.Response;
@@ -12,13 +16,16 @@ import org.tma.intern.common.base.BaseService;
 import org.tma.intern.common.exception.AppError;
 import org.tma.intern.common.exception.HttpException;
 import org.tma.intern.common.helper.StringHelper;
+import org.tma.intern.common.type.SeatStatus;
 import org.tma.intern.common.type.SeatType;
 import org.tma.intern.concert.data.Seat;
 import org.tma.intern.concert.dto.ConcertMapper;
+import org.tma.intern.concert.dto.ConcertRequest;
 import org.tma.intern.concert.dto.ConcertResponse;
 import org.tma.intern.concert.repository.SeatRepository;
 import org.tma.intern.concert.service.SeatService;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,13 +40,18 @@ public class SeatServiceImpl extends BaseService implements SeatService {
 
     ConcertMapper concertMapper;
 
-    @Override
-    public Uni<Boolean> isAvailable(String id) {
-        return seatRepository.findById(StringHelper.safeParse(id)).map(Seat::isAvailable);
+    record SeatLayout(SeatType type, int rows, int seatsPerRow, double price) {
     }
 
     @Override
-    public Uni<List<String>> generateSeatsForConcert(ObjectId concertId) {
+    public Uni<Boolean> checkAllStatusMatchById(SeatStatus status, List<String> ids, String concertId) {
+        return findSeatsById(ids.stream().map(StringHelper::safeParse).toList(), concertId).map(seats ->
+            seats.stream().allMatch(seat -> seat.getStatus() == status)
+        );
+    }
+
+    @Override
+    public Uni<List<String>> generateForConcert(ObjectId concertId) {
         List<Seat> seats = buildSeatsFromLayouts(concertId, predefinedSeatLayouts());
         return seatRepository.persist(seats)
             .replaceWith(seats.stream().map(seat -> seat.getId().toHexString()).toList())
@@ -49,25 +61,80 @@ public class SeatServiceImpl extends BaseService implements SeatService {
     }
 
     @Override
-    public Uni<String> update(String id) {
-        return seatRepository.findById(StringHelper.safeParse(id))
-            .onItem().ifNull().failWith(() ->
-                new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, new NullPointerException(), "concert")
-            ).flatMap(existingSeat -> {
-                existingSeat.setAvailable(!existingSeat.isAvailable());
-                updateAuditing(existingSeat);
-                return seatRepository.persist(existingSeat).map(saved -> saved.getId().toHexString());
-            }).onFailure().transform(error ->
-                new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, error, "Approve", "concert")
-            );
+    public Uni<List<String>> hold(ConcertRequest.SeatIds body, String concertId) {
+        return checkAllStatusMatchById(SeatStatus.AVAILABLE, body.ids(), concertId).flatMap(
+            result -> {
+                if (result)
+                    return updateStatus(SeatStatus.HELD, body.ids().stream().map(StringHelper::safeParse).toList(), concertId, true)
+                        .onFailure().transform(error ->
+                            new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, error, "Update", "seats status")
+                        );
+                else return Uni.createFrom().failure(() ->
+                    new HttpException(AppError.ACTION_FAILED, Response.Status.CONFLICT,
+                        new RuntimeException("Seats have been hold"), "Hold", "seats")
+                );
+
+            }
+        );
+    }
+
+    @Override
+    public Uni<List<String>> book(ConcertRequest.SeatIds body, String concertId) {
+        return checkAllStatusMatchById(SeatStatus.HELD, body.ids(), concertId).flatMap(
+            result -> {
+                if (result)
+                    return updateStatus(SeatStatus.BOOKED, body.ids().stream().map(StringHelper::safeParse).toList(), concertId, false)
+                        .onFailure().transform(error ->
+                            new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, error, "Update", "seats status")
+                        );
+                else return Uni.createFrom().failure(() ->
+                    new HttpException(AppError.ACTION_FAILED, Response.Status.CONFLICT,
+                        new RuntimeException("Seats have been booked or you must hold first"), "Hold", "seats")
+                );
+
+            }
+        );
+    }
+
+    @Override
+    public Uni<List<String>> cancel(ConcertRequest.SeatIds body, String concertId) {
+        return checkAllStatusMatchById(SeatStatus.BOOKED, body.ids(), concertId).flatMap(
+            result -> {
+                if (result)
+                    return updateStatus(SeatStatus.AVAILABLE, body.ids().stream().map(StringHelper::safeParse).toList(), concertId, false)
+                        .onFailure().transform(error ->
+                            new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, error, "Update", "seats status")
+                        );
+                else return Uni.createFrom().failure(() ->
+                    new HttpException(AppError.ACTION_FAILED, Response.Status.CONFLICT,
+                        new RuntimeException("Seats are already available"), "Hold", "seats")
+                );
+
+            }
+        );
+    }
+
+    @Override
+    public Uni<Long> release(Duration timeout) {
+        return seatRepository.update(Updates.combine(
+            Updates.set("status", SeatStatus.AVAILABLE),
+            Updates.unset("held_at"),
+            Updates.unset("held_by")
+        )).where(Filters.and(
+            Filters.eq("status", SeatStatus.HELD),
+            Filters.lt("held_at", Instant.now().minus(timeout))
+        ));
     }
 
     @Override
     public Uni<List<ConcertResponse.PreviewSeat>> findByConcertId(String concertId) {
-        return seatRepository.find("concert_id", concertId).list().map(this::mapToPreviewSeats);
-    }
-
-    record SeatLayout(SeatType type, int rows, int seatsPerRow, double price) {
+        return seatRepository.find(
+            Filters.and(
+                Filters.eq("concert_id", concertId)/*,
+            Filters.gte("price", minPrice), // price >= minPrice && price <= maxPrice
+            Filters.lte("price", maxPrice)*/),
+            Indexes.ascending("status")
+        ).list().map(this::mapToPreviewSeats);
     }
 
     /* --------- Private methods for [CREATE] --------- */
@@ -88,22 +155,39 @@ public class SeatServiceImpl extends BaseService implements SeatService {
                     seats.add(Seat.builder()
                         .id(new ObjectId())
                         .concertId(concertId.toHexString())
-                        .name(layout.type() + "-R" + row + "-S" + num)
+                        .code(layout.type() + "-R" + row + "-S" + num)
                         .type(layout.type())
                         .price(layout.price())
-                        .createdBy(identityContext.getClaim("sub"))
                         .build());
         return seats;
     }
 
     /* --------- Private methods for [UPDATE] --------- */
-    public void updateAuditing(Seat seat) {
-        seat.setVersion(seat.getVersion() + 1);
-        seat.setUpdatedAt(Instant.now());
-        seat.setUpdatedBy(identityContext.getClaim("sub"));
+    private Uni<List<String>> updateStatus(SeatStatus status, List<ObjectId> ids, String concertId, boolean isHolding) {
+        var updateCondition = isHolding ? Updates.combine(
+            Updates.set("status", status),
+            Updates.set("held_at", Instant.now()),
+            Updates.set("held_by", identityContext.getClaim("sub"))
+        ) : Updates.combine(
+            Updates.set("status", status),
+            Updates.unset("held_at"),
+            Updates.unset("held_by")
+        );
+        return Multi.createFrom().iterable(ids).onItem().transformToUniAndMerge(id ->
+            seatRepository.update(updateCondition).where(
+                Filters.and(
+                    Filters.eq("concert_id", concertId),
+                    Filters.eq("_id", id)
+                )
+            ).map(updatedCount -> updatedCount > 0 ? id.toHexString() : null)
+        ).collect().asList();
     }
 
     /* --------- Private methods for [FIND] --------- */
+    private Uni<List<Seat>> findSeatsById(List<ObjectId> ids, String concertId) {
+        return seatRepository.find("_id in ?1 and concert_id = ?2", ids, concertId).list();
+    }
+
     private List<ConcertResponse.PreviewSeat> mapToPreviewSeats(List<Seat> seats) {
         return seats.stream().map(concertMapper::toPreviewDto).toList();
     }

@@ -15,8 +15,10 @@ public interface ConcertMapper extends BaseMapper {
     ConcertResponse.Preview toPreviewDto(Concert entity);
 
     @Mapping(source = "createdBy", target = "ownerId")
-    ConcertResponse.Detail toDetailDto(Concert entity);
+    ConcertResponse.DetailsWithSeats toDetailsWithSeatsDto(Concert entity);
 
-    Concert toEntity(ConcertRequest.Body dto);
+    ConcertResponse.PreviewWithSeats toPreviewWithSeatsDto(Concert entity);
+
+    Concert toEntity(ConcertRequest.Info dto);
 
 }

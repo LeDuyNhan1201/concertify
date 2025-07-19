@@ -16,6 +16,7 @@ ext {
 
             quarkusArc              : "io.quarkus:quarkus-arc",
             quarkusRest             : "io.quarkus:quarkus-rest",
+            quarkusScheduler        : "io.quarkus:quarkus-scheduler",
             quarkusRestClient       : "io.quarkus:quarkus-resteasy-client",
             restClientMunity        : "io.quarkus:quarkus-resteasy-client-mutiny",
             quarkusRestClientJackson: "io.quarkus:quarkus-resteasy-client-jackson",

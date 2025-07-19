@@ -14,7 +14,22 @@ public class BookingResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    public static class Detail {
+    public static class Details {
+        String id;
+        String concertId;
+        String concertOwnerId;
+        String ownerId;
+        BookingStatus status;
+        List<BookingItemResponse.Detail> items;
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @FieldDefaults(level = AccessLevel.PRIVATE)
+    public static class Preview {
         String id;
         String concertId;
         String concertOwnerId;

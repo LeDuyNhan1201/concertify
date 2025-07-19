@@ -2,6 +2,8 @@ package org.tma.intern.auth.data;
 
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
+import org.tma.intern.common.type.identity.ClientScope;
+import org.tma.intern.common.type.identity.IdentityClient;
 import org.tma.intern.common.type.identity.IdentityGroup;
 import org.tma.intern.common.type.Region;
 
@@ -21,4 +23,5 @@ public interface IdentityAdminClient {
 
     Multi<String> createUsers(List<IdentityUser> entities, IdentityGroup groups, Region region);
 
+    Uni<String> assignClientRole(IdentityClient client, ClientScope scope, String realmRoleName);
 }

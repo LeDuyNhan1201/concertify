@@ -23,7 +23,7 @@ import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 @QuarkusTest
 public class KafkaTest {
 
-    @TestHTTPResource("/hello/consumed")
+    @TestHTTPResource("/v1/hello/consumed")
     URI consumedGreetings;
 
     @Test
@@ -43,7 +43,7 @@ public class KafkaTest {
 
         // check if, after at most 5 seconds, we have at least 2 items collected, and they are what we expect
         await().atMost(5, SECONDS).until(() -> received.size() >= 2);
-        assertThat(received, Matchers.hasItems("Hello, Ben!!!"));
+        assertThat(received, Matchers.hasItems("Hello, Ben !!!"));
         source.close();
 
         // shutdown the executor that is feeding the `MovieResource`
@@ -57,13 +57,13 @@ public class KafkaTest {
             while (true) {
                 given()
                     .when()
-                    .get("/hello")
+                    .get("/v1/hello")
                     .then()
                     .statusCode(200);
 
                 given()
                     .when()
-                    .get("/hello")
+                    .get("/v1/hello")
                     .then()
                     .statusCode(200);
 

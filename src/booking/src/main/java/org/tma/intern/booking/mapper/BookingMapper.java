@@ -12,7 +12,10 @@ import org.tma.intern.common.base.BaseMapper;
 public interface BookingMapper extends BaseMapper {
 
     @Mapping(source = "createdBy", target = "ownerId")
-    BookingResponse.Detail toDto(Booking entity);
+    BookingResponse.Details toDetailsDto(Booking entity);
+
+    @Mapping(source = "createdBy", target = "ownerId")
+    BookingResponse.Preview toPreviewDto(Booking entity);
 
     Booking toEntity(BookingRequest.Body dto);
 

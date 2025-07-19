@@ -1,5 +1,6 @@
 package org.tma.intern.booking.service.impl;
 
+import com.mongodb.client.model.Filters;
 import io.quarkus.panache.common.Page;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -96,7 +97,8 @@ public class BookingServiceImpl extends BaseService implements BookingService {
         return bookingRepository.findById(new ObjectId(id))
             .onItem().ifNull().failWith(() ->
                 new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, new NullPointerException(), "booking")
-            ).flatMap(existingBooking -> {
+            ).invoke(concert -> checkOwner(concert.getCreatedBy()))
+            .flatMap(existingBooking -> {
                 // Step 1: Create new booking items
                 return createNewItems(existingBooking, request).flatMap(createdItemIds ->
                     // Step 2: Delete requested items
@@ -116,7 +118,8 @@ public class BookingServiceImpl extends BaseService implements BookingService {
         return bookingRepository.findById(StringHelper.safeParse(id))
             .onItem().ifNull().failWith(() ->
                 new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, new NullPointerException(), "booking")
-            ).flatMap(existingBooking -> {
+            ).invoke(concert -> checkOwner(concert.getConcertOwnerId()))
+            .flatMap(existingBooking -> {
                 existingBooking.setStatus(status);
                 updateAuditing(existingBooking);
                 return bookingRepository.persist(existingBooking).map(saved -> saved.getId().toHexString());
@@ -130,7 +133,8 @@ public class BookingServiceImpl extends BaseService implements BookingService {
         return bookingRepository.findById(StringHelper.safeParse(id))
             .onItem().ifNull().failWith(() ->
                 new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, new NullPointerException(), "booking")
-            ).flatMap(existingBooking -> {
+            ).invoke(concert -> checkOwner(concert.getCreatedBy()))
+            .flatMap(existingBooking -> {
                 existingBooking.setDeleted(!existingBooking.isDeleted());
                 updateAuditing(existingBooking);
                 return bookingRepository.persist(existingBooking).map(saved -> saved.getId().toHexString());
@@ -144,15 +148,17 @@ public class BookingServiceImpl extends BaseService implements BookingService {
         return bookingRepository.findById(StringHelper.safeParse(id))
             .onItem().ifNull().failWith(() ->
                 new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, null, "booking")
-            ).flatMap(booking -> deleteBookingAndItems(StringHelper.safeParse(id), booking));
+            ).invoke(concert -> checkOwner(concert.getCreatedBy()))
+            .flatMap(booking -> deleteBookingAndItems(StringHelper.safeParse(id), booking));
     }
 
     @Override
-    public Uni<BookingResponse.Detail> findById(String id) {
+    public Uni<BookingResponse.Details> details(String id) {
         return bookingRepository.findById(new ObjectId(id))
             .onItem().ifNull().failWith(() ->
                 new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, new NullPointerException(), "booking")
-            ).map(bookingMapper::toDto).flatMap(dto ->
+            ).invoke(booking -> checkOwner(booking.getConcertOwnerId()))
+            .map(bookingMapper::toDetailsDto).flatMap(dto ->
                 bookingItemService.findAllByBookingId(id).invoke(dto::setItems).replaceWith(dto)
             ).onFailure().transform(error ->
                 new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, error, "Booking")
@@ -160,10 +166,39 @@ public class BookingServiceImpl extends BaseService implements BookingService {
     }
 
     @Override
-    public Uni<PageResponse<BookingResponse.Detail>> findAll(int index, int limit) {
+    public Uni<BookingResponse.Preview> preview(String id) {
+        return bookingRepository.findById(new ObjectId(id))
+            .onItem().ifNull().failWith(() ->
+                new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, new NullPointerException(), "booking")
+            ).invoke(booking -> checkOwner(booking.getConcertOwnerId()))
+            .map(bookingMapper::toPreviewDto).flatMap(dto ->
+                bookingItemService.findAllByBookingId(id).invoke(dto::setItems).replaceWith(dto)
+            ).onFailure().transform(error ->
+                new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, error, "Booking")
+            );
+    }
+
+    @Override
+    public Uni<PageResponse<BookingResponse.Details>> search(int index, int limit) {
         return Uni.combine().all().unis(
             bookingRepository.find("is_deleted", false).page(Page.of(index, limit)).list(),
             bookingRepository.count("is_deleted", false)
+        ).asTuple().flatMap(tuple -> {
+            List<Booking> bookings = tuple.getItem1();
+            Long total = tuple.getItem2();
+            return toDetailResponses(bookings).map(details -> PageResponse.of(details, index, limit, total));
+        }).replaceWith(PageResponse.of(new ArrayList<>(), index, limit, 0));
+    }
+
+    @Override
+    public Uni<PageResponse<BookingResponse.Details>> bookingsOfMyConcerts(int index, int limit) {
+        var query = Filters.and(
+            Filters.eq("concert_owner_id", identityContext.getClaim("sub")),
+            Filters.eq("deleted", false)
+        );
+        return Uni.combine().all().unis(
+            bookingRepository.find(query).page(Page.of(index, limit)).list(),
+            bookingRepository.count(query)
         ).asTuple().flatMap(tuple -> {
             List<Booking> bookings = tuple.getItem1();
             Long total = tuple.getItem2();
@@ -279,7 +314,6 @@ public class BookingServiceImpl extends BaseService implements BookingService {
     }
 
     public void updateAuditing(Booking booking) {
-        booking.setVersion(booking.getVersion() + 1);
         booking.setUpdatedAt(Instant.now());
         booking.setUpdatedBy(identityContext.getClaim("sub"));
     }
@@ -313,16 +347,16 @@ public class BookingServiceImpl extends BaseService implements BookingService {
     }
 
     /* --------- Private methods for [FIND] --------- */
-    private Uni<List<BookingResponse.Detail>> toDetailResponses(List<Booking> bookings) {
-        List<Uni<BookingResponse.Detail>> detailUnis = bookings.stream().map(this::toDetailResponse).toList();
+    private Uni<List<BookingResponse.Details>> toDetailResponses(List<Booking> bookings) {
+        List<Uni<BookingResponse.Details>> detailUnis = bookings.stream().map(this::toDetailResponse).toList();
         return Uni.combine().all().unis(detailUnis).with(list ->
-            list.stream().map(BookingResponse.Detail.class::cast).toList()
+            list.stream().map(BookingResponse.Details.class::cast).toList()
         );
     }
 
-    private Uni<BookingResponse.Detail> toDetailResponse(Booking booking) {
+    private Uni<BookingResponse.Details> toDetailResponse(Booking booking) {
         return bookingItemService.findAllByBookingId(booking.getId().toHexString()).map(items -> {
-            BookingResponse.Detail dto = bookingMapper.toDto(booking);
+            BookingResponse.Details dto = bookingMapper.toDetailsDto(booking);
             dto.setItems(items);
             return dto;
         });

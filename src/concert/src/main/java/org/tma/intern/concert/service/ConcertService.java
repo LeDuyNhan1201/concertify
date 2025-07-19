@@ -9,17 +9,21 @@ import java.util.List;
 
 public interface ConcertService {
 
-    Uni<String> create(ConcertRequest.Body request);
+    Uni<String> create(ConcertRequest.Info request);
 
-    Uni<String> update(String id, ConcertRequest.Body request);
+    Uni<String> update(String id, ConcertRequest.Info request);
 
     Uni<String> approve(String id);
 
     Uni<String> softDelete(String id);
 
-    Uni<ConcertResponse.Detail> findById(String id);
+    Uni<ConcertResponse.PreviewWithSeats> preview(String id);
 
-    Uni<PageResponse<ConcertResponse.Preview>> findAll(int offset, int limit);
+    Uni<ConcertResponse.DetailsWithSeats> details(String id);
+
+    Uni<PageResponse<ConcertResponse.Preview>> search(int offset, int limit);
+
+    Uni<PageResponse<ConcertResponse.Preview>> myConcerts(int offset, int limit);
 
     Uni<List<String>> seedData(int count);
 

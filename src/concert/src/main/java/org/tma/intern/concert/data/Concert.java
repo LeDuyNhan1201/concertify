@@ -36,6 +36,6 @@ public class Concert extends AuditCollection {
 
     @BsonProperty(value = "is_approved")
     @Builder.Default
-    boolean isApproved = false;
+    boolean isApproved = true;
 
 }
