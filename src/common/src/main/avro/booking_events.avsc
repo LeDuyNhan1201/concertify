@@ -1,0 +1,57 @@
+[
+  {
+    "namespace": "org.tma.intern.common.contract.event",
+    "type": "record",
+    "name": "BookingItemCreated",
+    "fields": [
+      { "name": "seatId", "type": "string" },
+      { "name": "seatCode", "type": "string" },
+      { "name": "price", "type": "double" }
+    ]
+  },
+  {
+    "namespace": "org.tma.intern.common.contract.event",
+    "type": "record",
+    "name": "BookingItemUpdated",
+    "fields": [
+      { "name": "seatId", "type": "string" }
+    ]
+  },
+  {
+    "namespace": "org.tma.intern.common.contract.event",
+    "type": "record",
+    "name": "BookingCreated",
+    "fields": [
+      { "name": "concertId", "type": "string" },
+      { "name": "concertOwnerId", "type": "string" },
+      {
+        "name": "items",
+        "type": {
+          "type": "array",
+          "items": "org.tma.intern.common.contract.event.BookingItemCreated"
+        }
+      }
+    ]
+  },
+  {
+    "namespace": "org.tma.intern.common.contract.event",
+    "type": "record",
+    "name": "BookingUpdated",
+    "fields": [
+      {
+        "name": "newItems",
+        "type": {
+          "type": "array",
+          "items": "org.tma.intern.common.contract.event.BookingItemUpdated"
+        }
+      },
+      {
+        "name": "oldItems",
+        "type": {
+          "type": "array",
+          "items": "org.tma.intern.common.contract.event.BookingItemUpdated"
+        }
+      }
+    ]
+  }
+]
