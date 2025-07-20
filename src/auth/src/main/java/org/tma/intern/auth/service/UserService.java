@@ -12,6 +12,8 @@ public interface UserService {
 
     Uni<UserResponse.Detail> findByEmail(String email);
 
+    Uni<String> signUp(UserRequest.Registration request);
+
     Uni<String> create(UserRequest.Creation request);
 
     Uni<String> createGroup(UserRequest.GroupCreation request);

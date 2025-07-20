@@ -30,8 +30,8 @@ public class BaseService {
             throw new HttpException(AppError.REGION_INVALID, Response.Status.FORBIDDEN, null);
     }
 
-    protected void checkOwner(String id) {
-        if (!identityContext.getClaim("sub").equals(id))
+    protected void checkOwner(String email) {
+        if (!identityContext.getPrincipleName().equals(email))
             throw new HttpException(AppError.CANNOT_ACCESS, Response.Status.FORBIDDEN, null);
     }
 

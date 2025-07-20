@@ -3,6 +3,7 @@ package org.tma.intern.auth.api;
 import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Uni;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -47,6 +48,19 @@ public class UsersResourceV1 extends BaseResource {
 
     UserService userService;
 
+    @POST
+    @Path("/sign-up")
+    @Operation(summary = "Sign up user", description = "Sign up a new user")
+    @APIResponse(responseCode = "501", description = "Failed", content = @Content(schema = @Schema(implementation = String.class)))
+    @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    public Uni<RestResponse<CommonResponse<String>>> signUp(@Valid UserRequest.Registration body) {
+        return userService.signUp(body).onItem().transform(userId ->
+            RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
+                .message(locale.getMessage("Action.Success", "Sign up", "user"))
+                .data(userId).build()
+            ).build());
+    }
+
     @RolesAllowed(ROLE_GLOBAL_ADMIN)
     @POST
     @Path("")
@@ -61,7 +75,7 @@ public class UsersResourceV1 extends BaseResource {
             ).build());
     }
 
-    @Authenticated
+    @RolesAllowed(ROLE_GLOBAL_ADMIN)
     @GET
     @Path("/{email}")
     @NoCache
@@ -92,24 +106,34 @@ public class UsersResourceV1 extends BaseResource {
     @GET
     @Path("/me")
     @NoCache
-    @Operation(summary = "Get current username", description = "API to get name of current user")
+    @Operation(summary = "Get current user", description = "API to get name of current user")
     @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     public Uni<RestResponse<UserResponse.Detail>> me() {
         return Uni.createFrom().item(() -> RestResponse.ResponseBuilder.ok(UserResponse.Detail.builder()
             .id(identityContext.getClaim("sub"))
             .email(identityContext.getPrincipleName())
-            .roles(identityContext.getRoles()).build()
+            .roles(identityContext.getRoles())
+            .region(identityContext.getRegion())
+            .build()
         ).build());
     }
 
+    @RolesAllowed(ROLE_GLOBAL_ADMIN)
     @GET
-    @Path("/seed/{count}")
+    @Path("/seed")
     @NoCache
     @Operation(summary = "Seed users", description = "API to seed user with [Role]:user.")
     @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<Response> seedUsers(@PathParam("count") int count) {
-        return userService.seedUsers(count, IdentityGroup.CUSTOMERS, Region.US).map(userIds -> Response.ok(userIds).build());
+    public Uni<Response> seed(
+        @QueryParam("count") int count,
+        @QueryParam("group") String group,
+        @QueryParam("region") String region
+    ) {
+        return userService.seedUsers(count,
+            IdentityGroup.valueOf(group.toUpperCase()),
+            Region.valueOf(region.toUpperCase())
+        ).map(userIds -> Response.ok(userIds).build());
     }
 
 }

@@ -11,6 +11,8 @@ import java.util.List;
 
 public interface IdentityAdminClient {
 
+    Uni<List<String>> getAllUserEmailByGroup(IdentityGroup group, Region region);
+
     Multi<String> getRoles();
 
     Uni<String> createGroup(IdentityGroup group, Region region);

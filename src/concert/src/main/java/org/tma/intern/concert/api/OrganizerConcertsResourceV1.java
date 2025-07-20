@@ -21,6 +21,7 @@ import org.jboss.resteasy.reactive.RestResponse;
 import org.tma.intern.common.base.BaseResource;
 import org.tma.intern.common.dto.CommonResponse;
 import org.tma.intern.common.dto.PageResponse;
+import org.tma.intern.common.type.Region;
 import org.tma.intern.common.type.identity.IdentityRole;
 import org.tma.intern.concert.dto.ConcertRequest;
 import org.tma.intern.concert.dto.ConcertResponse;
@@ -47,11 +48,7 @@ public class OrganizerConcertsResourceV1 extends BaseResource {
 
     ConcertService concertService;
 
-    static final String CREATE_ROLE = "concert:create";
-    static final String UPDATE_ROLE = "concert:edit";
-    static final String VIEW_ROLE = "concert:view";
-
-    @RolesAllowed("global_admin")
+    @RolesAllowed(ROLE_GLOBAL_ADMIN)
     @PATCH
     @Path("/{id}/approve")
     @Operation(summary = "Approve concert", description = "API to approve an exist concert by id.")
@@ -138,13 +135,16 @@ public class OrganizerConcertsResourceV1 extends BaseResource {
         return concertService.myConcerts(offset, limit).map(page -> RestResponse.ResponseBuilder.ok(page).build());
     }
 
+    @RolesAllowed(ROLE_GLOBAL_ADMIN)
     @GET
-    @Path("/seed/{count}")
+    @Path("/seed")
     @NoCache
     @Operation(summary = "Seed concerts", description = "API to seed concerts with count.")
     @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = Integer.class)))
-    public Uni<RestResponse<CommonResponse<List<String>>>> seed(int count) {
-        return concertService.seedData(count).map(ids -> RestResponse.ok(CommonResponse.<List<String>>builder().data(ids).build()));
+    public Uni<RestResponse<CommonResponse<List<String>>>> seed(@QueryParam("count") int count, @QueryParam("region") String region) {
+        return concertService.seedData(count, Region.valueOf(region.toUpperCase())).map(ids ->
+            RestResponse.ok(CommonResponse.<List<String>>builder().data(ids).build())
+        );
     }
 
 }

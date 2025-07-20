@@ -12,4 +12,6 @@ public interface UserMapper extends BaseMapper {
 
     IdentityUser toEntity(UserRequest.Creation dto);
 
+    IdentityUser toEntity(UserRequest.Registration dto);
+
 }

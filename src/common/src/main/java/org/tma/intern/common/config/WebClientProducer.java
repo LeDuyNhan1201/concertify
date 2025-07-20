@@ -1,5 +1,7 @@
 package org.tma.intern.common.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.quarkus.arc.profile.IfBuildProfile;
 import io.vertx.core.net.PfxOptions;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.mutiny.core.Vertx;
@@ -12,15 +14,18 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @ApplicationScoped
 public class WebClientProducer {
 
-    @ConfigProperty(name = "%dev.quarkus.tls.ssl-tls.trust-store.p12.path")
+    @IfBuildProfile("dev")
+    @ConfigProperty(name = "%dev.quarkus.tls.ssl-tls.trust-store.p12.path", defaultValue = "")
     String truststorePath;
 
-    @ConfigProperty(name = "%dev.quarkus.tls.ssl-tls.trust-store.p12.password")
+    @IfBuildProfile("dev")
+    @ConfigProperty(name = "%dev.quarkus.tls.ssl-tls.trust-store.p12.password", defaultValue = "")
     String truststorePassword;
 
     @Produces
     @Singleton
-    public WebClient webClient(Vertx vertx) {
+    @IfBuildProfile("dev")
+    public WebClient authRestClient(Vertx vertx) {
         return WebClient.create(vertx, new WebClientOptions()
             .setSsl(true)
             .setPfxTrustOptions(new PfxOptions()
@@ -28,6 +33,20 @@ public class WebClientProducer {
                 .setPassword(truststorePassword))
             .setVerifyHost(true)
         );
+    }
+
+    @Produces
+    @Singleton
+    @IfBuildProfile("test")
+    public WebClient testAuthRestClient(Vertx vertx) {
+        return WebClient.create(vertx, new WebClientOptions());
+    }
+
+    @Produces
+    @Singleton
+    @IfBuildProfile("dev")
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 
 }

@@ -55,8 +55,13 @@ public class BookingServiceImpl extends BaseService implements BookingService {
 
     @NonFinal
     @Inject
-    @Channel("booking.created-out")
-    private Emitter<BookingCreated> bookingCreatedEventBus;
+    @Channel("booking.updated-out")
+    private Emitter<BookingCreated> bookingUpdatedEventBus;
+
+    @NonFinal
+    @Inject
+    @Channel("booking.deleted-out")
+    private Emitter<BookingCreated> bookingDeletedEventBus;
 
     Faker faker;
 
@@ -84,7 +89,7 @@ public class BookingServiceImpl extends BaseService implements BookingService {
 
                 return bookingRepository.persist(booking)
                     .flatMap(createdBooking -> bookingItemService.create(createdBooking.getId(), bookingItems)
-                        .chain(() -> sendBookingCreatedEvent(request, itemsCreatedEvent))
+//                        .chain(() -> sendBookingCreatedEvent(request, itemsCreatedEvent))
                         .onFailure().call(createdError -> rollbackCreateBooking(createdBooking.getId(), createdError))
                         .replaceWith(createdBooking.getId().toHexString())
                     );
@@ -234,16 +239,16 @@ public class BookingServiceImpl extends BaseService implements BookingService {
     }
 
     /* --------- Private methods for [CREATE] --------- */
-    private Uni<Void> sendBookingCreatedEvent(BookingRequest.Body request, List<BookingItemCreated> items) {
-        BookingCreated event = BookingCreated.newBuilder()
-            .setConcertId(request.concertId())
-            .setConcertOwnerId(request.concertOwnerId())
-            .setItems(items)
-            .build();
-
-        return Uni.createFrom().completionStage(() -> bookingCreatedEventBus.send(event))  // CompletableFuture<Void>
-            .invoke(() -> log.info("Booking created event sent successfully!"));
-    }
+//    private Uni<Void> sendBookingCreatedEvent(BookingRequest.Body request, List<BookingItemCreated> items) {
+//        BookingCreated event = BookingCreated.newBuilder()
+//            .setConcertId(request.concertId())
+//            .setConcertOwnerId(request.concertOwnerId())
+//            .setItems(items)
+//            .build();
+//
+//        return Uni.createFrom().completionStage(() -> bookingCreatedEventBus.send(event))  // CompletableFuture<Void>
+//            .invoke(() -> log.info("Booking created event sent successfully!"));
+//    }
 
     private Uni<Void> rollbackCreateBooking(ObjectId bookingId, Throwable createdError) {
         return bookingRepository.deleteById(bookingId)

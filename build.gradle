@@ -65,6 +65,7 @@ subprojects {
         implementation rootProject.ext.libs.quarkusJackson
         implementation rootProject.ext.libs.quarkusRest
         implementation rootProject.ext.libs.quarkusOidc
+        implementation rootProject.ext.libs.quarkusOidcClient
         implementation rootProject.ext.libs.keycloakAuthorization
         implementation rootProject.ext.libs.quarkusJackson
         implementation rootProject.ext.libs.swagger

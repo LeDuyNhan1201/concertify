@@ -78,6 +78,18 @@ public class KeycloakAdminClient implements IdentityAdminClient {
     }
 
     @Override
+    public Uni<List<String>> getAllUserEmailByGroup(IdentityGroup group, Region region) {
+        return Uni.createFrom().item(() -> {
+            Optional<GroupRepresentation> groupRepresentation = findGroupByPath(formatFullPathGroupName(group, region));
+            if (groupRepresentation.isEmpty()) {
+                log.warn("Group {} in region {} not found", group.type, region.country);
+                return new ArrayList<String>();
+            }
+            return getAllUsersInGroup(groupRepresentation.get().getId()).stream().map(UserRepresentation::getEmail).distinct().toList();
+        }).runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+    }
+
+    @Override
     public Multi<String> getRoles() {
         return Multi.createFrom().items(() ->
             keycloak.realm(REALM).roles().list().stream().map(RoleRepresentation::getName)
@@ -173,6 +185,26 @@ public class KeycloakAdminClient implements IdentityAdminClient {
             log.error("Failed to fetch user in Keycloak: {}", email, e);
             throw new RuntimeException(e);
         }
+    }
+
+    private List<UserRepresentation> getAllUsersInGroup(String groupId) {
+        List<UserRepresentation> users = new ArrayList<>();
+        int first = 0;
+        int max = 100;
+
+        while (true) {
+            List<UserRepresentation> batch = keycloak.realm(REALM)
+                .groups()
+                .group(groupId)
+                .members(first, max);
+
+            if (batch.isEmpty()) break;
+
+            users.addAll(batch);
+            first += batch.size();
+        }
+
+        return users;
     }
 
     /* --------- Private methods for [KEYCLOAK GROUPS] --------- */

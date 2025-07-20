@@ -2,6 +2,7 @@ package org.tma.intern.concert.service;
 
 import io.smallrye.mutiny.Uni;
 import org.tma.intern.common.dto.PageResponse;
+import org.tma.intern.common.type.Region;
 import org.tma.intern.concert.dto.ConcertRequest;
 import org.tma.intern.concert.dto.ConcertResponse;
 
@@ -25,6 +26,6 @@ public interface ConcertService {
 
     Uni<PageResponse<ConcertResponse.Preview>> myConcerts(int offset, int limit);
 
-    Uni<List<String>> seedData(int count);
+    Uni<List<String>> seedData(int count, Region region);
 
 }

@@ -33,6 +33,7 @@ ext {
             quarkusJackson          : "io.quarkus:quarkus-rest-jackson",
             quarkusSecurity         : "io.quarkus:quarkus-security",
             quarkusOidc             : "io.quarkus:quarkus-oidc",
+            quarkusOidcClient       : "io.quarkus:quarkus-oidc-client",
             keycloakAuthorization   : "io.quarkus:quarkus-keycloak-authorization",
 
             messagingKafka          : "io.quarkus:quarkus-messaging-kafka",

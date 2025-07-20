@@ -37,11 +37,19 @@ public class UserServiceImpl extends BaseService implements UserService {
     @Override
     public Uni<UserResponse.Detail> findByEmail(String email) {
         return keycloakAdminClient.getUserByEmail(email)
-            .invoke(() -> log.warn("Region: {}", identityContext.getRegion()))
             .onFailure().transform(throwable -> {
                 log.error("Failed to find user by email: {}", email, throwable);
                 throw new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, throwable, "user");
             }).map(userMapper::toDto);
+    }
+
+    @Override
+    public Uni<String> signUp(UserRequest.Registration request) {
+        return keycloakAdminClient.createUser(userMapper.toEntity(request), IdentityGroup.CUSTOMERS, Region.valueOf(locale.getCountry()))
+            .onFailure().transform(throwable -> {
+                log.error("Failed to sign up user: {} caused by {}", request.email(), throwable.getMessage());
+                throw new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, throwable, "Sign up", "user");
+            });
     }
 
     @Override
@@ -82,10 +90,16 @@ public class UserServiceImpl extends BaseService implements UserService {
 
     @Override
     public Uni<List<String>> seedUsers(int count, IdentityGroup group, Region region) {
-        List<IdentityUser> fakeUsers = IntStream.range(0, count).mapToObj(index -> IdentityUser.builder()
-                .email(faker.naruto().character().trim().replace(" ", "").toLowerCase() + "@gmail.com")
-                .password("123456")
-                .build())
+        List<IdentityUser> fakeUsers = IntStream.range(0, count).mapToObj(index -> {
+                String lastName = faker.name().lastName().trim();
+                return IdentityUser.builder()
+                    .email(String.format("%s_%s.%s.%s@gmail.com",
+                        lastName.replace(" ", "").toLowerCase(), index, group.type, region.country))
+                    .password("123")
+                    .firstName(group.name())
+                    .lastName(lastName)
+                    .build();
+            })
             .toList();
 
         return keycloakAdminClient.createUsers(fakeUsers, group, region).onItem().invoke(id ->

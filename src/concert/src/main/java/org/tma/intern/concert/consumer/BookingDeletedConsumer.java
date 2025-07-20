@@ -1,4 +1,4 @@
-package org.tma.intern.concert;
+package org.tma.intern.concert.consumer;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import lombok.AccessLevel;
@@ -12,10 +12,10 @@ import org.tma.intern.common.contract.event.BookingCreated;
 @Slf4j
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class BookingCreatedConsumer {
+public class BookingDeletedConsumer {
 
-    @Incoming("booking.created-in")
-    public void receiveGreeting(BookingCreated event) {
+    @Incoming("booking.deleted-in")
+    public void consume(BookingCreated event) {
         log.warn("Received: concertId: {}, concertOwnerId: {}", event.getConcertId(), event.getConcertOwnerId());
         event.getItems().forEach(bookingItemCreated ->
             log.warn("Received: seatId: {}, price: {}", bookingItemCreated.getSeatId(), bookingItemCreated.getPrice()));

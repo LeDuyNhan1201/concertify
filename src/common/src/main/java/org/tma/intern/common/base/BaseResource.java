@@ -27,6 +27,9 @@ public class BaseResource {
     LocaleProvider locale;
 
     final String ROLE_GLOBAL_ADMIN = "global_admin";
+    final String CREATE_ROLE = "concert:create";
+    final String UPDATE_ROLE = "concert:edit";
+    final String VIEW_ROLE = "concert:view";
 
     protected void hasOnlyRole(IdentityRole role) {
         Region currentRegion = identityContext.getRegion();

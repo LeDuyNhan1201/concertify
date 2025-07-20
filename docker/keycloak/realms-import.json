@@ -2502,6 +2502,22 @@
         "containerId" : "debd37b6-36b2-404b-90ea-c7bc6dee6f0a",
         "attributes" : { }
       }, {
+        "id" : "656e4dbc-7148-44e3-99ef-08c111f54d8d",
+        "name" : "booking-service",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : false,
+        "containerId" : "debd37b6-36b2-404b-90ea-c7bc6dee6f0a",
+        "attributes" : { }
+      }, {
+        "id" : "880d4593-4fde-47ed-85c0-43b2c2824c29",
+        "name" : "auth-service",
+        "description" : "",
+        "composite" : false,
+        "clientRole" : false,
+        "containerId" : "debd37b6-36b2-404b-90ea-c7bc6dee6f0a",
+        "attributes" : { }
+      }, {
         "id" : "84bec6c7-b1f0-4531-8ebf-989f7bf5563c",
         "name" : "customer_us",
         "composite" : true,
@@ -2526,6 +2542,14 @@
             "booking-service" : [ "booking:update", "booking:view", "booking:create", "booking:read", "booking:delete" ]
           }
         },
+        "clientRole" : false,
+        "containerId" : "debd37b6-36b2-404b-90ea-c7bc6dee6f0a",
+        "attributes" : { }
+      }, {
+        "id" : "a286f8fb-0579-4f68-96d6-aefdce9acbc4",
+        "name" : "concert-service",
+        "description" : "",
+        "composite" : false,
         "clientRole" : false,
         "containerId" : "debd37b6-36b2-404b-90ea-c7bc6dee6f0a",
         "attributes" : { }
@@ -3115,20 +3139,20 @@
       "notBefore" : 0,
       "groups" : [ ]
     }, {
-      "id" : "261e0bfd-c8f9-410e-b8e1-93d060e42044",
-      "username" : "customer1.vi@gmail.com",
+      "id" : "0a860ce4-c02d-43ff-9c55-5efbb30a9782",
+      "username" : "customer1.vn@gmail.com",
       "firstName" : "Customer1",
       "lastName" : "VN",
-      "email" : "customer1.vi@gmail.com",
+      "email" : "customer1.vn@gmail.com",
       "emailVerified" : true,
-      "createdTimestamp" : 1752936888802,
+      "createdTimestamp" : 1752998863806,
       "enabled" : true,
       "totp" : false,
       "credentials" : [ {
-        "id" : "cda75fee-d014-48de-ba3c-ac22aedb950f",
+        "id" : "75df5be6-9538-4351-b2f8-56faa6b67b3c",
         "type" : "password",
-        "createdDate" : 1752936888942,
-        "secretData" : "{\"value\":\"EeAtacU526TuAVkP6GWVJ67Fh3Oszf5rhg2KzWzZ9oc=\",\"salt\":\"S1R5Sy+X2tUT8jyxUFVEZw==\",\"additionalParameters\":{}}",
+        "createdDate" : 1752998864045,
+        "secretData" : "{\"value\":\"7JafGrrnCJEtsl4sGiP5quw3mSh6lnMrN+2rsar9QSg=\",\"salt\":\"b7CE6gHmY4I5cZwfMu7sZA==\",\"additionalParameters\":{}}",
         "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
       } ],
       "disableableCredentialTypes" : [ ],
@@ -3159,20 +3183,20 @@
       "notBefore" : 0,
       "groups" : [ "/global/us/customers" ]
     }, {
-      "id" : "2ec9f6e8-1e94-4911-970c-c22b1cf0ceab",
-      "username" : "customer.vi@gmail.com",
+      "id" : "5ed0e5c4-ee30-4147-aef4-5877be2ce3f5",
+      "username" : "customer.vn@gmail.com",
       "firstName" : "Customer",
       "lastName" : "VN",
-      "email" : "customer.vi@gmail.com",
+      "email" : "customer.vn@gmail.com",
       "emailVerified" : true,
-      "createdTimestamp" : 1752936707842,
+      "createdTimestamp" : 1752998872484,
       "enabled" : true,
       "totp" : false,
       "credentials" : [ {
-        "id" : "e0e91124-ba87-4023-9b78-3c9b43ebb13b",
+        "id" : "a3af9853-4c49-439b-b56d-4fba758d7542",
         "type" : "password",
-        "createdDate" : 1752936707984,
-        "secretData" : "{\"value\":\"Mv+uV4AOpPrffqXjKP0eCFiqaHzjmo8gO1kvTRaHRV4=\",\"salt\":\"gOz0jRzQA1LKSRes3VhnwA==\",\"additionalParameters\":{}}",
+        "createdDate" : 1752998872634,
+        "secretData" : "{\"value\":\"L0qMFMRTHd0TOD51rP4BkWS+1jYHuBYn4tCimNAzKIY=\",\"salt\":\"fnM9RQOyVhr7dskoUVPhOA==\",\"additionalParameters\":{}}",
         "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
       } ],
       "disableableCredentialTypes" : [ ],
@@ -3181,20 +3205,20 @@
       "notBefore" : 0,
       "groups" : [ "/global/vn/customers" ]
     }, {
-      "id" : "a0e60878-c6b0-4858-8925-e4627b3a18b3",
-      "username" : "organizer1.vi@gmail.com",
+      "id" : "1f829a7d-2f33-4e70-93e9-6d16d5ef0aa3",
+      "username" : "organizer1.vn@gmail.com",
       "firstName" : "Organizer1",
       "lastName" : "VN",
-      "email" : "organizer1.vi@gmail.com",
+      "email" : "organizer1.vn@gmail.com",
       "emailVerified" : true,
-      "createdTimestamp" : 1752936861156,
+      "createdTimestamp" : 1752998898232,
       "enabled" : true,
       "totp" : false,
       "credentials" : [ {
-        "id" : "b9ad5443-6a48-4cbe-8ef5-c2017eccfbe3",
+        "id" : "301d801a-941e-49b0-b995-676dc4619ab0",
         "type" : "password",
-        "createdDate" : 1752936861303,
-        "secretData" : "{\"value\":\"Xn1rifvM8Zg1lWQUhh0gBCW1d1aXvyu62AlxCOWrN6E=\",\"salt\":\"oLMJAbeOVYdKHXcflF7KAQ==\",\"additionalParameters\":{}}",
+        "createdDate" : 1752998898383,
+        "secretData" : "{\"value\":\"mFjtJeHOmVM4RmOlsSSqAWqZ/UH0YKfTzV7c4gnkIGI=\",\"salt\":\"F350XJTHZZi6lIL1uZXqDQ==\",\"additionalParameters\":{}}",
         "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
       } ],
       "disableableCredentialTypes" : [ ],
@@ -3225,20 +3249,20 @@
       "notBefore" : 0,
       "groups" : [ "/global/us/organizers" ]
     }, {
-      "id" : "c801c2dc-1cf6-4dcc-baf5-4204fb353c6d",
-      "username" : "organizer.vi@gmail.com",
+      "id" : "9453f62f-9671-4eee-b244-096e1d48c9c8",
+      "username" : "organizer.vn@gmail.com",
       "firstName" : "Organizer",
       "lastName" : "VN",
-      "email" : "organizer.vi@gmail.com",
+      "email" : "organizer.vn@gmail.com",
       "emailVerified" : true,
-      "createdTimestamp" : 1752936776286,
+      "createdTimestamp" : 1752998889573,
       "enabled" : true,
       "totp" : false,
       "credentials" : [ {
-        "id" : "80f55da5-219a-4e8e-a560-90e01ac759b7",
+        "id" : "5391c17a-c4fd-4a17-be31-e91e7b4987ad",
         "type" : "password",
-        "createdDate" : 1752936776422,
-        "secretData" : "{\"value\":\"kQ+oDTPprpcvmeU4xgx5/S1x86TFJWgQWqE3pHBRfuE=\",\"salt\":\"aLQaN8Us1LZGeBwjAdyiVA==\",\"additionalParameters\":{}}",
+        "createdDate" : 1752998889726,
+        "secretData" : "{\"value\":\"cJRKtt6T/HjRLZ7+sUvt5gAwMuio9nKF56p+l4iYaR8=\",\"salt\":\"nsHzHpjcLjYUjvSX8ZDGhQ==\",\"additionalParameters\":{}}",
         "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
       } ],
       "disableableCredentialTypes" : [ ],
@@ -3257,7 +3281,7 @@
       "credentials" : [ ],
       "disableableCredentialTypes" : [ ],
       "requiredActions" : [ ],
-      "realmRoles" : [ "default-roles-concertify" ],
+      "realmRoles" : [ "default-roles-concertify", "auth-service" ],
       "clientRoles" : {
         "auth-service" : [ "uma_protection" ],
         "realm-management" : [ "realm-admin" ]
@@ -3275,7 +3299,7 @@
       "credentials" : [ ],
       "disableableCredentialTypes" : [ ],
       "requiredActions" : [ ],
-      "realmRoles" : [ "default-roles-concertify" ],
+      "realmRoles" : [ "default-roles-concertify", "booking-service" ],
       "clientRoles" : {
         "booking-service" : [ "uma_protection" ]
       },
@@ -3292,7 +3316,7 @@
       "credentials" : [ ],
       "disableableCredentialTypes" : [ ],
       "requiredActions" : [ ],
-      "realmRoles" : [ "default-roles-concertify" ],
+      "realmRoles" : [ "default-roles-concertify", "concert-service" ],
       "clientRoles" : {
         "concert-service" : [ "uma_protection" ]
       },
