@@ -27,8 +27,7 @@ import org.tma.intern.booking.repository.BookingRepository;
 import org.tma.intern.booking.service.BookingItemService;
 import org.tma.intern.booking.service.BookingService;
 import org.tma.intern.common.base.BaseService;
-import org.tma.intern.common.contract.event.BookingCreated;
-import org.tma.intern.common.contract.event.BookingItemCreated;
+import org.tma.intern.common.contract.event.*;
 import org.tma.intern.common.dto.PageResponse;
 import org.tma.intern.common.exception.AppError;
 import org.tma.intern.common.exception.HttpException;
@@ -56,40 +55,60 @@ public class BookingServiceImpl extends BaseService implements BookingService {
     @NonFinal
     @Inject
     @Channel("booking.updated-out")
-    private Emitter<BookingCreated> bookingUpdatedEventBus;
+    private Emitter<BookingUpdated> bookingUpdatedEventBus;
 
     @NonFinal
     @Inject
     @Channel("booking.deleted-out")
-    private Emitter<BookingCreated> bookingDeletedEventBus;
+    private Emitter<BookingDeleted> bookingDeletedEventBus;
 
     Faker faker;
 
     static public String ROLLBACK_FAILED_MESSAGE = "Rollback failed: could not {} {}";
 
+//    @Override
+//    public Uni<String> create(BookingRequest.Body request) {
+//        Booking booking = bookingMapper.toEntity(request);
+//        booking.setCreatedAt(Instant.now());
+//        booking.setCreatedBy(identityContext.getPrincipleName());
+//
+//        List<BookingItem> bookingItems = request.items().stream().distinct().map(bookingItemMapper::toEntity).toList();
+//        return bookingItemService.isAnyExisted(request.items().stream().map(BookingItemRequest.Body::seatId).toList())
+//            .flatMap(isExisted -> {
+//                if (isExisted) throw new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED,
+//                    new IllegalAccessException("Any item is already existed !!!"), "Create", "booking");
+//
+//                return bookingRepository.persist(booking)
+//                    .flatMap(createdBooking -> bookingItemService.create(createdBooking.getId(), bookingItems)
+//                        .onFailure().call(createdError -> rollbackCreateBooking(createdBooking.getId(), createdError))
+//                        .replaceWith(createdBooking.getId().toHexString())
+//                    );
+//            });
+//
+//    }
+
     @Override
-    public Uni<String> create(BookingRequest.Body request) {
-        Booking booking = bookingMapper.toEntity(request);
-        booking.setCreatedAt(Instant.now());
-        booking.setCreatedBy(identityContext.getClaim("sub"));
+    public Uni<String> create(BookingCreated event) {
+        Booking booking = Booking.builder()
+            .concertId(event.getConcertId())
+            .concertOwnerId(event.getConcertOwnerId())
+            .createdAt(Instant.now())
+            .createdBy(event.getCreatedBy())
+            .build();
 
-        List<BookingItem> bookingItems = request.items().stream().distinct().map(bookingItemMapper::toEntity).toList();
-
-        List<BookingItemCreated> itemsCreatedEvent = request.items().stream().map(item ->
-                BookingItemCreated.newBuilder()
-                    .setSeatId(item.seatId())
-                    .setPrice(item.price())
-                    .build())
-            .toList();
-
-        return bookingItemService.isAnyExisted(request.items().stream().map(BookingItemRequest.Body::seatId).toList())
+        List<BookingItem> bookingItems = event.getItems().stream().distinct()
+            .map(bookingItemCreated -> BookingItem.builder()
+                .seatId(bookingItemCreated.getSeatId())
+                .seatCode(bookingItemCreated.getSeatCode())
+                .price(bookingItemCreated.getPrice())
+                .build()
+            ).toList();
+        return bookingItemService.isAnyExisted(event.getItems().stream().map(BookingItemCreated::getSeatId).toList())
             .flatMap(isExisted -> {
-                if (isExisted) throw new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED,
-                    new IllegalAccessException("Any item is already existed !!!"), "Create", "booking");
+                if (isExisted) throw new RuntimeException("Any item is already existed !!!");
 
                 return bookingRepository.persist(booking)
                     .flatMap(createdBooking -> bookingItemService.create(createdBooking.getId(), bookingItems)
-//                        .chain(() -> sendBookingCreatedEvent(request, itemsCreatedEvent))
                         .onFailure().call(createdError -> rollbackCreateBooking(createdBooking.getId(), createdError))
                         .replaceWith(createdBooking.getId().toHexString())
                     );
@@ -102,14 +121,19 @@ public class BookingServiceImpl extends BaseService implements BookingService {
         return bookingRepository.findById(new ObjectId(id))
             .onItem().ifNull().failWith(() ->
                 new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, new NullPointerException(), "booking")
-            ).invoke(concert -> checkOwner(concert.getCreatedBy()))
+            ).invoke(booking -> checkOwner(booking.getCreatedBy()))
             .flatMap(existingBooking -> {
                 // Step 1: Create new booking items
                 return createNewItems(existingBooking, request).flatMap(createdItemIds ->
                     // Step 2: Delete requested items
                     deleteOldItems(request, createdItemIds).chain(deletedItems -> {
                         updateAuditing(existingBooking);
-                        return bookingRepository.update(existingBooking).replaceWith(id)
+                        return bookingRepository.update(existingBooking)
+                            .chain(() -> sendBookingUpdatedEvent(
+                                existingBooking.getConcertId(),
+                                deletedItems.stream().map(BookingItem::getSeatId).toList(),
+                                request.newItems().stream().map(BookingItemRequest.Body::seatId).toList())
+                            ).replaceWith(id)
                             .onFailure().call(updateFailure ->
                                 rollbackUpdate(existingBooking.getId(), deletedItems, createdItemIds, updateFailure)
                             );
@@ -198,7 +222,7 @@ public class BookingServiceImpl extends BaseService implements BookingService {
     @Override
     public Uni<PageResponse<BookingResponse.Details>> bookingsOfMyConcerts(int index, int limit) {
         var query = Filters.and(
-            Filters.eq("concert_owner_id", identityContext.getClaim("sub")),
+            Filters.eq("concert_owner_id", identityContext.getPrincipleName()),
             Filters.eq("deleted", false)
         );
         return Uni.combine().all().unis(
@@ -239,17 +263,6 @@ public class BookingServiceImpl extends BaseService implements BookingService {
     }
 
     /* --------- Private methods for [CREATE] --------- */
-//    private Uni<Void> sendBookingCreatedEvent(BookingRequest.Body request, List<BookingItemCreated> items) {
-//        BookingCreated event = BookingCreated.newBuilder()
-//            .setConcertId(request.concertId())
-//            .setConcertOwnerId(request.concertOwnerId())
-//            .setItems(items)
-//            .build();
-//
-//        return Uni.createFrom().completionStage(() -> bookingCreatedEventBus.send(event))  // CompletableFuture<Void>
-//            .invoke(() -> log.info("Booking created event sent successfully!"));
-//    }
-
     private Uni<Void> rollbackCreateBooking(ObjectId bookingId, Throwable createdError) {
         return bookingRepository.deleteById(bookingId)
             .onItem().invoke(isDeleted -> {
@@ -269,6 +282,21 @@ public class BookingServiceImpl extends BaseService implements BookingService {
     }
 
     /* --------- Private methods for [UPDATE] --------- */
+    private Uni<Void> sendBookingUpdatedEvent(String concertId, List<String> oldItems, List<String> newItems) {
+        BookingUpdated event = BookingUpdated.newBuilder()
+            .setConcertId(concertId)
+            .setOldItems(oldItems.stream().map(seatId -> BookingItemChanged.newBuilder()
+                .setSeatId(seatId)
+                .build()).toList())
+            .setNewItems(newItems.stream().map(seatId -> BookingItemChanged.newBuilder()
+                .setSeatId(seatId)
+                .build()).toList())
+            .build();
+
+        return Uni.createFrom().completionStage(() -> bookingUpdatedEventBus.send(event))
+            .invoke(() -> log.info("Booking updated event sent successfully!"));
+    }
+
     private HttpException wrapHttpException(Throwable cause, String action, String target) {
         return (cause instanceof HttpException httpEx) ? httpEx
             : new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, cause, action, target);
@@ -281,7 +309,7 @@ public class BookingServiceImpl extends BaseService implements BookingService {
     }
 
     private Uni<List<BookingItem>> deleteOldItems(BookingRequest.Update request, List<String> createdItemIds) {
-        return bookingItemService.delete(request.deletedItems())
+        return bookingItemService.delete(request.oldItems())
             .onFailure().call(deleteError -> rollbackCreateItems(createdItemIds)
                 .onItem().failWith(() -> {
                     throw wrapHttpException(deleteError, "Delete", "booking items");
@@ -320,10 +348,22 @@ public class BookingServiceImpl extends BaseService implements BookingService {
 
     public void updateAuditing(Booking booking) {
         booking.setUpdatedAt(Instant.now());
-        booking.setUpdatedBy(identityContext.getClaim("sub"));
+        booking.setUpdatedBy(identityContext.getPrincipleName());
     }
 
     /* --------- Private methods for [DELETE] --------- */
+    private Uni<Void> sendBookingDeletedEvent(String concertId, List<String> items) {
+        BookingDeleted event = BookingDeleted.newBuilder()
+            .setConcertId(concertId)
+            .setItems(items.stream().map(seatId -> BookingItemChanged.newBuilder()
+                .setSeatId(seatId)
+                .build()).toList())
+            .build();
+
+        return Uni.createFrom().completionStage(() -> bookingDeletedEventBus.send(event))
+            .invoke(() -> log.info("Booking deleted event sent successfully!"));
+    }
+
     private Uni<String> deleteBookingAndItems(ObjectId bookingId, Booking booking) {
         return bookingRepository.deleteById(bookingId).flatMap(isDeleted -> {
             if (!isDeleted)
@@ -332,7 +372,11 @@ public class BookingServiceImpl extends BaseService implements BookingService {
             return bookingItemService.findAllByBookingId(bookingId.toHexString())
                 .flatMap(items -> {
                     List<String> itemIds = items.stream().map(BookingItemResponse.Detail::getId).distinct().toList();
-                    return bookingItemService.delete(itemIds).replaceWith(bookingId.toHexString())
+                    return bookingItemService.delete(itemIds)
+                        .chain(() -> sendBookingDeletedEvent(
+                            booking.getConcertId(),
+                            items.stream().map(BookingItemResponse.Detail::getSeatId).toList())
+                        ).replaceWith(bookingId.toHexString())
                         .onFailure().call(error -> {
                             log.error("Error: {}", error.getMessage(), error);
                             return rollbackDeleteBooking(booking);

@@ -4,17 +4,29 @@
     "type": "record",
     "name": "BookingItemCreated",
     "fields": [
-      { "name": "seatId", "type": "string" },
-      { "name": "seatCode", "type": "string" },
-      { "name": "price", "type": "double" }
+      {
+        "name": "seatId",
+        "type": "string"
+      },
+      {
+        "name": "seatCode",
+        "type": "string"
+      },
+      {
+        "name": "price",
+        "type": "double"
+      }
     ]
   },
   {
     "namespace": "org.tma.intern.common.contract.event",
     "type": "record",
-    "name": "BookingItemUpdated",
+    "name": "BookingItemChanged",
     "fields": [
-      { "name": "seatId", "type": "string" }
+      {
+        "name": "seatId",
+        "type": "string"
+      }
     ]
   },
   {
@@ -22,8 +34,18 @@
     "type": "record",
     "name": "BookingCreated",
     "fields": [
-      { "name": "concertId", "type": "string" },
-      { "name": "concertOwnerId", "type": "string" },
+      {
+        "name": "concertId",
+        "type": "string"
+      },
+      {
+        "name": "concertOwnerId",
+        "type": "string"
+      },
+      {
+        "name": "createdBy",
+        "type": "string"
+      },
       {
         "name": "items",
         "type": {
@@ -39,17 +61,39 @@
     "name": "BookingUpdated",
     "fields": [
       {
+        "name": "concertId",
+        "type": "string"
+      },
+      {
         "name": "newItems",
         "type": {
           "type": "array",
-          "items": "org.tma.intern.common.contract.event.BookingItemUpdated"
+          "items": "org.tma.intern.common.contract.event.BookingItemChanged"
         }
       },
       {
         "name": "oldItems",
         "type": {
           "type": "array",
-          "items": "org.tma.intern.common.contract.event.BookingItemUpdated"
+          "items": "org.tma.intern.common.contract.event.BookingItemChanged"
+        }
+      }
+    ]
+  },
+  {
+    "namespace": "org.tma.intern.common.contract.event",
+    "type": "record",
+    "name": "BookingDeleted",
+    "fields": [
+      {
+        "name": "concertId",
+        "type": "string"
+      },
+      {
+        "name": "items",
+        "type": {
+          "type": "array",
+          "items": "org.tma.intern.common.contract.event.BookingItemChanged"
         }
       }
     ]

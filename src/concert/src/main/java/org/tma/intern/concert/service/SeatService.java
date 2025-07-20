@@ -17,7 +17,9 @@ public interface SeatService {
 
     Uni<List<String>> hold(ConcertRequest.SeatIds body, String concertId);
 
-    Uni<List<String>> book(ConcertRequest.SeatIds body, String concertId);
+    Uni<List<String>> book(ConcertRequest.SeatIds body, ConcertResponse.Preview concert);
+
+    Uni<List<String>> bookMore(ConcertRequest.SeatIds body, String concertId);
 
     Uni<List<String>> cancel(ConcertRequest.SeatIds body, String concertId);
 

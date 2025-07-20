@@ -38,4 +38,9 @@ public class BaseResource {
         ))) throw new HttpException(AppError.ROLE_INVALID, Response.Status.FORBIDDEN, null);
     }
 
+    protected void checkRegion(Region region) {
+        if (!identityContext.getRegion().equals(region))
+            throw new HttpException(AppError.REGION_INVALID, Response.Status.FORBIDDEN, null);
+    }
+
 }

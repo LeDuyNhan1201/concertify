@@ -45,20 +45,20 @@ public class CustomerBookingsResourceV1 extends BaseResource {
 
     BookingService bookingService;
 
-    @RolesAllowed("booking:create") // Only Customers
-    @POST
-    @Path("")
-    @Operation(summary = "Create booking", description = "API to create a new booking.")
-    @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Uni<RestResponse<CommonResponse<String>>> create(BookingRequest.Body body) {
-        hasOnlyRole(IdentityRole.CUSTOMER);
-        return bookingService.create(body).onItem().transform(id ->
-            RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
-                .message(locale.getMessage("Action.Success", "Create", "booking"))
-                .data(id).build()
-            ).build());
-    }
+//    @RolesAllowed("booking:create") // Only Customers
+//    @POST
+//    @Path("")
+//    @Operation(summary = "Create booking", description = "API to create a new booking.")
+//    @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    public Uni<RestResponse<CommonResponse<String>>> create(BookingRequest.Body body) {
+//        hasOnlyRole(IdentityRole.CUSTOMER);
+//        return bookingService.create(body).onItem().transform(id ->
+//            RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
+//                .message(locale.getMessage("Action.Success", "Create", "booking"))
+//                .data(id).build()
+//            ).build());
+//    }
 
     @RolesAllowed("booking:update") // Only Customers
     @PUT

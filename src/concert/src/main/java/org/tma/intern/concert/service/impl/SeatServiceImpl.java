@@ -6,13 +6,19 @@ import com.mongodb.client.model.Updates;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.tma.intern.common.base.BaseService;
+import org.tma.intern.common.contract.event.BookingCreated;
+import org.tma.intern.common.contract.event.BookingItemCreated;
 import org.tma.intern.common.exception.AppError;
 import org.tma.intern.common.exception.HttpException;
 import org.tma.intern.common.helper.StringHelper;
@@ -39,6 +45,11 @@ public class SeatServiceImpl extends BaseService implements SeatService {
     SeatRepository seatRepository;
 
     ConcertMapper concertMapper;
+
+    @NonFinal
+    @Inject
+    @Channel("booking.created-out")
+    private Emitter<BookingCreated> bookingCreatedEventBus;
 
     record SeatLayout(SeatType type, int rows, int seatsPerRow, double price) {
     }
@@ -79,19 +90,30 @@ public class SeatServiceImpl extends BaseService implements SeatService {
     }
 
     @Override
-    public Uni<List<String>> book(ConcertRequest.SeatIds body, String concertId) {
-        return checkAllStatusMatchById(SeatStatus.HELD, body.ids(), concertId).flatMap(
+    public Uni<List<String>> book(ConcertRequest.SeatIds body, ConcertResponse.Preview concert) {
+        return findSeatsById(body.ids().stream().map(StringHelper::safeParse).toList(), concert.getId()).map(seats -> {
+                if (!seats.stream().allMatch(seat -> seat.getStatus() == SeatStatus.HELD))
+                    throw new HttpException(AppError.ACTION_FAILED, Response.Status.CONFLICT,
+                        new RuntimeException("Seats have been booked or you must hold first"), "Book", "seats");
+                return seats;
+            }
+        ).flatMap(seats ->
+            updateStatus(SeatStatus.BOOKED, seats.stream().map(Seat::getId).toList(), concert.getId(), false)
+                .call(() -> sendBookingCreatedEvent(concert, seats))
+                .onFailure().transform(error ->
+                    new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, error, "Update", "seats status")
+                )
+        );
+    }
+
+    @Override
+    public Uni<List<String>> bookMore(ConcertRequest.SeatIds body, String concertId) {
+        return checkAllStatusMatchById(SeatStatus.AVAILABLE, body.ids(), concertId).flatMap(
             result -> {
                 if (result)
-                    return updateStatus(SeatStatus.BOOKED, body.ids().stream().map(StringHelper::safeParse).toList(), concertId, false)
-                        .onFailure().transform(error ->
-                            new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, error, "Update", "seats status")
-                        );
-                else return Uni.createFrom().failure(() ->
-                    new HttpException(AppError.ACTION_FAILED, Response.Status.CONFLICT,
-                        new RuntimeException("Seats have been booked or you must hold first"), "Hold", "seats")
-                );
-
+                    return updateStatus(SeatStatus.BOOKED, body.ids().stream().map(StringHelper::safeParse).toList(), concertId, false);
+                else
+                    return Uni.createFrom().failure(() -> new RuntimeException("Seats have been booked or held"));
             }
         );
     }
@@ -101,15 +123,9 @@ public class SeatServiceImpl extends BaseService implements SeatService {
         return checkAllStatusMatchById(SeatStatus.BOOKED, body.ids(), concertId).flatMap(
             result -> {
                 if (result)
-                    return updateStatus(SeatStatus.AVAILABLE, body.ids().stream().map(StringHelper::safeParse).toList(), concertId, false)
-                        .onFailure().transform(error ->
-                            new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, error, "Update", "seats status")
-                        );
-                else return Uni.createFrom().failure(() ->
-                    new HttpException(AppError.ACTION_FAILED, Response.Status.CONFLICT,
-                        new RuntimeException("Seats are already available"), "Hold", "seats")
-                );
-
+                    return updateStatus(SeatStatus.AVAILABLE, body.ids().stream().map(StringHelper::safeParse).toList(), concertId, false);
+                else
+                    return Uni.createFrom().failure(() -> new RuntimeException("Seats are already available"));
             }
         );
     }
@@ -133,11 +149,27 @@ public class SeatServiceImpl extends BaseService implements SeatService {
                 Filters.eq("concert_id", concertId)/*,
             Filters.gte("price", minPrice), // price >= minPrice && price <= maxPrice
             Filters.lte("price", maxPrice)*/),
-            Indexes.ascending("status")
+            Indexes.compoundIndex(Indexes.descending("price"), Indexes.descending("status"))
         ).list().map(this::mapToPreviewSeats);
     }
 
     /* --------- Private methods for [CREATE] --------- */
+    private Uni<Void> sendBookingCreatedEvent(ConcertResponse.Preview concert, List<Seat> items) {
+        BookingCreated event = BookingCreated.newBuilder()
+            .setConcertId(concert.getId())
+            .setConcertOwnerId(concert.getOwnerId())
+            .setCreatedBy(identityContext.getPrincipleName())
+            .setItems(items.stream().map(seat -> BookingItemCreated.newBuilder()
+                .setSeatId(seat.getId().toHexString())
+                .setSeatCode(seat.getCode())
+                .setPrice(seat.getPrice())
+                .build()).toList())
+            .build();
+
+        return Uni.createFrom().completionStage(() -> bookingCreatedEventBus.send(event))  // CompletableFuture<Void>
+            .invoke(() -> log.info("Booking created event sent successfully!"));
+    }
+
     private List<SeatLayout> predefinedSeatLayouts() {
         return List.of(
             new SeatLayout(SeatType.VIP, 3, 8, SeatType.VIP.price),

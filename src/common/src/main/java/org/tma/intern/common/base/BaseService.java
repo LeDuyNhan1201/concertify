@@ -14,6 +14,7 @@ import org.tma.intern.common.security.IdentityContext;
 import org.tma.intern.common.type.Region;
 
 @ApplicationScoped
+//@RequestScoped
 @FieldDefaults(level = AccessLevel.PUBLIC)
 @AllArgsConstructor
 @NoArgsConstructor

@@ -1,5 +1,6 @@
 package org.tma.intern.common.locale;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.ws.rs.core.HttpHeaders;
 import lombok.AccessLevel;
@@ -11,7 +12,8 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-@RequestScoped
+@ApplicationScoped
+//@RequestScoped
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j

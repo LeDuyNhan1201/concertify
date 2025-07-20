@@ -30,7 +30,7 @@ public class AuthRestClient {
 
     WebClient webClient;
 
-    ObjectMapper objectMapper;
+    ObjectMapper objectMapper = new ObjectMapper();
 
     OidcClient oidcClient;
 

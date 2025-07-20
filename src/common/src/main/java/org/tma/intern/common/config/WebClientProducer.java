@@ -42,11 +42,11 @@ public class WebClientProducer {
         return WebClient.create(vertx, new WebClientOptions());
     }
 
-    @Produces
-    @Singleton
-    @IfBuildProfile("dev")
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
+//    @Produces
+//    @Singleton
+//    @IfBuildProfile("dev")
+//    public ObjectMapper objectMapper() {
+//        return new ObjectMapper();
+//    }
 
 }

@@ -10,9 +10,10 @@ public class BookingRequest {
         List<BookingItemRequest.Body> items
     ) {
     }
+    ;
 
     public record Update(
-        List<String> deletedItems,
+        List<String> oldItems,
         List<BookingItemRequest.Body> newItems
     ) {
     }

@@ -18,6 +18,8 @@ public interface ConcertService {
 
     Uni<String> softDelete(String id);
 
+    Uni<ConcertResponse.Preview> findById(String id);
+
     Uni<ConcertResponse.PreviewWithSeats> preview(String id);
 
     Uni<ConcertResponse.DetailsWithSeats> details(String id);

@@ -3,6 +3,7 @@ package org.tma.intern.booking.service;
 import io.smallrye.mutiny.Uni;
 import org.tma.intern.booking.dto.request.BookingRequest;
 import org.tma.intern.booking.dto.response.BookingResponse;
+import org.tma.intern.common.contract.event.BookingCreated;
 import org.tma.intern.common.type.BookingStatus;
 import org.tma.intern.common.dto.PageResponse;
 
@@ -10,7 +11,7 @@ import java.util.List;
 
 public interface BookingService {
 
-    Uni<String> create(BookingRequest.Body request);
+    Uni<String> create(BookingCreated event);
 
     Uni<String> update(String id, BookingRequest.Update request);
 

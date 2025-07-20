@@ -1,5 +1,6 @@
 package org.tma.intern.concert.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.bson.codecs.pojo.annotations.BsonProperty;
@@ -24,6 +25,8 @@ public class ConcertResponse {
         String location;
         String startTime;
         String endTime;
+        String ownerId;
+        Region region;
     }
 
     @Getter
@@ -66,6 +69,7 @@ public class ConcertResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class PreviewSeat {
         String id;
         String code;

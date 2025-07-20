@@ -43,18 +43,13 @@ public class BookingItemServiceImpl extends BaseService implements BookingItemSe
             bookingItem.setId(new ObjectId());
             bookingItem.setBookingId(bookingId.toHexString());
         }).toList();
-        return bookingItemRepository.persist(newItems)
-            .replaceWith(newItems.stream().map(item -> item.getId().toHexString()).toList())
-            .onFailure().transform(throwable -> new HttpException(AppError.ACTION_FAILED,
-                Response.Status.NOT_IMPLEMENTED, throwable, "Create", "booking item"));
+        return bookingItemRepository.persist(newItems).replaceWith(
+            newItems.stream().map(item -> item.getId().toHexString()).toList());
     }
 
     @Override
     public Uni<String> delete(ObjectId id) {
         return bookingItemRepository.deleteById(id)
-            .onFailure().transform(error ->
-                new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, error, "Delete", "booking item")
-            )
             .onItem().transform(isDeleted -> {
                 if (!isDeleted)
                     throw new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, null, "Delete", "booking item");
@@ -64,10 +59,7 @@ public class BookingItemServiceImpl extends BaseService implements BookingItemSe
 
     @Override
     public Uni<List<String>> delete(List<String> ids) {
-        return Multi.createFrom().iterable(ids).map(ObjectId::new).onItem().transformToUniAndMerge(this::delete)
-            .onFailure().transform(error ->
-                new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, error, "Delete", "booking items")
-            ).collect().asList();
+        return Multi.createFrom().iterable(ids).map(ObjectId::new).onItem().transformToUniAndMerge(this::delete).collect().asList();
     }
 
     @Override

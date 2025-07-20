@@ -11,7 +11,7 @@ import org.bson.types.ObjectId;
 @MongoEntity(database = "booking-service", collection = "booking_items")
 @Getter
 @Setter
-@SuperBuilder
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -26,10 +26,10 @@ public class BookingItem {
     @BsonProperty(value = "seat_id")
     String seatId;
 
-    @BsonProperty(value = "seat_name")
-    String seatName;
+    @BsonProperty(value = "seat_code")
+    String seatCode;
 
     @BsonProperty(value = "price")
-    long price;
+    double price;
 
 }

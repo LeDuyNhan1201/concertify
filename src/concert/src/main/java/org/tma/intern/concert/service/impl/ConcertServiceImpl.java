@@ -5,19 +5,14 @@ import io.quarkus.panache.common.Page;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
-import org.eclipse.microprofile.reactive.messaging.Channel;
-import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.tma.intern.common.base.BaseService;
-import org.tma.intern.common.contract.event.BookingCreated;
 import org.tma.intern.common.dto.PageResponse;
 import org.tma.intern.common.exception.AppError;
 import org.tma.intern.common.exception.HttpException;
@@ -52,11 +47,6 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
     ConcertMapper concertMapper;
 
     AuthRestClient authRestClient;
-
-    @NonFinal
-    @Inject
-    @Channel("booking.created-out")
-    private Emitter<BookingCreated> bookingCreatedEventBus;
 
     Faker faker;
 
@@ -118,6 +108,17 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
                 return concertRepository.persist(existingConcert).map(saved -> saved.getId().toHexString());
             }).onFailure().transform(error ->
                 new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, error, "Soft delete", "concert")
+            );
+    }
+
+    @Override
+    public Uni<ConcertResponse.Preview> findById(String id) {
+        return concertRepository.findById(StringHelper.safeParse(id))
+            .onItem().ifNull().failWith(() ->
+                new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, new NullPointerException(), "Concert")
+            ).invoke(concert -> checkRegion(concert.getRegion()))
+            .map(concertMapper::toPreviewDto).onFailure().transform(error ->
+                new HttpException(AppError.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND, error, "Concert")
             );
     }
 

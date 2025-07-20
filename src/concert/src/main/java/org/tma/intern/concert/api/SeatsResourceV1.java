@@ -20,6 +20,7 @@ import org.jboss.resteasy.reactive.RestResponse;
 import org.tma.intern.common.base.BaseResource;
 import org.tma.intern.common.dto.CommonResponse;
 import org.tma.intern.concert.dto.ConcertRequest;
+import org.tma.intern.concert.service.ConcertService;
 import org.tma.intern.concert.service.SeatService;
 
 import java.util.List;
@@ -41,6 +42,8 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class SeatsResourceV1 extends BaseResource {
 
+    ConcertService concertService;
+
     SeatService seatService;
 
     static final String SEAT_UPDATE_ROLE = "concert:seat:update";
@@ -54,11 +57,33 @@ public class SeatsResourceV1 extends BaseResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Uni<RestResponse<CommonResponse<List<String>>>> holdSeats(@PathParam("concertId") String concertId, ConcertRequest.SeatIds body) {
         // Check region
-        return seatService.hold(body, concertId).onItem().transform(resultIds ->
-            RestResponse.ResponseBuilder.ok(CommonResponse.<List<String>>builder()
-                .message(locale.getMessage("Action.Success", "Hold", "seats"))
-                .data(resultIds).build()
-            ).build());
+        return concertService.findById(concertId)
+            .invoke(concert -> checkRegion(concert.getRegion())).flatMap(preview ->
+                seatService.hold(body, preview.getId()).onItem().transform(resultIds ->
+                    RestResponse.ResponseBuilder.ok(CommonResponse.<List<String>>builder()
+                        .message(locale.getMessage("Action.Success", "Hold", "seats"))
+                        .data(resultIds).build()
+                    ).build())
+            );
+    }
+
+    @RolesAllowed(SEAT_UPDATE_ROLE) // Only Customers
+    @PUT
+    @Path("/book/{concertId}/concert")
+    @Operation(summary = "Hold seats", description = "API to hold seats by list seat id.")
+    @APIResponse(responseCode = "409", description = "Conflict", content = @Content(schema = @Schema(implementation = String.class)))
+    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Uni<RestResponse<CommonResponse<List<String>>>> bookedSeats(@PathParam("concertId") String concertId, ConcertRequest.SeatIds body) {
+        // Check region
+        return concertService.findById(concertId)
+            .invoke(concert -> checkRegion(concert.getRegion())).flatMap(preview ->
+                seatService.book(body, preview).onItem().transform(resultIds ->
+                    RestResponse.ResponseBuilder.ok(CommonResponse.<List<String>>builder()
+                        .message(locale.getMessage("Action.Success", "Book", "seats"))
+                        .data(resultIds).build()
+                    ).build())
+            );
     }
 
 }
