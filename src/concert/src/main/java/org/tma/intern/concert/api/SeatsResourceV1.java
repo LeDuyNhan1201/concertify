@@ -70,7 +70,7 @@ public class SeatsResourceV1 extends BaseResource {
     @RolesAllowed(SEAT_UPDATE_ROLE) // Only Customers
     @PUT
     @Path("/book/{concertId}/concert")
-    @Operation(summary = "Hold seats", description = "API to hold seats by list seat id.")
+    @Operation(summary = "Book seats", description = "API to book seats by list seat id.")
     @APIResponse(responseCode = "409", description = "Conflict", content = @Content(schema = @Schema(implementation = String.class)))
     @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
     @Consumes(MediaType.APPLICATION_JSON)

@@ -19,6 +19,8 @@ import org.tma.intern.common.exception.AppError;
 import org.tma.intern.common.exception.HttpException;
 import org.tma.intern.common.helper.StringHelper;
 
+import java.sql.Array;
+import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
@@ -60,6 +62,7 @@ public class BookingItemServiceImpl extends BaseService implements BookingItemSe
     @Override
     public Uni<List<String>> delete(List<String> ids) {
         return Multi.createFrom().iterable(ids).map(ObjectId::new).onItem().transformToUniAndMerge(this::delete).collect().asList();
+        //return Multi.createFrom().iterable(ids).collect().asList();
     }
 
     @Override

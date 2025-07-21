@@ -53,12 +53,54 @@ curl --insecure -X 'POST' \
   -H 'Authorization: Bearer ' \
   -H 'Content-Type: application/json' \
   -d '{
-  "email": "customer.vi@gmail.com",
+  "email": "organizer1.us@gmail.com",
   "password": "123",
-  "firstName": "Customer",
-  "lastName": "VN",
+  "firstName": "Organizer1",
+  "lastName": "US",
+  "group": "ORGANIZERS",
+  "region": "US"
+}'
+
+curl --insecure -X 'POST' \
+  'https://localhost:61002/v1/users' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer ' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "organizer2.us@gmail.com",
+  "password": "123",
+  "firstName": "Organizer2",
+  "lastName": "US",
+  "group": "ORGANIZERS",
+  "region": "US"
+}'
+
+curl --insecure -X 'POST' \
+  'https://localhost:61002/v1/users' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer 123' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "customer1.us@gmail.com",
+  "password": "123",
+  "firstName": "Customer1",
+  "lastName": "US",
   "group": "CUSTOMERS",
-  "region": "VN"
+  "region": "US"
+}'
+
+curl --insecure -X 'POST' \
+  'https://localhost:61002/v1/users' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer 123' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "customer2.us@gmail.com",
+  "password": "123",
+  "firstName": "Customer2",
+  "lastName": "US",
+  "group": "CUSTOMERS",
+  "region": "US"
 }'
 
 curl --insecure -X 'POST' \
@@ -77,15 +119,15 @@ curl --insecure -X 'POST' \
 curl --insecure 'https://localhost:62002/v1/organizer/concerts/687d0fbc0ebd36ab870d270d' \
 --header 'Authorization: Bearer '
 
-curl --X PUT --insecure 'https://localhost:62002/v1/seats/hold/687d0fbc0ebd36ab870d270d/concert' \
+curl --X PUT --insecure 'https://localhost:62002/v1/seats/hold/687db518a938f9d7196aceb9/concert' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer ' \
 --data '{
     "ids": [
-            "687d0fbc0ebd36ab870d2730",
-            "687d0fbc0ebd36ab870d2725",
-            "687d0fbc0ebd36ab870d276f",
-            "687d0fbc0ebd36ab870d2770"
+            "687db518a938f9d7196acedc",
+            "687db518a938f9d7196aced1",
+            "687db518a938f9d7196acf18",
+            "687db518a938f9d7196acf19"
         ]
 }'
 
@@ -137,9 +179,13 @@ sudo ./stop.sh
 
 ```shell
 docker exec -it broker1 /bin/bash 
+curl --insecure https://localhost:8081/subjects --cert Desktop/Projects/concertify/docker/kafka/schema-registry1/certs/cert.pem --key Desktop/Projects/concertify/docker/kafka/schema-registry1/certs/key.pem --cacert Desktop/Projects/concertify/docker/certs/ca/ca.crt
+
+curl -X DELETE --insecure https://localhost:8081/subjects/booking.created-value --cert Desktop/Projects/concertify/docker/kafka/schema-registry1/certs/cert.pem --key Desktop/Projects/concertify/docker/kafka/schema-registry1/certs/key.pem --cacert Desktop/Projects/concertify/docker/certs/ca/ca.crt
+
 curl --insecure https://localhost:8081/subjects --cert Projects/concertify/docker/kafka/schema-registry1/certs/cert.pem --key Projects/concertify/docker/kafka/schema-registry1/certs/key.pem --cacert Projects/concertify/docker/certs/ca/ca.crt
 
-curl -X DELETE --insecure https://localhost:8081/subjects/booking.created-value --cert Projects/concertify/docker/kafka/schema-registry1/certs/cert.pem --key Projects/concertify/docker/kafka/schema-registry1/certs/key.pem --cacert Projects/concertify/docker/certs/ca/ca.crt
+curl -X DELETE --insecure https://localhost:8081/subjects/booking.updated-value --cert Projects/concertify/docker/kafka/schema-registry1/certs/cert.pem --key Projects/concertify/docker/kafka/schema-registry1/certs/key.pem --cacert Projects/concertify/docker/certs/ca/ca.crt
 
 kafka-topics --bootstrap-server broker1:39091 --list --command-config /tmp/configs/superuser.properties
 kafka-topics --bootstrap-server broker1:39091 --delete --topic 'booking.created' --command-config /tmp/configs/superuser.properties

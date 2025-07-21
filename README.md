@@ -259,7 +259,6 @@ Realm: `concertify`
     5. Assign `{type_of_user}_{region}` role to `/global/{region}/{type_of_user}` group.
 - **Output:**
     - ID of `/global/{region}/{type_of_user}` group.
-
 ---
 
 ### 3. Create User (Customer Sign-Up): [POST] /auth/sign-up
@@ -633,3 +632,180 @@ For open source projects, say how it is licensed.
 
 ## Project status
 If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+
+
+
+
+
+
+
+```java
+// API layer
+    @RolesAllowed(ROLE_GLOBAL_ADMIN)
+    @POST
+    @Path("")
+    public Uni<RestResponse<CommonResponse<String>>> createGroup(UserRequest.GroupCreation body) {
+        return userService.createGroup(body).onItem().transform(groupId ->
+            RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
+                .message(locale.getMessage("Action.Success", "Create", "group"))
+                .data(groupId).build()
+            ).build());
+    }
+
+// Service Layer
+public Uni<String> createGroup(UserRequest.GroupCreation request) {
+    return keycloakAdminClient.createGroup(request.group(), request.region())
+        .onFailure().transform(throwable -> {
+            log.error("Failed to create group: {} caused by {}", request.region().country + "/" + request.group().type, throwable.getMessage());
+            throw new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, throwable, "Create", "group");
+        });
+}
+
+// Keycloak
+public Uni<String> createGroup(IdentityGroup group, Region region) {
+    return Uni.createFrom().item(() -> createFullPathGroup(group, region))
+        .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+}
+
+private String createFullPathGroup(IdentityGroup group, Region region) {
+    GroupsResource groups = keycloak.realm(REALM).groups();
+    Optional<GroupRepresentation> checkRegionGroup = findGroupByPath(MessageFormat.format("{0}/{1}", GROUP_PREFIX, region.country));
+
+    if (checkRegionGroup.isPresent())
+        return createSpecificGroup(groups, group, region, checkRegionGroup.get().getId());
+    else {
+        // Không có /global/{region}
+        Optional<GroupRepresentation> globalGroup = findGroupByPath(GROUP_PREFIX);
+        if (globalGroup.isEmpty()) throw new RuntimeException("Root group /global does not exist !!!");
+
+        String regionGroupId = createSubGroup(groups, globalGroup.get().getId(), region.country);
+        return createSpecificGroup(groups, group, region, regionGroupId);
+    }
+}
+```
+
+```java
+// API layer
+    @RolesAllowed(ROLE_GLOBAL_ADMIN)
+    @POST
+    @Path("")
+    public Uni<RestResponse<CommonResponse<String>>> createGroup(UserRequest.GroupCreation body) {
+        return userService.createGroup(body).onItem().transform(groupId ->
+            RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
+                .message(locale.getMessage("Action.Success", "Create", "group"))
+                .data(groupId).build()
+            ).build());
+    }
+
+// Service Layer
+public Uni<String> createGroup(UserRequest.GroupCreation request) {
+    return keycloakAdminClient.createGroup(request.group(), request.region())
+        .onFailure().transform(throwable -> {
+            log.error("Failed to create group: {} caused by {}", request.region().country + "/" + request.group().type, throwable.getMessage());
+            throw new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, throwable, "Create", "group");
+        });
+}
+
+// Keycloak
+public Uni<String> createGroup(IdentityGroup group, Region region) {
+    return Uni.createFrom().item(() -> createFullPathGroup(group, region))
+        .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+}
+
+private String createFullPathGroup(IdentityGroup group, Region region) {
+    GroupsResource groups = keycloak.realm(REALM).groups();
+    Optional<GroupRepresentation> checkRegionGroup = findGroupByPath(MessageFormat.format("{0}/{1}", GROUP_PREFIX, region.country));
+
+    if (checkRegionGroup.isPresent())
+        return createSpecificGroup(groups, group, region, checkRegionGroup.get().getId());
+    else {
+        // Không có /global/{region}
+        Optional<GroupRepresentation> globalGroup = findGroupByPath(GROUP_PREFIX);
+        if (globalGroup.isEmpty()) throw new RuntimeException("Root group /global does not exist !!!");
+
+        String regionGroupId = createSubGroup(groups, globalGroup.get().getId(), region.country);
+        return createSpecificGroup(groups, group, region, regionGroupId);
+    }
+}
+
+
+// API layer
+@RolesAllowed(SEAT_UPDATE_ROLE) // Only Customers
+@PUT
+@Path("/book/{concertId}/concert")
+public Uni<RestResponse<CommonResponse<List<String>>>> bookedSeats(@PathParam("concertId") String concertId, ConcertRequest.SeatIds body) {
+    // Check region
+    return concertService.findById(concertId)
+        .invoke(concert -> checkRegion(concert.getRegion())).flatMap(preview ->
+            seatService.book(body, preview).onItem().transform(resultIds ->
+                RestResponse.ResponseBuilder.ok(CommonResponse.<List<String>>builder()
+                    .message(locale.getMessage("Action.Success", "Book", "seats"))
+                    .data(resultIds).build()
+                ).build())
+        );
+}
+
+```
+
+```
+@startuml
+actor Client
+participant "POST /groups" as Controller
+participant "UserService" as Service
+participant "KeycloakAdminClient" as Keycloak
+participant "Keycloak" as KC
+participant "GroupsResource" as Groups
+participant "Group DB" as DB
+
+Client -> Controller : createGroup(body)
+Controller -> Service : createGroup(body)
+Service -> Keycloak : createGroup(group, region)
+
+Keycloak -> Keycloak : createFullPathGroup(group, region)
+Keycloak -> KC : keycloak.realm(REALM).groups()
+Keycloak -> Keycloak : findGroupByPath("/global/{region}")
+alt region group exists
+    Keycloak -> Groups : createSpecificGroup()
+    Groups -> DB : store group
+    DB --> Groups : groupId
+else region group not exist
+    Keycloak -> Keycloak : findGroupByPath("/global")
+    alt /global not exist
+        Keycloak -> Keycloak : throw RuntimeException
+    else
+        Keycloak -> Groups : createSubGroup("/global", region.country)
+        Groups -> DB : store region group
+        DB --> Groups : regionGroupId
+        Keycloak -> Groups : createSpecificGroup(..., regionGroupId)
+        Groups -> DB : store group
+        DB --> Groups : groupId
+    end
+end
+
+Keycloak --> Service : groupId
+Service --> Controller : groupId
+Controller --> Client : HTTP 201 Created\n{ message: "Success", data: groupId }
+@enduml
+```
+
+```
+
+```
+
+```
+
+```
+
+```
+
+```
+
+```
+
+```
+
+```
+
+```
+
+

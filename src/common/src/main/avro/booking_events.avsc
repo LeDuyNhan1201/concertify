@@ -2,14 +2,14 @@
   {
     "namespace": "org.tma.intern.common.contract.event",
     "type": "record",
-    "name": "BookingItemCreated",
+    "name": "SeatInfo",
     "fields": [
       {
-        "name": "seatId",
+        "name": "id",
         "type": "string"
       },
       {
-        "name": "seatCode",
+        "name": "code",
         "type": "string"
       },
       {
@@ -21,10 +21,36 @@
   {
     "namespace": "org.tma.intern.common.contract.event",
     "type": "record",
-    "name": "BookingItemChanged",
+    "name": "ExistedItem",
     "fields": [
       {
+        "name": "id",
+        "type": "string"
+      },
+      {
         "name": "seatId",
+        "type": "string"
+      }
+    ]
+  },
+  {
+    "namespace": "org.tma.intern.common.contract.event",
+    "type": "record",
+    "name": "SeatId",
+    "fields": [
+      {
+        "name": "value",
+        "type": "string"
+      }
+    ]
+  },
+  {
+    "namespace": "org.tma.intern.common.contract.event",
+    "type": "record",
+    "name": "ItemId",
+    "fields": [
+      {
+        "name": "value",
         "type": "string"
       }
     ]
@@ -50,7 +76,7 @@
         "name": "items",
         "type": {
           "type": "array",
-          "items": "org.tma.intern.common.contract.event.BookingItemCreated"
+          "items": "org.tma.intern.common.contract.event.SeatInfo"
         }
       }
     ]
@@ -61,6 +87,10 @@
     "name": "BookingUpdated",
     "fields": [
       {
+        "name": "bookingId",
+        "type": "string"
+      },
+      {
         "name": "concertId",
         "type": "string"
       },
@@ -68,14 +98,14 @@
         "name": "newItems",
         "type": {
           "type": "array",
-          "items": "org.tma.intern.common.contract.event.BookingItemChanged"
+          "items": "org.tma.intern.common.contract.event.ExistedItem"
         }
       },
       {
         "name": "oldItems",
         "type": {
           "type": "array",
-          "items": "org.tma.intern.common.contract.event.BookingItemChanged"
+          "items": "org.tma.intern.common.contract.event.SeatId"
         }
       }
     ]
@@ -86,6 +116,14 @@
     "name": "BookingDeleted",
     "fields": [
       {
+        "name": "userId",
+        "type": "string"
+      },
+      {
+        "name": "bookingId",
+        "type": "string"
+      },
+      {
         "name": "concertId",
         "type": "string"
       },
@@ -93,7 +131,80 @@
         "name": "items",
         "type": {
           "type": "array",
-          "items": "org.tma.intern.common.contract.event.BookingItemChanged"
+          "items": "org.tma.intern.common.contract.event.SeatId"
+        }
+      }
+    ]
+  },
+  {
+    "namespace": "org.tma.intern.common.contract.event",
+    "type": "record",
+    "name": "RollbackBookingCreated",
+    "fields": [
+      {
+        "name": "concertId",
+        "type": "string"
+      },
+      {
+        "name": "seatIds",
+        "type": {
+          "type": "array",
+          "items": "org.tma.intern.common.contract.event.SeatId"
+        }
+      }
+    ]
+  },
+  {
+    "namespace": "org.tma.intern.common.contract.event",
+    "type": "record",
+    "name": "RollbackBookingUpdated",
+    "fields": [
+      {
+        "name": "concertId",
+        "type": "string"
+      },
+      {
+        "name": "bookingId",
+        "type": "string"
+      },
+      {
+        "name": "createdItems",
+        "type": {
+          "type": "array",
+          "items": "org.tma.intern.common.contract.event.ItemId"
+        }
+      },
+      {
+        "name": "deletedItems",
+        "type": {
+          "type": "array",
+          "items": "org.tma.intern.common.contract.event.SeatInfo"
+        }
+      }
+    ]
+  },
+  {
+    "namespace": "org.tma.intern.common.contract.event",
+    "type": "record",
+    "name": "RollbackBookingDeleted",
+    "fields": [
+      {
+        "name": "userId",
+        "type": "string"
+      },
+      {
+        "name": "concertId",
+        "type": "string"
+      },
+      {
+        "name": "concertOwnerId",
+        "type": "string"
+      },
+      {
+        "name": "deletedItems",
+        "type": {
+          "type": "array",
+          "items": "org.tma.intern.common.contract.event.SeatInfo"
         }
       }
     ]

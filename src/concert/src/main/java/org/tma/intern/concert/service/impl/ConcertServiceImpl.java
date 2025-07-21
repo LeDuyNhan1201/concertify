@@ -181,13 +181,15 @@ public class ConcertServiceImpl extends BaseService implements ConcertService {
                 return IntStream.range(0, count).mapToObj(index ->
                     createRandomConcert(userEmails.get(faker.number().numberBetween(0, userEmails.size())), region)
                 ).toList();
-            })
-            .flatMap(concerts -> concertRepository.persist(concerts)
+            }).flatMap(concerts -> concertRepository.persist(concerts)
                 .onFailure().transform(error ->
                     new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, error, "Seed", "concerts")
                 ).replaceWith(concerts).flatMap(concertList ->
                     Multi.createFrom().iterable(concertList)
-                        .onItem().transformToUniAndMerge(concert -> seatService.generateForConcert(concert.getId()))
+                        .onItem().transformToUniAndMerge(concert ->
+                            seatService.generateForConcert(concert.getId()).onFailure().transform(error ->
+                                new HttpException(AppError.ACTION_FAILED, Response.Status.NOT_IMPLEMENTED, error, "Create", "Seats")
+                            ))
                         .collect().asList()
                         .replaceWith(concertList.stream().map(concert -> concert.getId().toHexString()).toList())
                 )

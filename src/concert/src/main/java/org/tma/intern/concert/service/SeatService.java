@@ -3,6 +3,7 @@ package org.tma.intern.concert.service;
 import io.smallrye.mutiny.Uni;
 import org.bson.types.ObjectId;
 import org.tma.intern.common.type.SeatStatus;
+import org.tma.intern.concert.data.Seat;
 import org.tma.intern.concert.dto.ConcertRequest;
 import org.tma.intern.concert.dto.ConcertResponse;
 
@@ -19,12 +20,11 @@ public interface SeatService {
 
     Uni<List<String>> book(ConcertRequest.SeatIds body, ConcertResponse.Preview concert);
 
-    Uni<List<String>> bookMore(ConcertRequest.SeatIds body, String concertId);
-
-    Uni<List<String>> cancel(ConcertRequest.SeatIds body, String concertId);
+    Uni<List<String>> updateStatus(SeatStatus before, SeatStatus after, List<String> seatIds, String concertId);
 
     Uni<Long> release(Duration timeout);
 
     Uni<List<ConcertResponse.PreviewSeat>> findByConcertId(String concertId);
 
+    Uni<List<Seat>> findSeatsById(List<String> ids, String concertId);
 }
