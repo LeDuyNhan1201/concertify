@@ -1,0 +1,25 @@
+global:
+  scrape_interval: 2s
+  evaluation_interval: 2s
+
+scrape_configs:
+  - job_name: otel-collector
+    static_configs:
+      - targets: [ 'otel-collector:8889' ]
+      - targets: [ 'otel-collector:8888' ]
+        labels:
+          env: "dev"
+
+  - job_name: prometheus
+    honor_timestamps: true
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets:
+        - 'prometheus:9090'
+
+tracing:
+  endpoint: otel-collector:4317
+  insecure: true

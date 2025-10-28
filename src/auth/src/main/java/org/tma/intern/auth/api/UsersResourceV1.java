@@ -21,8 +21,8 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.NoCache;
 import org.jboss.resteasy.reactive.RestResponse;
-import org.tma.intern.auth.dto.UserRequest;
-import org.tma.intern.auth.dto.UserResponse;
+import org.tma.intern.auth.dto.request.UserRequest;
+import org.tma.intern.auth.dto.response.UserResponse;
 import org.tma.intern.auth.service.UserService;
 import org.tma.intern.common.base.BaseResource;
 import org.tma.intern.common.dto.CommonResponse;
@@ -52,7 +52,7 @@ public class UsersResourceV1 extends BaseResource {
     @Path("/sign-up")
     @Operation(summary = "Sign up user", description = "Sign up a new user")
     @APIResponse(responseCode = "501", description = "Failed", content = @Content(schema = @Schema(implementation = String.class)))
-    @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
     public Uni<RestResponse<CommonResponse<String>>> signUp(@Valid UserRequest.Registration body) {
         return userService.signUp(body).onItem().transform(userId ->
             RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
@@ -66,9 +66,9 @@ public class UsersResourceV1 extends BaseResource {
     @Path("")
     @Operation(summary = "Create user", description = "Create a new user")
     @APIResponse(responseCode = "501", description = "Failed", content = @Content(schema = @Schema(implementation = String.class)))
-    @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
     public Uni<RestResponse<CommonResponse<String>>> create(UserRequest.Creation body) {
-        return userService.create(body).onItem().transform(userId ->
+        return userService.createUser(body).onItem().transform(userId ->
             RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
                 .message(locale.getMessage("Action.Success", "Create", "user"))
                 .data(userId).build()
@@ -80,20 +80,19 @@ public class UsersResourceV1 extends BaseResource {
     @Path("/{email}")
     @NoCache
     @Operation(summary = "Get user details", description = "API to get details of user by email")
-    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = UserResponse.Detail.class)))
-    public Uni<RestResponse<CommonResponse<UserResponse.Detail>>> details(@PathParam("email") String email) {
-        return userService.findByEmail(email).onItem().transform(user ->
+    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = UserResponse.Details.class)))
+    public Uni<RestResponse<CommonResponse<UserResponse.Details>>> details(@PathParam("email") String email) {
+        return userService.getUserByEmail(email).onItem().transform(user ->
             RestResponse.ResponseBuilder.ok(
-                CommonResponse.<UserResponse.Detail>builder().data(user).build()
+                CommonResponse.<UserResponse.Details>builder().data(user).build()
             ).build());
     }
 
     @RolesAllowed(ROLE_GLOBAL_ADMIN)
     @DELETE
     @Path("/{id}")
-    @NoCache
     @Operation(summary = "Delete user", description = "API to get delete user by id")
-    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
     public Uni<RestResponse<CommonResponse<String>>> delete(@PathParam("id") String id) {
         return userService.delete(id).onItem().transform(userId ->
             RestResponse.ResponseBuilder.create(RestResponse.Status.OK, CommonResponse.<String>builder()
@@ -107,9 +106,9 @@ public class UsersResourceV1 extends BaseResource {
     @Path("/me")
     @NoCache
     @Operation(summary = "Get current user", description = "API to get name of current user")
-    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
-    public Uni<RestResponse<UserResponse.Detail>> me() {
-        return Uni.createFrom().item(() -> RestResponse.ResponseBuilder.ok(UserResponse.Detail.builder()
+    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = UserResponse.Details.class)))
+    public Uni<RestResponse<UserResponse.Details>> me() {
+        return Uni.createFrom().item(() -> RestResponse.ResponseBuilder.ok(UserResponse.Details.builder()
             .id(identityContext.getClaim("sub"))
             .email(identityContext.getPrincipleName())
             .roles(identityContext.getRoles())
@@ -127,7 +126,7 @@ public class UsersResourceV1 extends BaseResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Response> seed(
         @QueryParam("count") int count,
-        @QueryParam("group") String group,
+        @QueryParam("groupType") String group,
         @QueryParam("region") String region
     ) {
         return userService.seedUsers(count,

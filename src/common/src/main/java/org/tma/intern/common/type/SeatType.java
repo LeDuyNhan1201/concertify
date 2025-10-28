@@ -10,5 +10,5 @@ public enum SeatType {
     ;
 
     public final double price;
-
+// price chua hop li, nameing
 }

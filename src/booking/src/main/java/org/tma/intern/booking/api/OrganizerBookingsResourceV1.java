@@ -26,8 +26,6 @@ import org.tma.intern.common.dto.PageResponse;
 import org.tma.intern.common.type.BookingStatus;
 import org.tma.intern.common.type.identity.IdentityRole;
 
-import java.util.List;
-
 @Path("/v1/organizer/bookings")
 @SecuritySchemes(value = {
     @SecurityScheme(securitySchemeName = "bearerToken",
@@ -47,7 +45,7 @@ public class OrganizerBookingsResourceV1 extends BaseResource {
 
     BookingService bookingService;
 
-    @RolesAllowed("booking:update") // Only Organizer that owns the concert
+    @RolesAllowed(ROLE_UPDATE_BOOKING) // Only Organizer that owns the concert
     @PATCH
     @Path("/{id}/{status}")
     @Operation(summary = "Update booking", description = "API to update an exist booking by id.")
@@ -55,7 +53,7 @@ public class OrganizerBookingsResourceV1 extends BaseResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Uni<RestResponse<CommonResponse<String>>> update(@PathParam("id") String id, @PathParam("status") BookingStatus status) {
         // Check owner of concert
-        hasOnlyRole(IdentityRole.ORGANIZER);
+        hasRole(IdentityRole.ORGANIZER);
         return bookingService.update(id, status).onItem().transform(resultId ->
             RestResponse.ResponseBuilder.ok(CommonResponse.<String>builder()
                 .message(locale.getMessage("Action.Success", "Update", "booking"))
@@ -64,7 +62,7 @@ public class OrganizerBookingsResourceV1 extends BaseResource {
 
     }
 
-    @RolesAllowed("booking:view") // Only Organizer that owns the concert
+    @RolesAllowed(ROLE_VIEW_BOOKING) // Only Organizer that owns the concert
     @GET
     @Path("/{id}")
     @NoCache
@@ -72,13 +70,13 @@ public class OrganizerBookingsResourceV1 extends BaseResource {
     @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = BookingResponse.Details.class)))
     public Uni<RestResponse<CommonResponse<BookingResponse.Preview>>> details(@PathParam("id") String id) {
         // Check owner of concert
-        hasOnlyRole(IdentityRole.ORGANIZER);
+        hasRole(IdentityRole.ORGANIZER);
         return bookingService.preview(id).onItem().transform(booking ->
             RestResponse.ResponseBuilder.ok(CommonResponse.<BookingResponse.Preview>builder().data(booking).build()).build()
         );
     }
 
-    @RolesAllowed("booking:view") // Only Organizer that owns the concerts
+    @RolesAllowed(ROLE_VIEW_BOOKING) // Only Organizer that owns the concerts
     @GET
     @Path("/{concertId}/concert")
     @NoCache
@@ -89,17 +87,10 @@ public class OrganizerBookingsResourceV1 extends BaseResource {
         @QueryParam("index") int index,
         @QueryParam("limit") int limit) {
         // Check owner of concert
-        hasOnlyRole(IdentityRole.ORGANIZER);
-        return bookingService.bookingsOfMyConcerts(index, limit).map(page -> RestResponse.ResponseBuilder.ok(page).build());
-    }
-
-    @GET
-    @Path("/seed/{count}")
-    @NoCache
-    @Operation(summary = "Seed bookings", description = "API to seed bookings with count.")
-    @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = Integer.class)))
-    public Uni<RestResponse<CommonResponse<List<String>>>> seed(int count) {
-        return bookingService.seedData(count).map(ids -> RestResponse.ok(CommonResponse.<List<String>>builder().data(ids).build()));
+        hasRole(IdentityRole.ORGANIZER);
+        return bookingService.bookingsOfMyConcerts(index, limit).map(
+            page -> RestResponse.ResponseBuilder.ok(page).build()
+        );
     }
 
 }

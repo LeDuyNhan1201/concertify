@@ -1,7 +1,6 @@
 package org.tma.intern.common.locale;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.context.RequestScoped;
 import jakarta.ws.rs.core.HttpHeaders;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,33 +18,38 @@ import java.util.ResourceBundle;
 @Slf4j
 public class LocaleProvider {
 
-    HttpHeaders headers;
+    static HttpHeaders headers;
 
-    public Locale getLocale() {
+    public static Locale getLocale() {
         return headers.getAcceptableLanguages()
-                .stream()
-                .findFirst()
-                .orElse(Locale.getDefault());
+            .stream()
+            .findFirst()
+            .orElse(Locale.US);
     }
 
-    public String getTag() {
+    public static String getTag() {
         log.info("[{}] Current tag: {}", LocaleProvider.class.getName(), getLocale());
         return getLocale().toLanguageTag();
     }
 
-    public String getCountry() {
+    public static String getCountry() {
         log.info("[{}] Current country: {}", LocaleProvider.class.getName(), getLocale());
         return getLocale().getCountry();
     }
 
-    public String getMessage(String key) {
+    private static String getMessage(String key) {
         Locale locale = getLocale();
         ResourceBundle bundle = ResourceBundle.getBundle("messages", locale);
         return bundle.getString(key);
     }
 
-    public String getMessage(String key, Object... args) {
-        return MessageFormat.format(getMessage(key), args);
+    public static String getMessage(String key, Object... args) {
+        try {
+            return MessageFormat.format(getMessage(key), args);
+        } catch (Exception exception) {
+            log.error("Cannot get messages from bundle caused by {}", exception.getMessage());
+            return key;
+        }
     }
 
 }

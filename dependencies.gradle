@@ -30,6 +30,7 @@ ext {
             reactivePanache         : "io.quarkus:quarkus-hibernate-reactive-panache",
 
             keycloakAdmin           : "io.quarkus:quarkus-keycloak-admin-rest-client",
+            jwt                     : "io.quarkus:quarkus-smallrye-jwt",
             quarkusJackson          : "io.quarkus:quarkus-rest-jackson",
             quarkusSecurity         : "io.quarkus:quarkus-security",
             quarkusOidc             : "io.quarkus:quarkus-oidc",
@@ -49,7 +50,10 @@ ext {
             testKeycloakServer      : "io.quarkus:quarkus-test-keycloak-server",
             testcontainers          : "org.testcontainers:testcontainers:${versions.testcontainers}",
             testcontainersKeycloak  : "com.github.dasniko:testcontainers-keycloak:${versions.testcontainersKeycloak}",
-            dataFaker               : "net.datafaker:datafaker:${versions.dataFaker}"
+            dataFaker               : "net.datafaker:datafaker:${versions.dataFaker}",
+
+            opentelemetry           : "io.quarkus:quarkus-opentelemetry",
+            exporterLogging         : "io.opentelemetry:opentelemetry-exporter-logging"
 
     ]
 }

@@ -39,33 +39,56 @@ public class KeycloakAdminClient implements IdentityAdminClient {
     static final String GROUP_PREFIX = "/global";
 
     @Override
-    public Uni<String> createUser(IdentityUser user, IdentityGroup group, Region region) {
-        UserRepresentation newUser = new UserRepresentation();
-        newUser.setEmail(user.getEmail());
-        newUser.setFirstName(user.getFirstName());
-        newUser.setLastName(user.getLastName());
-        newUser.setCreatedTimestamp(Instant.now().toEpochMilli());
-        newUser.setEnabled(true);
-        newUser.setEmailVerified(true);
-        newUser.setCredentials(Collections.singletonList(createPasswordCredential(user.getPassword())));
-        newUser.setGroups(Stream.of(group).map(identityGroup -> formatFullPathGroupName(group, region)).toList());
+    public Uni<String> createUserIntoGroup(
+        IdentityUser user,
+        IdentityGroup group,
+        Region region
+    ) {
+        UserRepresentation newUser = toUserRepresentation(user, group, region);
 
         return Uni.createFrom().item(() -> {
-            if (findGroupByPath(formatFullPathGroupName(group, region)).isEmpty())
+            if (findGroupByPath(formatFullPathGroupName(group, region)).isEmpty()) {
                 throw new RuntimeException("Group does not exist: " + group.type + " in region: " + region.country);
+            }
             return createUserBlocking(newUser);
         }).runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
+    private UserRepresentation toUserRepresentation(
+        IdentityUser user,
+        IdentityGroup group,
+        Region region
+    ) {
+        UserRepresentation userRepresentation = new UserRepresentation();
+        userRepresentation.setEmail(user.getEmail());
+        userRepresentation.setFirstName(user.getFirstName());
+        userRepresentation.setLastName(user.getLastName());
+        userRepresentation.setCreatedTimestamp(Instant.now().toEpochMilli());
+        userRepresentation.setEnabled(true);
+        userRepresentation.setEmailVerified(true);
+        userRepresentation.setCredentials(
+            Collections.singletonList(createPasswordCredential(user.getPassword()))
+        );
+        userRepresentation.setGroups(
+            Stream.of(group).map(
+                identityGroup -> formatFullPathGroupName(group, region)
+            ).toList()
+        );
+        return userRepresentation;
+    }
+
     @Override
-    public Uni<String> deleteUser(String id) {
-        return Uni.createFrom().item(() ->
-            deleteUserBlocking(id)).runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+    public Uni<String> deleteUserById(String id) {
+        return Uni.createFrom().item(
+            () -> deleteUserBlocking(id)
+        ).runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
     @Override
     public Multi<String> createUsers(List<IdentityUser> users, IdentityGroup group, Region region) {
-        List<Uni<String>> creations = users.stream().map(user -> createUser(user, group, region)).toList();
+        List<Uni<String>> creations = users.stream().map(
+            user -> createUserIntoGroup(user, group, region)
+        ).toList();
         return Uni.combine().all().unis(creations)
             .with(ids -> ids.stream().map(Object::toString).toList())
             .toMulti().flatMap(Multi.createFrom()::iterable);
@@ -73,8 +96,9 @@ public class KeycloakAdminClient implements IdentityAdminClient {
 
     @Override
     public Uni<IdentityUser> getUserByEmail(String email) {
-        return Uni.createFrom().item(() -> getUserByEmailBlocking(email))
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return Uni.createFrom().item(
+            () -> getUserByEmailBlocking(email)
+        ).runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
     @Override
@@ -85,15 +109,11 @@ public class KeycloakAdminClient implements IdentityAdminClient {
                 log.warn("Group {} in region {} not found", group.type, region.country);
                 return new ArrayList<String>();
             }
-            return getAllUsersInGroup(groupRepresentation.get().getId()).stream().map(UserRepresentation::getEmail).distinct().toList();
-        }).runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
-    }
 
-    @Override
-    public Multi<String> getRoles() {
-        return Multi.createFrom().items(() ->
-            keycloak.realm(REALM).roles().list().stream().map(RoleRepresentation::getName)
-        ).runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+            return getAllUsersInGroup(
+                groupRepresentation.get().getId()
+            ).stream().map(UserRepresentation::getEmail).distinct().toList();
+        }).runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
     @Override
@@ -108,38 +128,24 @@ public class KeycloakAdminClient implements IdentityAdminClient {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-//    @Override
-//    public Uni<List<IdentityUser>> getUsersByGroup(IdentityGroup group) {
-//        return Uni.createFrom().item(() ->
-//            getUsersByGroupBlocking(group)).runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
-//    }
-//
-//    private List<IdentityUser> getUsersByGroupBlocking(IdentityGroup group) {
-//        GroupsResource users = keycloak.realm(REALM).groups();
-//        try {
-//            UserRepresentation response = users.group().members();
-//            return IdentityUser.builder()
-//                .id(response.getId())
-//                .email(response.getEmail())
-//                .region(Region.valueOf(response.getAttributes().get("region").get(0).toUpperCase()))
-//                .build();
-//        } catch (Exception e) {
-//            log.error("Failed to fetch users of {} group in Keycloak", group, e);
-//            throw new RuntimeException(e);
-//        }
-//    }
-
     /* --------- Private methods for [KEYCLOAK USERS] --------- */
     private String handleCreationResponse(Response response, String entityName) {
         int status = response.getStatus();
         if (status == Response.Status.CREATED.getStatusCode()) {
             String location = response.getHeaderString("Location");
-            if (location == null)
+            if (location == null) {
                 throw new RuntimeException(entityName + " creation succeeded but no Location header returned");
+            }
             return location.substring(location.lastIndexOf('/') + 1);
 
-        } else
-            throw new RuntimeException("Keycloak " + entityName + " creation failed with status: " + status + " - " + response.readEntity(String.class));
+        } else {
+            throw new RuntimeException(
+                "Keycloak " + entityName
+                    + " creation failed with status: "
+                    + status + " - "
+                    + response.readEntity(String.class)
+            );
+        }
     }
 
     private CredentialRepresentation createPasswordCredential(String password) {
@@ -164,8 +170,9 @@ public class KeycloakAdminClient implements IdentityAdminClient {
         UsersResource users = keycloak.realm(REALM).users();
         try (Response response = users.delete(id)) {
             int status = response.getStatus();
-            if (status != Response.Status.NO_CONTENT.getStatusCode())
+            if (status != Response.Status.NO_CONTENT.getStatusCode()) {
                 throw new RuntimeException("Keycloak user deletion failed with status: " + status);
+            }
             return id;
         } catch (Exception exception) {
             log.error("Failed to delete user {} in Keycloak", id, exception);
@@ -175,16 +182,12 @@ public class KeycloakAdminClient implements IdentityAdminClient {
 
     private IdentityUser getUserByEmailBlocking(String email) {
         UsersResource users = keycloak.realm(REALM).users();
-        try {
-            UserRepresentation response = users.searchByEmail(email, true).get(0);
-            return IdentityUser.builder()
-                .id(response.getId())
-                .email(response.getEmail())
-                .build();
-        } catch (Exception e) {
-            log.error("Failed to fetch user in Keycloak: {}", email, e);
-            throw new RuntimeException(e);
-        }
+        UserRepresentation response = users.searchByEmail(email, true).get(0);
+
+        return IdentityUser.builder()
+            .id(response.getId())
+            .email(response.getEmail())
+            .build();
     }
 
     private List<UserRepresentation> getAllUsersInGroup(String groupId) {
@@ -198,10 +201,12 @@ public class KeycloakAdminClient implements IdentityAdminClient {
                 .group(groupId)
                 .members(first, max);
 
-            if (batch.isEmpty()) break;
-
-            users.addAll(batch);
-            first += batch.size();
+            if (!batch.isEmpty()) {
+                users.addAll(batch);
+                first += batch.size();
+            } else {
+                break;
+            }
         }
 
         return users;
@@ -217,9 +222,9 @@ public class KeycloakAdminClient implements IdentityAdminClient {
         newGroup.setName(groupName);
 
         try (Response response = groups.group(parentId).subGroup(newGroup)) {
-            return handleCreationResponse(response, "Sub group");
+            return handleCreationResponse(response, "Sub groupType");
         } catch (Exception exception) {
-            log.error("Failed to create sub group in Keycloak", exception);
+            log.error("Failed to create sub groupType in Keycloak", exception);
             throw new RuntimeException(exception);
         }
     }
@@ -234,7 +239,7 @@ public class KeycloakAdminClient implements IdentityAdminClient {
         String groupName = formatFullPathGroupName(group, region);
         if (findGroupByPath(groupName).isPresent()) throw new RuntimeException("Group is already existed !!!");
 
-        // Create & assign realm role to group
+        // Create & assign realm role to groupType
         String groupId = createSubGroup(groups, regionGroupId, group.type);
         groups.group(groupId).roles().realmLevel().add(List.of(realmRole));
         return groupId;
@@ -244,12 +249,12 @@ public class KeycloakAdminClient implements IdentityAdminClient {
         GroupsResource groups = keycloak.realm(REALM).groups();
         Optional<GroupRepresentation> checkRegionGroup = findGroupByPath(MessageFormat.format("{0}/{1}", GROUP_PREFIX, region.country));
 
-        if (checkRegionGroup.isPresent())
+        if (checkRegionGroup.isPresent()) {
             return createSpecificGroup(groups, group, region, checkRegionGroup.get().getId());
-        else {
+        } else {
             // Không có /global/{region}
             Optional<GroupRepresentation> globalGroup = findGroupByPath(GROUP_PREFIX);
-            if (globalGroup.isEmpty()) throw new RuntimeException("Root group /global does not exist !!!");
+            if (globalGroup.isEmpty()) throw new RuntimeException("Root groupType /global does not exist !!!");
 
             String regionGroupId = createSubGroup(groups, globalGroup.get().getId(), region.country);
             return createSpecificGroup(groups, group, region, regionGroupId);
@@ -257,29 +262,37 @@ public class KeycloakAdminClient implements IdentityAdminClient {
     }
 
     private Optional<GroupRepresentation> findDirectChildGroupByName(String parentId, String childName) {
-        List<GroupRepresentation> subGroups = keycloak.realm(REALM).groups().group(parentId)
+        List<GroupRepresentation> subGroups = keycloak.realm(REALM).groups()
+            .group(parentId)
             .getSubGroups(0, 200, true);
 
-        return subGroups.stream().filter(group ->
-            group.getName().equalsIgnoreCase(childName)).findFirst();
+        return subGroups.stream().filter(
+            group -> group.getName().equalsIgnoreCase(childName)
+        ).findFirst();
     }
 
     public Optional<GroupRepresentation> findGroupByPath(String path) {
-        if (path == null || path.isEmpty() || path.equals("/")) return Optional.empty();
+        if (path == null || path.isEmpty() || path.equals("/")) {
+            return Optional.empty();
+        }
 
         // Split path, skip empty parts
         String[] parts = path.split("/");
         List<String> names = Arrays.stream(parts).filter(s -> !s.isBlank()).toList();
 
-        if (names.isEmpty()) return Optional.empty();
+        if (names.isEmpty()) {
+            return Optional.empty();
+        }
 
-        // Step 1: Find top-level group matching first part
+        // Step 1: Find top-level groupType matching first part
         List<GroupRepresentation> topGroups = keycloak.realm(REALM).groups().groups();
 
         Optional<GroupRepresentation> currentOpt = topGroups.stream().filter(group ->
             group.getName().equalsIgnoreCase(names.get(0))).findFirst();
 
-        if (currentOpt.isEmpty()) return Optional.empty();
+        if (currentOpt.isEmpty()) {
+            return Optional.empty();
+        }
 
         GroupRepresentation current = currentOpt.get();
 
@@ -288,7 +301,9 @@ public class KeycloakAdminClient implements IdentityAdminClient {
             String nextName = names.get(i);
             Optional<GroupRepresentation> childOpt = findDirectChildGroupByName(current.getId(), nextName);
 
-            if (childOpt.isEmpty()) return Optional.empty();
+            if (childOpt.isEmpty()) {
+                return Optional.empty();
+            }
             current = childOpt.get();
         }
         return Optional.of(current);
@@ -312,44 +327,51 @@ public class KeycloakAdminClient implements IdentityAdminClient {
             case CUSTOMER -> switch (identityClient) {
                 case AUTH -> List.of(ClientScope.USER_READ, ClientScope.USER_UPDATE);
                 case CONCERT -> List.of(ClientScope.VIEW, ClientScope.SEAT_UPDATE);
-                case BOOKING ->
-                    List.of(ClientScope.VIEW, ClientScope.READ, ClientScope.CREATE, ClientScope.UPDATE, ClientScope.DELETE);
+                case BOOKING -> List.of(
+                    ClientScope.VIEW,
+                    ClientScope.READ,
+                    ClientScope.CREATE,
+                    ClientScope.UPDATE,
+                    ClientScope.DELETE
+                );
             };
             case ORGANIZER -> switch (identityClient) {
                 case AUTH -> List.of(ClientScope.USER_READ, ClientScope.USER_UPDATE);
-                case CONCERT ->
-                    List.of(ClientScope.VIEW, ClientScope.READ, ClientScope.CREATE, ClientScope.UPDATE, ClientScope.DELETE);
+                case CONCERT -> List.of(
+                    ClientScope.VIEW,
+                    ClientScope.READ,
+                    ClientScope.CREATE,
+                    ClientScope.UPDATE,
+                    ClientScope.DELETE
+                );
                 case BOOKING -> List.of(ClientScope.VIEW, ClientScope.READ, ClientScope.UPDATE);
             };
             case ADMINISTRATOR -> switch (identityClient) {
-                case AUTH ->
-                    List.of(ClientScope.VIEW, ClientScope.READ, ClientScope.CREATE, ClientScope.UPDATE, ClientScope.DELETE);
+                case AUTH -> List.of(
+                    ClientScope.VIEW,
+                    ClientScope.READ,
+                    ClientScope.CREATE,
+                    ClientScope.UPDATE,
+                    ClientScope.DELETE);
                 case CONCERT, BOOKING -> List.of();
             };
         };
     }
 
     private RoleRepresentation getClientRole(String clientId, String roleName) {
-        // 1. Find client
+        // 1. Find clientType
         ClientRepresentation client = keycloak.realm(REALM)
-            .clients()
-            .findByClientId(clientId)
-            .stream()
-            .findFirst()
+            .clients().findByClientId(clientId).stream().findFirst()
             .orElseThrow(() -> new RuntimeException("Client not found: " + clientId));
 
         // 2. Get role
-        return keycloak.realm(REALM)
-            .clients()
-            .get(client.getId())
-            .roles()
-            .get(roleName)
-            .toRepresentation();
+        return keycloak.realm(REALM).clients().get(client.getId()).roles().get(roleName).toRepresentation();
     }
 
     private RoleRepresentation getOrCreateRealmRole(RolesResource roles, String roleName, IdentityRole roleType) {
         try {
             return roles.get(roleName).toRepresentation();
+
         } catch (Exception notFoundException) {
             log.warn("Failed to check role existence: {} caused by {}", roleName, notFoundException.getMessage());
 
@@ -363,8 +385,9 @@ public class KeycloakAdminClient implements IdentityAdminClient {
                 assignClientRolesToRealmRole(IdentityClient.AUTH, roleType, createdRealmRole.getName());
                 assignClientRolesToRealmRole(IdentityClient.CONCERT, roleType, createdRealmRole.getName());
                 assignClientRolesToRealmRole(IdentityClient.BOOKING, roleType, createdRealmRole.getName());
+
             } catch (Exception assignedFailedException) {
-                log.error("Cannot assign client roles caused by {}", assignedFailedException.getMessage());
+                log.error("Cannot assign clientType roles caused by {}", assignedFailedException.getMessage());
                 roles.deleteRole(createdRealmRole.getName());
                 throw new RuntimeException(assignedFailedException);
             }
@@ -384,7 +407,7 @@ public class KeycloakAdminClient implements IdentityAdminClient {
 
         // Add as composite to realm role
         keycloak.realm(REALM).roles().get(realmRoleName).addComposites(List.of(clientRole));
-        log.info("Added client role '{}' from client '{}' to realm role '{}'", clientRoleName, client.id, realmRoleName);
+        log.info("Added clientType role '{}' from clientType '{}' to realm role '{}'", clientRoleName, client.id, realmRoleName);
         return clientRole.getId();
     }
 
@@ -399,10 +422,9 @@ public class KeycloakAdminClient implements IdentityAdminClient {
     public String createConcertResourceBlocking(String concertId, String region) {
         String clientId = "concert-service";
 
-        // 1. Find the client
-        List<ClientRepresentation> clients = keycloak.realm(REALM)
-            .clients()
-            .findByClientId(clientId);
+        // 1. Find the clientType
+        List<ClientRepresentation> clients = keycloak.realm(REALM).clients().findByClientId(clientId);
+
         if (clients.isEmpty()) {
             throw new IllegalStateException("Client not found: " + clientId);
         }

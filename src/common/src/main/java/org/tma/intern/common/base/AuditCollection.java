@@ -3,9 +3,7 @@ package org.tma.intern.common.base;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
-import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.codecs.pojo.annotations.BsonProperty;
-import org.bson.types.ObjectId;
 
 import java.time.Instant;
 
@@ -15,29 +13,36 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PROTECTED)
-public class AuditCollection {
+public class AuditCollection extends BaseMongoModel {
 
-    @BsonId
-    ObjectId id;
+    public static final String FIELD_CREATED_BY = "created_by";
 
-    @BsonProperty(value = "created_by")
+    public static final String FIELD_UPDATED_BY = "updated_by";
+
+    public static final String FIELD_IS_DELETED = "is_deleted";
+
+    public static final String FIELD_CREATED_AT = "created_at";
+
+    public static final String FIELD_UPDATED_AT = "updated_at";
+
+    @BsonProperty(FIELD_CREATED_BY)
     @Builder.Default
-    String createdBy = "anonymous";
+    protected String createdBy = "anonymous";
 
-    @BsonProperty(value = "updated_by")
+    @BsonProperty(FIELD_UPDATED_BY)
     @Builder.Default
-    String updatedBy = "anonymous";
+    protected String updatedBy = "anonymous";
 
-    @BsonProperty(value = "is_deleted")
+    @BsonProperty(FIELD_IS_DELETED)
     @Builder.Default
-    boolean isDeleted = false;
+    protected boolean isDeleted = false;
 
-    @BsonProperty(value = "created_at")
+    @BsonProperty(FIELD_CREATED_AT)
     @Builder.Default
-    Instant createdAt = Instant.now();
+    protected Instant createdAt = Instant.now();
 
-    @BsonProperty(value = "updated_at")
+    @BsonProperty(FIELD_UPDATED_AT)
     @Builder.Default
-    Instant updatedAt = Instant.now();
+    protected Instant updatedAt = Instant.now();
 
 }

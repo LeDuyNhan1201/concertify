@@ -17,8 +17,8 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.RestResponse;
-import org.tma.intern.auth.dto.UserRequest;
-import org.tma.intern.auth.service.UserService;
+import org.tma.intern.auth.dto.request.GroupRequest;
+import org.tma.intern.auth.service.GroupService;
 import org.tma.intern.common.base.BaseResource;
 import org.tma.intern.common.dto.CommonResponse;
 
@@ -39,18 +39,18 @@ import org.tma.intern.common.dto.CommonResponse;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GroupsResourceV1 extends BaseResource {
 
-    UserService userService;
+    GroupService groupService;
 
     @RolesAllowed(ROLE_GLOBAL_ADMIN)
     @POST
     @Path("")
-    @Operation(summary = "Create group", description = "Create a new group")
+    @Operation(summary = "Create groupType", description = "Create a new groupType")
     @APIResponse(responseCode = "501", description = "Failed", content = @Content(schema = @Schema(implementation = String.class)))
-    @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
-    public Uni<RestResponse<CommonResponse<String>>> createGroup(UserRequest.GroupCreation body) {
-        return userService.createGroup(body).onItem().transform(groupId ->
+    @APIResponse(responseCode = "201", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
+    public Uni<RestResponse<CommonResponse<String>>> createGroup(GroupRequest.GroupCreation body) {
+        return groupService.createGroup(body).onItem().transform(groupId ->
             RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
-                .message(locale.getMessage("Action.Success", "Create", "group"))
+                .message(locale.getMessage("Action.Success", "Create", "groupType"))
                 .data(groupId).build()
             ).build());
     }

@@ -17,8 +17,8 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.RestResponse;
-import org.tma.intern.auth.dto.UserRequest;
-import org.tma.intern.auth.service.UserService;
+import org.tma.intern.auth.dto.request.RoleRequest;
+import org.tma.intern.auth.service.RoleService;
 import org.tma.intern.common.base.BaseResource;
 import org.tma.intern.common.dto.CommonResponse;
 
@@ -39,18 +39,18 @@ import org.tma.intern.common.dto.CommonResponse;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RolesResourceV1 extends BaseResource {
 
-    UserService userService;
+    RoleService roleService;
 
     @RolesAllowed(ROLE_GLOBAL_ADMIN)
     @PUT
     @Path("")
-    @Operation(summary = "Assign client role", description = "Assign client role to Realm role")
+    @Operation(summary = "Assign clientType role", description = "Assign clientType role to Realm role")
     @APIResponse(responseCode = "501", description = "Failed", content = @Content(schema = @Schema(implementation = String.class)))
     @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
-    public Uni<RestResponse<CommonResponse<String>>> assignClientRole(UserRequest.ClientRoleScope body) {
-        return userService.assignClientRole(body).onItem().transform(clientRoleId ->
+    public Uni<RestResponse<CommonResponse<String>>> assignClientRole(RoleRequest.ClientRoleInfo body) {
+        return roleService.assignClientRole(body).onItem().transform(clientRoleId ->
             RestResponse.ResponseBuilder.create(RestResponse.Status.CREATED, CommonResponse.<String>builder()
-                .message(locale.getMessage("Action.Success", "Assign", "client role"))
+                .message(locale.getMessage("Action.Success", "Assign", "clientType role"))
                 .data(clientRoleId).build()
             ).build());
     }

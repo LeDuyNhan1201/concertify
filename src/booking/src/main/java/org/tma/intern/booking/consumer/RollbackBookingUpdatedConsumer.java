@@ -2,31 +2,29 @@ package org.tma.intern.booking.consumer;
 
 import io.smallrye.mutiny.Uni;
 import io.smallrye.reactive.messaging.kafka.KafkaRecord;
-import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.reactive.messaging.Acknowledgment;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
-import org.eclipse.microprofile.reactive.messaging.Metadata;
-import org.tma.intern.booking.entity.BookingItem;
+import org.tma.intern.booking.model.BookingItem;
 import org.tma.intern.booking.service.BookingItemService;
-import org.tma.intern.common.contract.event.ItemId;
-import org.tma.intern.common.contract.event.RollbackBookingUpdated;
+import org.tma.intern.common.base.BaseConsumer;
+import org.tma.intern.common.contract.event.*;
 
-import java.nio.charset.StandardCharsets;
-import java.util.UUID;
+import java.util.List;
 
 @ApplicationScoped
 @Slf4j
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class RollbackBookingUpdatedConsumer {
+public class RollbackBookingUpdatedConsumer extends BaseConsumer<RollbackBookingUpdated> {
 
+    @Inject
     BookingItemService bookingItemService;
 
     static String ERROR_KEY = "rollback.booking.updated.error";
@@ -35,7 +33,8 @@ public class RollbackBookingUpdatedConsumer {
     @Acknowledgment(Acknowledgment.Strategy.MANUAL)
     public Uni<Void> consume(KafkaRecord<String, RollbackBookingUpdated> record) {
         RollbackBookingUpdated event = record.getPayload();
-        return bookingItemService.create(
+        return super.assertActionFailWithDeadLetter(
+            bookingItemService.create(
                 new ObjectId(event.getBookingId()),
                 event.getDeletedItems().stream().map(seatInfo ->
                     BookingItem.builder()
@@ -44,24 +43,28 @@ public class RollbackBookingUpdatedConsumer {
                         .price(seatInfo.getPrice())
                         .build()
                 ).toList()
-            ).invoke(id -> {
-                log.warn("Received: bookingId: {}", event.getConcertId());
-                event.getDeletedItems().forEach(item -> log.warn("Recovered itemId: {}", item.getId()));
-            }).chain(() -> bookingItemService.delete(event.getCreatedItems().stream().map(ItemId::getValue).toList())
-                .invoke(deletedIds -> deletedIds.forEach(deletedId -> log.warn("Deleted itemId: {}", deletedId)))
-                .onFailure().call(throwable -> bookingItemService.delete(event.getCreatedItems().stream().map(ItemId::getValue).toList())).onItem().failWith(() -> {
-                    throw new RuntimeException("Failed to delete items for bookingId: " + event.getBookingId());
-                })).onItem().transformToUni(id -> Uni.createFrom().completionStage(record.ack()))
-            .onFailure().recoverWithUni(error -> {
-                log.error("Failed during rollback update booking: {}", error.getMessage(), error);
-                var metadata = OutgoingKafkaRecordMetadata.<String>builder()
-                    .withKey(ERROR_KEY + ":" + UUID.randomUUID())
-                    .withHeaders(new RecordHeaders()
-                        .add("error-type", ERROR_KEY.getBytes(StandardCharsets.UTF_8))
-                        .add("error-msg", error.getMessage().getBytes(StandardCharsets.UTF_8)))
-                    .build();
-                return Uni.createFrom().completionStage(record.nack(error, Metadata.of(metadata)));
-            });
+            ).invoke(itemIds -> {
+                log.warn("Received: bookingId: {}", event.getBookingId());
+                itemIds.forEach(itemId -> log.warn("Recovered itemId: {}", itemId));
+            }).chain(createdIds ->
+                super.actionWithRollback(
+                    deleteCreatedItems(event.getCreatedItems()),
+                    bookingItemService.delete(createdIds)
+                )
+            ),
+            ERROR_KEY,
+            record
+        );
+    }
+
+    private Uni<List<String>> deleteCreatedItems(List<ItemId> createdItemIds) {
+        return bookingItemService.delete(
+                createdItemIds.stream().map(ItemId::getValue).toList()
+            )
+            .invoke(deletedIds -> deletedIds.forEach(
+                    deletedId -> log.warn("Deleted itemId: {}", deletedId)
+                )
+            );
     }
 
 }

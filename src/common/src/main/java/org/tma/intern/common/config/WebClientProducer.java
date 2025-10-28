@@ -1,6 +1,5 @@
 package org.tma.intern.common.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.arc.profile.IfBuildProfile;
 import io.vertx.core.net.PfxOptions;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -41,12 +40,5 @@ public class WebClientProducer {
     public WebClient testAuthRestClient(Vertx vertx) {
         return WebClient.create(vertx, new WebClientOptions());
     }
-
-//    @Produces
-//    @Singleton
-//    @IfBuildProfile("dev")
-//    public ObjectMapper objectMapper() {
-//        return new ObjectMapper();
-//    }
 
 }

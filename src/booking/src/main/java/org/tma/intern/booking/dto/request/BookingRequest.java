@@ -2,21 +2,26 @@ package org.tma.intern.booking.dto.request;
 
 import java.util.List;
 
-public class BookingRequest {
+public interface BookingRequest {
 
-    public record Body(
+    record Info(
+
         String concertId,
-        String concertOwnerId,
-        List<BookingItemRequest.Body> items
-    ) {
-    }
-    ;
 
-    public record Update(
-        List<String> oldItems,
-        List<BookingItemRequest.Body> newItems
+        String concertOwnerId,
+
+        List<BookingItemRequest.Info> items
+
     ) {
     }
-    ;
+
+    record UpdatedInfo(
+
+        List<String> oldItems,
+
+        List<BookingItemRequest.Info> newItems
+
+    ) {
+    }
 
 }

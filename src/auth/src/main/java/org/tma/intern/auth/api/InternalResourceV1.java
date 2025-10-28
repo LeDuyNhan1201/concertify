@@ -52,10 +52,12 @@ public class InternalResourceV1 extends BaseResource {
     @GET
     @Path("/users")
     @NoCache
-    @Operation(summary = "Get list user email", description = "API to get list user email by group")
+    @Operation(summary = "Get list user email", description = "API to get list user email by groupType")
     @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
-    public Uni<RestResponse<CommonResponse<List<String>>>> getEmailsByGroup(@QueryParam("group") String group,
-                                                                            @QueryParam("region") String region) {
+    public Uni<RestResponse<CommonResponse<List<String>>>> getEmailsByGroup(
+        @QueryParam("groupType") String group,
+        @QueryParam("region") String region
+    ) {
         return keycloakAdminClient.getAllUserEmailByGroup(
             IdentityGroup.valueOf(group.toUpperCase()), Region.valueOf(region.toUpperCase())
         ).onItem().transform(userEmails -> RestResponse.ResponseBuilder.ok(

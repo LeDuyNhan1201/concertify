@@ -4,8 +4,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import org.tma.intern.common.base.BaseMapper;
-import org.tma.intern.concert.data.Concert;
-import org.tma.intern.concert.data.Seat;
+import org.tma.intern.concert.model.Concert;
+import org.tma.intern.concert.model.Seat;
 
 @Mapper(componentModel = "cdi", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ConcertMapper extends BaseMapper {

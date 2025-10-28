@@ -13,12 +13,10 @@ import org.eclipse.microprofile.reactive.messaging.Acknowledgment;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
-import org.tma.intern.common.contract.event.BookingDeleted;
-import org.tma.intern.common.contract.event.RollbackBookingDeleted;
-import org.tma.intern.common.contract.event.SeatId;
-import org.tma.intern.common.contract.event.SeatInfo;
+import org.tma.intern.common.base.BaseConsumer;
+import org.tma.intern.common.contract.event.*;
 import org.tma.intern.common.type.SeatStatus;
-import org.tma.intern.concert.data.Seat;
+import org.tma.intern.concert.model.Seat;
 import org.tma.intern.concert.service.ConcertService;
 import org.tma.intern.concert.service.SeatService;
 
@@ -28,7 +26,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class BookingDeletedConsumer {
+public class BookingDeletedConsumer extends BaseConsumer<BookingDeleted> {
 
     ConcertService concertService;
 
@@ -39,39 +37,27 @@ public class BookingDeletedConsumer {
     @Channel("rollback.booking.deleted-out")
     private Emitter<RollbackBookingDeleted> rollbackBookingDeletedEventBus;
 
-    static String ERROR_KEY = "booking.deleted.error";
-
     @Incoming("booking.deleted-in")
     @Acknowledgment(Acknowledgment.Strategy.MANUAL)
     public Uni<Void> consume(KafkaRecord<String, BookingDeleted> record) {
         BookingDeleted event = record.getPayload();
-        return seatService.updateStatus(
-                SeatStatus.BOOKED,
-                SeatStatus.AVAILABLE,
-                event.getItems().stream().map(SeatId::getValue).toList(),
-                event.getConcertId()
-            ).invoke(id -> {
-                log.warn("Received: concertId: {}", event.getConcertId());
-                event.getItems().forEach(seatId -> log.warn("Old seatId: {}", seatId.getValue()));
-            }).onItem().transformToUni(id -> Uni.createFrom().completionStage(record.ack()))
-            .onFailure().recoverWithUni(error -> {
-                log.error("Failed during cancel seats: {}", error.getMessage(), error);
-                return concertService.findById(event.getConcertId()).chain(concert -> seatService.findSeatsById(event.getItems().stream().map(SeatId::getValue).toList(), event.getConcertId())
-                    .onItem().transformToUni(seats -> sendRollbackBookingDeletedEvent(
-                        event.getUserId(),
-                        event.getConcertId(),
-                        concert.getOwnerId(),
-                        seats
-                    ))
-                ).onItem().transformToUni(id -> Uni.createFrom().completionStage(record.ack()));
-//                var metadata = OutgoingKafkaRecordMetadata.<String>builder()
-//                    .withKey(ERROR_KEY + ":" + event.getBookingId())
-//                    .withHeaders(new RecordHeaders()
-//                        .add("error-type", ERROR_KEY.getBytes(StandardCharsets.UTF_8))
-//                        .add("error-msg", error.getMessage().getBytes(StandardCharsets.UTF_8)))
-//                    .build();
-//                return Uni.createFrom().completionStage(record.nack(error, Metadata.of(metadata)));
-            });
+        return super.assertActionFailWithRollback(
+            deleteBookingWithLogging(event),
+            concertService.findById(event.getConcertId()).chain(concert ->
+                seatService.findAllByIds(
+                        event.getItems().stream().map(SeatId::getValue).toList(),
+                        event.getConcertId()
+                    )
+                    .onItem().transformToUni(seats ->
+                        sendRollbackBookingDeletedEvent(
+                            event.getUserId(),
+                            event.getConcertId(),
+                            concert.getOwnerId(),
+                            seats
+                        )
+                    )
+            ), record
+        );
     }
 
     private Uni<Void> sendRollbackBookingDeletedEvent(String userId, String concertId, String concertOwnerId, List<Seat> seats) {
@@ -91,4 +77,15 @@ public class BookingDeletedConsumer {
             .invoke(() -> log.info("Rollback booking deleted event sent successfully!"));
     }
 
+    private Uni<List<String>> deleteBookingWithLogging(BookingDeleted event) {
+        return seatService.updateStatus(
+            SeatStatus.BOOKED,
+            SeatStatus.AVAILABLE,
+            event.getItems().stream().map(SeatId::getValue).toList(),
+            event.getConcertId()
+        ).invoke(id -> {
+            log.warn("Received: concertId: {}", event.getConcertId());
+            event.getItems().forEach(seatId -> log.warn("Old seatId: {}", seatId.getValue()));
+        });
+    }
 }

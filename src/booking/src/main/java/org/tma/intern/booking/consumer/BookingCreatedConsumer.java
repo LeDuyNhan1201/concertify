@@ -14,6 +14,7 @@ import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.tma.intern.booking.service.BookingService;
+import org.tma.intern.common.base.BaseConsumer;
 import org.tma.intern.common.contract.event.BookingCreated;
 import org.tma.intern.common.contract.event.RollbackBookingCreated;
 import org.tma.intern.common.contract.event.SeatId;
@@ -25,8 +26,9 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class BookingCreatedConsumer {
+public class BookingCreatedConsumer extends BaseConsumer<BookingCreated> {
 
+    @Inject
     BookingService bookingService;
 
     @NonFinal
@@ -38,27 +40,14 @@ public class BookingCreatedConsumer {
     @Acknowledgment(Acknowledgment.Strategy.MANUAL)
     public Uni<Void> consume(KafkaRecord<String, BookingCreated> record) {
         BookingCreated event = record.getPayload();
-        return bookingService.create(event)
-            .invoke(id -> {
-                log.info("Booking created with ID: {}", id);
-                log.warn("Received: concertId: {}, concertOwnerId: {}", event.getConcertId(), event.getConcertOwnerId());
-                event.getItems().forEach(seatInfo ->
-                    log.warn("Received: seatId: {}, price: {}", seatInfo.getId(), seatInfo.getPrice()));
-            }).onItem().transformToUni(id -> Uni.createFrom().completionStage(record.ack()))
-            .onFailure().recoverWithUni(error -> {
-                log.error("Failed to process booking created event: {}", error.getMessage(), error);
-                return sendRollbackBookingCreatedEvent(
-                    event.getConcertId(),
-                    event.getItems()
-                ).onItem().transformToUni(id -> Uni.createFrom().completionStage(record.ack()));
-//                var metadata = OutgoingKafkaRecordMetadata.<String>builder()
-//                    .withKey("booking-failed-" + UUID.randomUUID())
-//                    .withHeaders(new RecordHeaders()
-//                        .add("error-type", "booking-processing-error".getBytes(StandardCharsets.UTF_8))
-//                        .add("error-msg", error.getMessage().getBytes(StandardCharsets.UTF_8)))
-//                    .build();
-//                return Uni.createFrom().completionStage(record.nack(error, Metadata.of(metadata)));
-            });
+        return super.assertActionFailWithRollback(
+            createBookingWithLogging(bookingService.create(event), event),
+            sendRollbackBookingCreatedEvent(
+                event.getConcertId(),
+                event.getItems()
+            ),
+            record
+        );
     }
 
     private Uni<Void> sendRollbackBookingCreatedEvent(String concertId, List<SeatInfo> seats) {
@@ -72,6 +61,24 @@ public class BookingCreatedConsumer {
 
         return Uni.createFrom().completionStage(() -> rollbackBookingCreatedEventBus.send(event))
             .invoke(() -> log.info("Rollback booking created event sent successfully!"));
+    }
+
+    private Uni<String> createBookingWithLogging(Uni<String> uniAction, BookingCreated event) {
+        return uniAction.invoke(bookingId -> {
+            log.warn(
+                "Booking created with ID: {}, Received: concertId: {}, concertOwnerId: {}",
+                bookingId,
+                event.getConcertId(),
+                event.getConcertOwnerId()
+            );
+            event.getItems().forEach(
+                seatInfo -> log.warn(
+                    "Received: seatId: {}, price: {}",
+                    seatInfo.getId(),
+                    seatInfo.getPrice()
+                )
+            );
+        });
     }
 
 }

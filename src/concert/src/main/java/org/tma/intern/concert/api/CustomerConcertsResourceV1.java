@@ -22,6 +22,7 @@ import org.tma.intern.common.base.BaseResource;
 import org.tma.intern.common.dto.CommonResponse;
 import org.tma.intern.common.dto.PageResponse;
 import org.tma.intern.common.type.identity.IdentityRole;
+import org.tma.intern.concert.dto.ConcertRequest;
 import org.tma.intern.concert.dto.ConcertResponse;
 import org.tma.intern.concert.service.ConcertService;
 
@@ -44,9 +45,7 @@ public class CustomerConcertsResourceV1 extends BaseResource {
 
     ConcertService concertService;
 
-    static final String VIEW_ROLE = "concert:view";
-
-    @RolesAllowed(VIEW_ROLE) // Only customers
+    @RolesAllowed(ROLE_VIEW_CONCERT) // Only customers
     @GET
     @Path("/{id}")
     @NoCache
@@ -54,23 +53,26 @@ public class CustomerConcertsResourceV1 extends BaseResource {
     @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = ConcertResponse.PreviewWithSeats.class)))
     public Uni<RestResponse<CommonResponse<ConcertResponse.PreviewWithSeats>>> details(@PathParam("id") String id) {
         // Check region
-        hasOnlyRole(IdentityRole.CUSTOMER);
+        hasRole(IdentityRole.CUSTOMER);
         return concertService.preview(id).onItem().transform(concert ->
-            RestResponse.ResponseBuilder.ok(CommonResponse.<ConcertResponse.PreviewWithSeats>builder().data(concert).build()).build());
+            RestResponse.ResponseBuilder.ok(CommonResponse.<ConcertResponse.PreviewWithSeats>builder().data(concert).build()).build()
+        );
     }
 
-    @RolesAllowed(VIEW_ROLE) // Only customers
-    @GET
+    @RolesAllowed(ROLE_VIEW_CONCERT) // Only customers
+    @POST
     @Path("")
     @NoCache
     @Operation(summary = "Get concerts page", description = "API to search concerts.")
     @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = PageResponse.class)))
     public Uni<RestResponse<PageResponse<ConcertResponse.Preview>>> search(
+        ConcertRequest.SearchQuery query,
         @QueryParam("offset") int offset,
-        @QueryParam("limit") int limit) {
-        // Check region
-        hasOnlyRole(IdentityRole.CUSTOMER);
-        return concertService.search(offset, limit).map(page -> RestResponse.ResponseBuilder.ok(page).build());
+        @QueryParam("limit") int limit
+    ) {
+        hasRole(IdentityRole.CUSTOMER);
+        return concertService.search(query, offset, limit, false)
+            .map(page -> RestResponse.ResponseBuilder.ok(page).build());
     }
 
 }

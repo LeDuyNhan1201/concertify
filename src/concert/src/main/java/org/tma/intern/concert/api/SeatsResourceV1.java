@@ -19,6 +19,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.RestResponse;
 import org.tma.intern.common.base.BaseResource;
 import org.tma.intern.common.dto.CommonResponse;
+import org.tma.intern.common.type.identity.IdentityRole;
 import org.tma.intern.concert.dto.ConcertRequest;
 import org.tma.intern.concert.service.ConcertService;
 import org.tma.intern.concert.service.SeatService;
@@ -46,36 +47,36 @@ public class SeatsResourceV1 extends BaseResource {
 
     SeatService seatService;
 
-    static final String SEAT_UPDATE_ROLE = "concert:seat:update";
-
-    @RolesAllowed(SEAT_UPDATE_ROLE) // Only Customers
+    @RolesAllowed({ ROLE_CREATE_BOOKING, ROLE_UPDATE_SEAT }) // Only Customers
     @PUT
     @Path("/hold/{concertId}/concert")
     @Operation(summary = "Hold seats", description = "API to hold seats by list seat id.")
     @APIResponse(responseCode = "409", description = "Conflict", content = @Content(schema = @Schema(implementation = String.class)))
     @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
     @Consumes(MediaType.APPLICATION_JSON)
-    public Uni<RestResponse<CommonResponse<List<String>>>> holdSeats(@PathParam("concertId") String concertId, ConcertRequest.SeatIds body) {
+    public Uni<RestResponse<CommonResponse<List<String>>>> hold(@PathParam("concertId") String concertId, ConcertRequest.SeatIds body) {
         // Check region
+        hasRole(IdentityRole.CUSTOMER);
         return concertService.findById(concertId)
             .invoke(concert -> checkRegion(concert.getRegion())).flatMap(preview ->
-                seatService.hold(body, preview.getId()).onItem().transform(resultIds ->
+                seatService.hold(body, preview.getId()).onItem().transform(seatIds ->
                     RestResponse.ResponseBuilder.ok(CommonResponse.<List<String>>builder()
                         .message(locale.getMessage("Action.Success", "Hold", "seats"))
-                        .data(resultIds).build()
+                        .data(seatIds).build()
                     ).build())
             );
     }
 
-    @RolesAllowed(SEAT_UPDATE_ROLE) // Only Customers
+    @RolesAllowed(ROLE_UPDATE_SEAT) // Only Customers
     @PUT
     @Path("/book/{concertId}/concert")
     @Operation(summary = "Book seats", description = "API to book seats by list seat id.")
     @APIResponse(responseCode = "409", description = "Conflict", content = @Content(schema = @Schema(implementation = String.class)))
     @APIResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = String.class)))
     @Consumes(MediaType.APPLICATION_JSON)
-    public Uni<RestResponse<CommonResponse<List<String>>>> bookedSeats(@PathParam("concertId") String concertId, ConcertRequest.SeatIds body) {
+    public Uni<RestResponse<CommonResponse<List<String>>>> book(@PathParam("concertId") String concertId, ConcertRequest.SeatIds body) {
         // Check region
+        hasRole(IdentityRole.CUSTOMER);
         return concertService.findById(concertId)
             .invoke(concert -> checkRegion(concert.getRegion())).flatMap(preview ->
                 seatService.book(body, preview).onItem().transform(resultIds ->

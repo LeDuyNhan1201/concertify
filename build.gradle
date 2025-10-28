@@ -64,12 +64,15 @@ subprojects {
         implementation rootProject.ext.libs.quarkusArc
         implementation rootProject.ext.libs.quarkusJackson
         implementation rootProject.ext.libs.quarkusRest
+        implementation rootProject.ext.libs.jwt
         implementation rootProject.ext.libs.quarkusOidc
         implementation rootProject.ext.libs.quarkusOidcClient
         implementation rootProject.ext.libs.keycloakAuthorization
         implementation rootProject.ext.libs.quarkusJackson
         implementation rootProject.ext.libs.swagger
-//        implementation rootProject.ext.libs.reactivePanache
+
+        implementation rootProject.ext.libs.opentelemetry
+        implementation rootProject.ext.libs.exporterLogging
 
         testImplementation rootProject.ext.libs.quarkusJunit
         testImplementation rootProject.ext.libs.restAssured

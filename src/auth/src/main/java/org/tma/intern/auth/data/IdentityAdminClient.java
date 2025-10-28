@@ -13,17 +13,16 @@ public interface IdentityAdminClient {
 
     Uni<List<String>> getAllUserEmailByGroup(IdentityGroup group, Region region);
 
-    Multi<String> getRoles();
-
     Uni<String> createGroup(IdentityGroup group, Region region);
 
     Uni<IdentityUser> getUserByEmail(String email);
 
-    Uni<String> createUser(IdentityUser entity, IdentityGroup group, Region region);
+    Uni<String> createUserIntoGroup(IdentityUser entity, IdentityGroup group, Region region);
 
-    Uni<String> deleteUser(String id);
+    Uni<String> deleteUserById(String id);
 
     Multi<String> createUsers(List<IdentityUser> entities, IdentityGroup groups, Region region);
 
     Uni<String> assignClientRole(IdentityClient client, ClientScope scope, String realmRoleName);
+
 }

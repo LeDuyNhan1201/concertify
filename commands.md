@@ -1,187 +1,90 @@
 ```shell
+# Setup global JAVA_HOME for the first time
+nvim ~/.bashrc
+export JAVA_HOME=/path/to/jdk-17.0.1
+export PATH=$JAVA_HOME/bin:$PATH
+source ~/.bashrc
+
+# Make IDE has full permission on current project
+sudo chown -R $USER:$USER path/to/project
+sudo chmod +x *.sh
+
+# Bonus
+sudo ./start.sh
+sudo ./stop.sh
+
+sudo tar -czvf <project-root>.tar.gz <project-root>
+sudo tar -xzf <project-root>.tar.gz
+
+sudo apt install make curl jq
+
+ssh root@<ip.address> "docker save <image-name> | gzip" | pv | gunzip | docker load
+```
+
+```shell
+# Gradle scripts
+# ./gradlew wrapper --gradle-version <gradleVersion>
+# Check version on https://docs.gradle.org/current/userguide/gradle_wrapper.html
 gradle wrapper --gradle-version 8.14
+
+# ./gradlew :<module-name>:clean build -Dquarkus.native.enabled=true -x test
 ./gradlew clean build
 ./gradlew clean build -x test
 ./gradlew clean build -Dquarkus.native.enabled=true
-./gradlew :common:clean build -x test
+
+# ./gradlew :<module-name>:quarkusDev
 ./gradlew :auth:quarkusDev
 ./gradlew :concert:quarkusDev
 ./gradlew :booking:quarkusDev
 
-sudo tar -czvf concertify.tar.gz concertify
-sudo tar -xzf concertify.tar.gz
+# Maven scripts
+# mvn -N wrapper:wrapper -Dmaven=<maven-version>
+# Check version on https://docs.gradle.org/current/userguide/gradle_wrapper.html
+mvn -N wrapper:wrapper
+./mvnw clean install
+
+# ./mvnw -pl <module-name> quarkus:dev
+./mvnw -pl auth quarkus:dev
+
+# Without Jacoco
+./mvnw -Dtest=<TestClassName>#<methodName1>+<methodName2> test
+
+# With Jacoco
+./mvnw clean verify -Dtest=<TestClassName>#<methodName1>+<methodName2> -Dquarkus.test.coverage.enabled=true
+
+./mvnw clean verify -Dtest=AuthenticationControllerTest#verifyToken_withOrgContext_success -Dquarkus.test.coverage.enabled=true
 ```
 
 ```shell
-docker compose up -d
-docker compose down -v
-docker logs -f postgres
-docker stop postgres
-docker rm -f -v postgres
+# docker compose scripts
+docker compose -f /path/to/real/docker-compose.yml up -d
+docker compose -f /path/to/real/docker-compose.yml down -v
 
+# docker scripts
+docker logs -f <container-name>
+docker stop <container-name>
+docker rmi -f <container-name>
+docker build -f /path/to/Dockerfile.builder -t quarkus/<service-name>-builder .
+
+# docker exec -it -uroot <service-name> bash -c '<any-shell-scripts>';
+docker exec -it -uroot auth-service bash -c 'cd /app && ./mvnw -pl auth quarkus:dev -Dquarkus.http.host=0.0.0.0 -DdebugHost=0.0.0.0 -DskipTests';
+
+# Export realm.json require install 'jq' package first
 docker exec -it keycloak /bin/bash 
 /opt/keycloak/bin/kc.sh export --dir /opt/keycloak/data/export --realm concertify --users realm_file
 
-docker inspect schema-registry1 | jq '.[0].State.Health.Log[] | {ExitCode, Output}'
-```
-
-```shell
-curl --insecure -X POST 'https://localhost:8443/realms/concertify/protocol/openid-connect/token' \
---header 'Content-Type: application/x-www-form-urlencoded' \
---data-urlencode 'username=organizer.us@gmail.com' \
---data-urlencode 'password=123' \
---data-urlencode 'client_id=web-app' \
---data-urlencode 'grant_type=password'
-
-curl --insecure -X POST 'https://localhost:8443/realms/concertify/protocol/openid-connect/token' \
---header 'Content-Type: application/x-www-form-urlencoded' \
---data-urlencode 'username=customer.us@gmail.com' \
---data-urlencode 'password=123' \
---data-urlencode 'client_id=web-app' \
---data-urlencode 'grant_type=password'
-
-curl --insecure -X POST 'https://localhost:8443/realms/concertify/protocol/openid-connect/token' \
---header 'Content-Type: application/x-www-form-urlencoded' \
---data-urlencode 'username=admin@gmail.com' \
---data-urlencode 'password=123' \
---data-urlencode 'client_id=web-app' \
---data-urlencode 'grant_type=password'
-
-curl --insecure -X 'POST' \
-  'https://localhost:61002/v1/users' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer ' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "email": "organizer1.us@gmail.com",
-  "password": "123",
-  "firstName": "Organizer1",
-  "lastName": "US",
-  "group": "ORGANIZERS",
-  "region": "US"
-}'
-
-curl --insecure -X 'POST' \
-  'https://localhost:61002/v1/users' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer ' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "email": "organizer2.us@gmail.com",
-  "password": "123",
-  "firstName": "Organizer2",
-  "lastName": "US",
-  "group": "ORGANIZERS",
-  "region": "US"
-}'
-
-curl --insecure -X 'POST' \
-  'https://localhost:61002/v1/users' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer 123' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "email": "customer1.us@gmail.com",
-  "password": "123",
-  "firstName": "Customer1",
-  "lastName": "US",
-  "group": "CUSTOMERS",
-  "region": "US"
-}'
-
-curl --insecure -X 'POST' \
-  'https://localhost:61002/v1/users' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer 123' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "email": "customer2.us@gmail.com",
-  "password": "123",
-  "firstName": "Customer2",
-  "lastName": "US",
-  "group": "CUSTOMERS",
-  "region": "US"
-}'
-
-curl --insecure -X 'POST' \
-  'https://localhost:62002/v1/organizer/concerts' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer ' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "title": "Test",
-  "description": "string",
-  "location": "Ho Chi Minh",
-  "startTime": "2022-03-10T12:15:50",
-  "endTime": "2022-03-10T12:15:50"
-}'
-
-curl --insecure 'https://localhost:62002/v1/organizer/concerts/687d0fbc0ebd36ab870d270d' \
---header 'Authorization: Bearer '
-
-curl --X PUT --insecure 'https://localhost:62002/v1/seats/hold/687db518a938f9d7196aceb9/concert' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer ' \
---data '{
-    "ids": [
-            "687db518a938f9d7196acedc",
-            "687db518a938f9d7196aced1",
-            "687db518a938f9d7196acf18",
-            "687db518a938f9d7196acf19"
-        ]
-}'
-
-curl --insecure --X PUT 'https://localhost:62002/v1/seats/book/687d0fbc0ebd36ab870d270d/concert' \
---header 'Content-Type: application/json' \
---header 'Accept-Language: en-US' \
---header 'Authorization: Bearer ' \
---data '{
-    "ids": [
-            "687d0fbc0ebd36ab870d2730",
-            "687d0fbc0ebd36ab870d2725",
-            "687d0fbc0ebd36ab870d276f",
-            "687d0fbc0ebd36ab870d2770"
-        ]
-}'
-
-curl --insecure --X PUT 'https://localhost:63002/v1/bookings/687d1a579c031f0b1a834a69' \
---header 'Content-Type: application/json' \
---header 'Accept-Language: vi-VN' \
---header 'Authorization: Bearer ' \
---data '{
-    "oldItems": [
-    "687d1fbf357e30a0f2a52688",
-    "687d1fbf357e30a0f2a52689"
-  ],
-  "newItems": [
-    {
-      "seatId": "687d0fbc0ebd36ab870d272f",
-      "seatCode": "VIP-R1-S1",
-      "price": 120
-    },
-    {
-      "seatId": "687d0fbc0ebd36ab870d270e",
-      "seatCode": "VIP-R1-S1",
-      "price": 120
-    }
-  ]
-}'
-
-curl --insecure --X DELETE 'https://localhost:63002/bookings/v1/687d1a579c031f0b1a834a69' \
---header 'Authorization: Bearer '
-```
-
-```shell
-source generate_ca.sh
-sudo ./start.sh
-sudo ./stop.sh
+# Inspect health check status require install 'jq' package first
+docker inspect <container-name> | jq '.[0].State.Health.Log[] | {ExitCode, Output}'
 ```
 
 ```shell
 docker exec -it broker1 /bin/bash 
+
+# curl --insecure https://localhost:8081/subjects --cert /path/to/cert.pem --key /path/to/key.pem --cacert /path/to/ca.crt
 curl --insecure https://localhost:8081/subjects --cert Desktop/Projects/concertify/docker/kafka/schema-registry1/certs/cert.pem --key Desktop/Projects/concertify/docker/kafka/schema-registry1/certs/key.pem --cacert Desktop/Projects/concertify/docker/certs/ca/ca.crt
 
-curl -X DELETE --insecure https://localhost:8081/subjects/booking.created-value --cert Desktop/Projects/concertify/docker/kafka/schema-registry1/certs/cert.pem --key Desktop/Projects/concertify/docker/kafka/schema-registry1/certs/key.pem --cacert Desktop/Projects/concertify/docker/certs/ca/ca.crt
+# curl -X DELETE --insecure https://localhost:8081/subjects/<schema-name> --cert /path/to/cert.pem --key /path/to/key.pem --cacert /path/to/ca.crt
+curl -X DELETE --insecure https://localhost:8081/subjects/rollback.booking.updated.dlq-value --cert Desktop/Projects/concertify/docker/kafka/schema-registry1/certs/cert.pem --key Desktop/Projects/concertify/docker/kafka/schema-registry1/certs/key.pem --cacert Desktop/Projects/concertify/docker/certs/ca/ca.crt
 
 curl --insecure https://localhost:8081/subjects --cert Projects/concertify/docker/kafka/schema-registry1/certs/cert.pem --key Projects/concertify/docker/kafka/schema-registry1/certs/key.pem --cacert Projects/concertify/docker/certs/ca/ca.crt
 

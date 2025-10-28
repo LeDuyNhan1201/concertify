@@ -1,32 +1,18 @@
 package org.tma.intern.common.exception;
 
-import lombok.Getter;
+import org.tma.intern.common.exception.error.AuthError;
+import org.tma.intern.common.exception.error.FailureError;
+import org.tma.intern.common.exception.error.InvalidError;
+import org.tma.intern.common.exception.error.NotFoundError;
 
-@Getter
-public enum AppError {
+public interface AppError {
 
-    // Token Errors
-    TOKEN_MISSING("common/token-missing", "Error.TokenMissing"),
-    TOKEN_INVALID("common/token-invalid", "Error.TokenInvalid"),
+    NotFoundError NotFound = new NotFoundError();
 
-    //Rate Limiting Errors
-    TOO_MANY_REQUESTS("common/too-many-requests", "Error.TooManyRequests"),
-    RATE_LIMIT_EXCEEDED("common/rate-limit-exceeded", "Error.RateLimitExceeded"),
+    InvalidError Invalid = new InvalidError();
 
-    RESOURCE_NOT_FOUND("common/resource-not-found", "Error.ResourceNotFound"),
-    ACTION_FAILED("common/action-failed", "Action.Fail"),
-    AUTH_INFO_INVALID("auth/auth-info-invalid", "Error.AuthInfoInvalid"),
-    REGION_INVALID("auth/region-invalid", "Error.RegionInvalid"),
-    ROLE_INVALID("auth/role-invalid", "Error.RoleInvalid"),
-    CANNOT_ACCESS("common/cannot-access-resource", "Error.CannotAccess"),
-    ;
+    FailureError Failure = new FailureError();
 
-    AppError(String code, String message) {
-        this.code = code;
-        this.message = message;
-    }
-
-    private final String code;
-    private final String message;
+    AuthError Auth = new AuthError();
 
 }

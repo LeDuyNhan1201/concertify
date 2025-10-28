@@ -24,9 +24,7 @@ public interface ConcertService {
 
     Uni<ConcertResponse.DetailsWithSeats> details(String id);
 
-    Uni<PageResponse<ConcertResponse.Preview>> search(int offset, int limit);
-
-    Uni<PageResponse<ConcertResponse.Preview>> myConcerts(int offset, int limit);
+    Uni<PageResponse<ConcertResponse.Preview>> search(ConcertRequest.SearchQuery query, int offset, int limit, boolean isOrganizer);
 
     Uni<List<String>> seedData(int count, Region region);
 

@@ -1,9 +1,6 @@
 package org.tma.intern.common.helper;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 
 public class TimeHelper {
@@ -20,6 +17,31 @@ public class TimeHelper {
 
     public static Instant toInstant(LocalDateTime dateTime) {
         return dateTime == null ? null : dateTime.atZone(ZoneOffset.UTC).toInstant();
+    }
+
+    public static String since(Instant startedAt) {
+        if (startedAt == null) {
+            return "-";
+        }
+        return toMsFormat(sinceMs(startedAt));
+    }
+
+    public static String toMsFormat(double duration) {
+        return String.format("%.2f ms", duration);
+    }
+
+    public static double sinceMs(Instant startedAt) {
+        if (startedAt == null) {
+            return -1;
+        }
+        return sinceNs(startedAt) / 1_000_000.0;
+    }
+
+    public static double sinceNs(Instant startedAt) {
+        if (startedAt == null) {
+            return -1;
+        }
+        return Math.abs(Duration.between(startedAt, Instant.now()).toNanos());
     }
 
 }

@@ -1,0 +1,156 @@
+services:
+  # --------- Postgres ---------
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - test-network
+    command: postgres -c 'max_connections=500'
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ldnhan -d postgres" ]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    restart: always
+    volumes:
+      - ./postgres/init-db:/docker-entrypoint-initdb.d:ro
+    environment:
+      POSTGRES_USER: ldnhan
+      POSTGRES_PASSWORD: 123
+
+  # --------- Keycloak ---------
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak_certgen:
+        condition: service_completed_successfully
+    ports:
+      - "8000:8000" # HTTP
+      - "9990:9990" # Management port
+    networks:
+      - test-network
+    command: ["start-dev", "--health-enabled=true", "--import-realm"]
+    healthcheck:
+      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9990; echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost:9990\r\nConnection: close\r\n\r\n' >&3; cat <&3 | grep -q '\"status\": \"UP\"' && exit 0 || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    restart: always
+    volumes:
+      - ./keycloak/test-realms.json:/opt/keycloak/data/import/realms-import.json
+    environment:
+      KC_HTTP_MANAGEMENT_PORT: 9990
+      KC_METRICS_ENABLED: true
+      KC_HEALTH_ENABLED: true
+      KC_BOOTSTRAP_ADMIN_USERNAME: ldnhan
+      KC_BOOTSTRAP_ADMIN_PASSWORD: 123
+      KC_PROXY: edge
+      KC_CORS: 'true'
+      KC_CORS_ORIGINS: '*'
+      KEYCLOAK_IMPORT: /opt/keycloak/data/import/realms-import.json
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_PORT: 5432
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: ldnhan
+      KC_DB_PASSWORD: 123
+
+  # --------- Kafka Brokers ---------
+  kafka1:
+    image: confluentinc/cp-kafka:${CONFLUENT_DOCKER_TAG:-latest}
+    container_name: kafka1
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    networks:
+      - test-network
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "kafka1", "29092" ]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    restart: always
+    environment:
+      KAFKA_BROKER_ID: '1'
+      KAFKA_LISTENERS: CONTROLLER://kafka1:19091,INTERNAL://kafka1:29091,EXTERNAL://kafka1:29092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka1:29091,EXTERNAL://kafka1:29092
+
+      CLUSTER_ID: vHCgQyIrRHG8Jv27qI2h3Q
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka1:19091
+
+      # Others
+      KAFKA_AUTO_CREATE_TOPICS_ENABLED: 'true'
+      KAFKA_DELETE_TOPIC_ENABLED: 'true'
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_GROUP_MAX_SESSION_TIMEOUT_MS: 300000    # 5 mins
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1           # 1 brokers
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1        # Đảm bảo có quorum (n - 1) brokers sẵn sàng
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+      KAFKA_MIN_INSYNC_REPLICAS: 2                  # Nên >= 2 khi replication = 3 (tối thiểu 2 replicas sống)
+      KAFKA_REPLICA_LAG_TIME_MAX_MS: 30000          # 30s là hợp lý cho phát hiện lag
+
+      KAFKA_NUM_IO_THREADS: 4                       # Tùy thuộc CPU (thường = số vCPU)
+      KAFKA_NUM_NETWORK_THREADS: 1                  # Một cho mỗi broker là đủ (hoặc = số NIC)
+      KAFKA_NUM_RECOVERY_THREADS_PER_DATA_DIR: 2    # Nếu bạn dùng 1 ổ đĩa: để = 2 giúp phục hồi nhanh hơn
+
+      KAFKA_OFFSETS_COMMIT_TIMEOUT_MS: 10000        # 10s
+      KAFKA_OFFSETS_RETENTION_MINUTES: 10080        # 7 days
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_COMPRESSION_CODEC: 1      # gzip
+
+      KAFKA_HEAP_OPTS: "-Xms${BROKER_HEAP} -Xmx${BROKER_HEAP}"
+
+  # --------- Schema Registry ---------
+  schema-registry1:
+    image: confluentinc/cp-schema-registry:${CONFLUENT_DOCKER_TAG:-latest}
+    container_name: schema-registry1
+    depends_on:
+      kafka1:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    networks:
+      - test-network
+    healthcheck:
+      test: >
+        sh -c 'curl --silent -o /dev/null -w "%{http_code}" http://localhost:8081/subjects | grep -E "^(200|401)$" > /dev/null'
+      start_period: 10s
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    restart: always
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema1
+      SCHEMA_REGISTRY_GROUP_ID: "schema-registry-group"
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC: _schemas
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka1:29092
+
+      SCHEMA_REGISTRY_INTER_INSTANCE_PROTOCOL: 'http'
+      SCHEMA_REGISTRY_SCHEMA_REGISTRY_INTER_INSTANCE_PROTOCOL: 'http'
+
+      # Schema store
+      SCHEMA_REGISTRY_KAFKASTORE_TIMEOUT_MS: 10000
+      SCHEMA_REGISTRY_KAFKASTORE_INIT_TIMEOUT_MS: 120000
+      SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: PLAINTEXT
+
+      SCHEMA_REGISTRY_LEADER_ELIGIBILITY: 'true'
+      SCHEMA_REGISTRY_MODE_MUTABILITY: 'true'
+      SCHEMA_REGISTRY_DEBUG: 'true'
+      KAFKA_HEAP_OPTS: "-Xms${SCHEMA_HEAP} -Xmx${SCHEMA_HEAP}"
+
+networks:
+  test-network:

@@ -225,6 +225,14 @@ Realm: `concertify`
     └── administrator_{region}
 ```
 
+!owner -> Cannot access
+!region -> Region invalid
+!role -> 403 | Role invalid
+
+
+
+
+
 # Features Details
 
 ## Auth Service
@@ -807,5 +815,8 @@ Controller --> Client : HTTP 201 Created\n{ message: "Success", data: groupId }
 ```
 
 ```
+
+
+
 
 

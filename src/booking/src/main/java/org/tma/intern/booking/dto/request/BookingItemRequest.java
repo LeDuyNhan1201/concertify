@@ -1,13 +1,16 @@
 package org.tma.intern.booking.dto.request;
 
-public class BookingItemRequest {
+public interface BookingItemRequest {
 
-    public record Body(
+    record Info(
+
         String seatId,
+
         String seatCode,
+
         long price
+
     ) {
     }
-    ;
 
 }

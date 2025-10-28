@@ -7,6 +7,7 @@ import io.quarkus.oidc.client.Tokens;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.ext.web.client.WebClient;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +16,9 @@ import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.tma.intern.common.dto.CommonResponse;
+import org.tma.intern.common.exception.AppException;
 import org.tma.intern.common.exception.AppError;
-import org.tma.intern.common.exception.HttpException;
+import org.tma.intern.common.type.Action;
 import org.tma.intern.common.type.Region;
 import org.tma.intern.common.type.identity.IdentityGroup;
 
@@ -28,10 +30,12 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthRestClient {
 
+    @Inject
     WebClient webClient;
 
     ObjectMapper objectMapper = new ObjectMapper();
 
+    @Inject
     OidcClient oidcClient;
 
     @NonFinal
@@ -40,7 +44,12 @@ public class AuthRestClient {
 
     public Uni<String> getAccessToken() {
         return oidcClient.getTokens().onFailure().transform(error ->
-            new HttpException(AppError.ACTION_FAILED, Response.Status.UNAUTHORIZED, error, "Get", "user ids")
+            new AppException(
+                AppError.Failure.Action,
+                error, Response.Status.UNAUTHORIZED,
+                Action.READ.message,
+                "tokens"
+            )
         ).map(Tokens::getAccessToken);
     }
 
@@ -55,16 +64,29 @@ public class AuthRestClient {
             .map(response -> {
                 if (response.statusCode() != 200) {
                     log.error("Fetch failed: {} - {}", response.statusCode(), response.statusMessage());
-                    throw new HttpException(AppError.ACTION_FAILED, Response.Status.fromStatusCode(response.statusCode()), null, "Get", "user ids");
+                    throw new AppException(
+                        AppError.Failure.Action,
+                        null, Response.Status.fromStatusCode(response.statusCode()),
+                        Action.READ.message,
+                        "user ids"
+                    );
                 }
 
                 try {
-                    CommonResponse<List<String>> myResponse = objectMapper.readValue(response.bodyAsString(), new TypeReference<>() {
-                    });
+                    CommonResponse<List<String>> myResponse = objectMapper.readValue(
+                        response.bodyAsString(), new TypeReference<>() {
+                        }
+                    );
                     return myResponse.getData();
-                } catch (Exception e) {
-                    log.error("Parse error", e);
-                    throw new HttpException(AppError.ACTION_FAILED, Response.Status.INTERNAL_SERVER_ERROR, e, "Parse", "user ids response");
+
+                } catch (Exception exception) {
+                    log.error("Parse error", exception);
+                    throw new AppException(
+                        AppError.Failure.Action,
+                        exception, Response.Status.INTERNAL_SERVER_ERROR,
+                        "Parse",
+                        "user ids response"
+                    );
                 }
             }));
     }

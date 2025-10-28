@@ -5,8 +5,9 @@ import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.common.mapper.TypeRef;
 import org.jboss.resteasy.reactive.RestResponse;
 import org.junit.jupiter.api.*;
-import org.tma.intern.auth.dto.UserRequest;
-import org.tma.intern.auth.dto.UserResponse;
+import org.tma.intern.auth.dto.request.GroupRequest;
+import org.tma.intern.auth.dto.request.UserRequest;
+import org.tma.intern.auth.dto.response.UserResponse;
 import org.tma.intern.common.dto.CommonResponse;
 import org.tma.intern.common.helper.StringHelper;
 import org.tma.intern.common.type.Region;
@@ -57,11 +58,11 @@ class UsersAndGroupsResourceV1Test {
             .auth().oauth2(getAccessToken(ADMIN_EMAIL))
             .header("Content-Type", "application/json")
             .header("Accept-Language", "en-US")
-            .body(new UserRequest.GroupCreation(IdentityGroup.CUSTOMERS, Region.FR))
+            .body(new GroupRequest.GroupCreation(IdentityGroup.CUSTOMERS, Region.FR))
             .when().post(GROUPS_PATH)
             .then().log().all()
             .statusCode(RestResponse.Status.CREATED.getStatusCode())
-            .body("message", is(StringHelper.getMessage("Action.Success", Locale.ENGLISH, "Create", "group")))
+            .body("message", is(StringHelper.getMessage("Action.Success", Locale.ENGLISH, "Create", "groupType")))
             .extract().response();
     }
 
@@ -77,7 +78,9 @@ class UsersAndGroupsResourceV1Test {
                 "123",
                 "Customer",
                 "FR",
-                IdentityGroup.CUSTOMERS, Region.FR))
+                IdentityGroup.CUSTOMERS, Region.FR
+                )
+            )
             .when().post(USERS_PATH)
             .then().log().all()
             .statusCode(RestResponse.Status.CREATED.getStatusCode())
@@ -92,7 +95,7 @@ class UsersAndGroupsResourceV1Test {
     @Order(3)
     @Test
     void getUserByEmail_withAdminInUS_Success() {
-        CommonResponse<UserResponse.Detail> response = given()
+        CommonResponse<UserResponse.Details> response = given()
             .auth().oauth2(getAccessToken(ADMIN_EMAIL))
             .when().get(USERS_PATH + "/{email}", email)
             .then().log().all()

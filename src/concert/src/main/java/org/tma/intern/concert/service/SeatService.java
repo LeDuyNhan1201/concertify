@@ -3,7 +3,7 @@ package org.tma.intern.concert.service;
 import io.smallrye.mutiny.Uni;
 import org.bson.types.ObjectId;
 import org.tma.intern.common.type.SeatStatus;
-import org.tma.intern.concert.data.Seat;
+import org.tma.intern.concert.model.Seat;
 import org.tma.intern.concert.dto.ConcertRequest;
 import org.tma.intern.concert.dto.ConcertResponse;
 
@@ -26,5 +26,5 @@ public interface SeatService {
 
     Uni<List<ConcertResponse.PreviewSeat>> findByConcertId(String concertId);
 
-    Uni<List<Seat>> findSeatsById(List<String> ids, String concertId);
+    Uni<List<Seat>> findAllByIds(List<String> ids, String concertId);
 }

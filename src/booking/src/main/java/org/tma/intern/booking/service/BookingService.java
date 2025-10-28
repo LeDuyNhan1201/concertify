@@ -7,13 +7,11 @@ import org.tma.intern.common.contract.event.BookingCreated;
 import org.tma.intern.common.type.BookingStatus;
 import org.tma.intern.common.dto.PageResponse;
 
-import java.util.List;
-
 public interface BookingService {
 
     Uni<String> create(BookingCreated event);
 
-    Uni<String> update(String id, BookingRequest.Update request);
+    Uni<String> update(String id, BookingRequest.UpdatedInfo request);
 
     Uni<String> update(String id, BookingStatus status);
 
@@ -28,7 +26,5 @@ public interface BookingService {
     Uni<PageResponse<BookingResponse.Details>> search(int page, int limit);
 
     Uni<PageResponse<BookingResponse.Details>> bookingsOfMyConcerts(int index, int limit);
-
-    Uni<List<String>> seedData(int count);
 
 }

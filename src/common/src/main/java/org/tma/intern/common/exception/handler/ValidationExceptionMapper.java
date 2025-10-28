@@ -1,6 +1,7 @@
 package org.tma.intern.common.exception.handler;
 
 import io.quarkus.hibernate.validator.runtime.jaxrs.ResteasyReactiveViolationException;
+import jakarta.validation.ConstraintViolation;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
@@ -12,6 +13,7 @@ import org.tma.intern.common.helper.StringHelper;
 import org.tma.intern.common.locale.LocaleProvider;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Provider
@@ -19,8 +21,6 @@ import java.util.stream.Collectors;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class ValidationExceptionMapper implements ExceptionMapper<ResteasyReactiveViolationException> {
-
-    LocaleProvider locale;
 
     @Override
     public Response toResponse(ResteasyReactiveViolationException exception) {
@@ -30,40 +30,47 @@ public class ValidationExceptionMapper implements ExceptionMapper<ResteasyReacti
             .collect(Collectors.toList());
 
         ValidationResponse error = new ValidationResponse(
-            locale.getMessage("Action.Fail", "Validate", "inputs"),
+            LocaleProvider.getMessage("Action.Fail", "Validate", "inputs"),
             violations
         );
 
-        return Response.status(Response.Status.BAD_REQUEST)
-            .entity(error)
-            .build();
+        return Response.status(Response.Status.BAD_REQUEST).entity(error).build();
     }
 
-    private Violation toViolation(jakarta.validation.ConstraintViolation<?> cv) {
-        String annotationType = cv.getConstraintDescriptor()
+    private Violation toViolation(ConstraintViolation<?> violation) {
+        String annotationType = violation.getConstraintDescriptor()
             .getAnnotation()
             .annotationType()
             .getSimpleName();
 
         String field = StringHelper.uppercaseFirstChar(
-            StringHelper.getLastSegment(cv.getPropertyPath().toString(), '.')
+            StringHelper.getLastSegment(violation.getPropertyPath().toString(), '.')
         );
 
+        Map<String, Object> attributes = violation.getConstraintDescriptor().getAttributes();
+        String messageKey = violation.getMessage();
         String message;
 
         switch (annotationType) {
-            case "Size":
-                String min = cv.getConstraintDescriptor().getAttributes().get("min").toString();
-                String max = cv.getConstraintDescriptor().getAttributes().get("max").toString();
-                message = locale.getMessage(cv.getMessage(), field, min, max);
-                break;
+            case "Size" -> {
+                String min = attributes.get("min").toString();
+                String max = attributes.get("max").toString();
+                message = LocaleProvider.getMessage(messageKey, field, min, max);
 
-            default:
-                message = locale.getMessage(cv.getMessage(), field);
+            } case "Min" -> {
+                String min = attributes.get("min").toString();
+                message = LocaleProvider.getMessage(messageKey, field, min);
+
+            } case "Max" -> {
+                String max = attributes.get("max").toString();
+                message = LocaleProvider.getMessage(messageKey, field, max);
+
+            } default -> message = LocaleProvider.getMessage(messageKey, field);
         }
 
         return new Violation(field, message);
     }
+
 
     public static class Violation {
         public String field;
@@ -84,4 +91,5 @@ public class ValidationExceptionMapper implements ExceptionMapper<ResteasyReacti
             this.violations = violations;
         }
     }
+
 }
