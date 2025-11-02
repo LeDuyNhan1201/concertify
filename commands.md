@@ -25,10 +25,10 @@ ssh root@<ip.address> "docker save <image-name> | gzip" | pv | gunzip | docker l
 # Gradle scripts
 # ./gradlew wrapper --gradle-version <gradleVersion>
 # Check version on https://docs.gradle.org/current/userguide/gradle_wrapper.html
-gradle wrapper --gradle-version 9.1.0
+gradle wrapper --gradle-version 8.14.3
 
 # ./gradlew :<module-name>:clean build -Dquarkus.native.enabled=true -x test
-./gradlew clean build
+./gradlew clean build --warning-mode=all --stacktrace
 ./gradlew clean build -x test
 ./gradlew clean build -Dquarkus.native.enabled=true
 

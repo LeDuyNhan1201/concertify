@@ -25,16 +25,15 @@ import java.util.List;
 @ApplicationScoped
 @Slf4j
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookingCreatedConsumer extends BaseConsumer<BookingCreated> {
 
-    @Inject
-    BookingService bookingService;
+    final BookingService bookingService;
 
     @NonFinal
     @Inject
     @Channel("rollback.booking.created-out")
-    private Emitter<RollbackBookingCreated> rollbackBookingCreatedEventBus;
+    Emitter<RollbackBookingCreated> rollbackBookingCreatedEventBus;
 
     @Incoming("booking.created-in")
     @Acknowledgment(Acknowledgment.Strategy.MANUAL)

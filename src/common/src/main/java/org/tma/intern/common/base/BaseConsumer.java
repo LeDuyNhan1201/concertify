@@ -16,8 +16,6 @@ import java.util.UUID;
 
 @Slf4j
 @FieldDefaults(level = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@NoArgsConstructor
 public abstract class BaseConsumer<TEvent> {
 
     protected abstract Uni<Void> consume(KafkaRecord<String, TEvent> record);
