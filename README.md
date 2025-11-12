@@ -4,178 +4,301 @@ Workflow -flowchart - [Mermaid studio:](https://www.mermaidchart.com/play?utm_so
 ---
 ## Auth Service
 ```mermaid
+%%{init: {"themeVariables": {"fontSize": "20px"}}}%%
 flowchart TD
     Start[Auth Service]
+    style Start font-size:24px
 
     %% Create Group
     Start --> CG[POST /auth/groups]
+    style CG font-size:22px
     CG --> CG_Auth[Check Role: global_admin]
+    style CG_Auth font-size:20px
     CG_Auth --> CG_Validate[Validate Input]
+    style CG_Validate font-size:20px
     CG_Validate --> CG_CreateParent[Ensure /global region group]
+    style CG_CreateParent font-size:20px
     CG_CreateParent --> CG_CreateChild[Ensure /global region type group]
+    style CG_CreateChild font-size:20px
     CG_CreateChild --> CG_Role[Ensure type_region role]
+    style CG_Role font-size:20px
     CG_Role --> CG_Assign[Assign role to group]
+    style CG_Assign font-size:20px
     CG_Assign --> CG_Done[Return Group ID]
+    style CG_Done font-size:20px
 
     %% Create User (Admin Use Case)
     Start --> CU_Admin[POST /auth/users]
+    style CU_Admin font-size:22px
     CU_Admin --> CU_Admin_Auth[Check Role: administrator]
+    style CU_Admin_Auth font-size:20px
     CU_Admin_Auth --> CU_Admin_Validate[Validate Input]
+    style CU_Admin_Validate font-size:20px
     CU_Admin_Validate --> CU_Admin_Group[Ensure Groups and Roles]
+    style CU_Admin_Group font-size:20px
     CU_Admin_Group --> CU_Admin_CreateUser[Create User]
+    style CU_Admin_CreateUser font-size:20px
     CU_Admin_CreateUser --> CU_Admin_AssignGroup[Assign User to Group]
+    style CU_Admin_AssignGroup font-size:20px
     CU_Admin_AssignGroup --> CU_Admin_Done[Return User ID]
+    style CU_Admin_Done font-size:20px
 
     %% Create User (Customer Sign-Up)
     Start --> CU_Customer[POST /auth/sign-up]
+    style CU_Customer font-size:22px
     CU_Customer --> CU_Customer_Role[Check Role: customer]
+    style CU_Customer_Role font-size:20px
     CU_Customer_Role --> CU_Customer_Validate[Validate User Info]
+    style CU_Customer_Validate font-size:20px
     CU_Customer_Validate --> CU_Customer_Region[Determine Region]
+    style CU_Customer_Region font-size:20px
     CU_Customer_Region --> CU_Customer_CreateUser[Create User Enabled]
+    style CU_Customer_CreateUser font-size:20px
     CU_Customer_CreateUser --> CU_Customer_Done[Return User ID]
+    style CU_Customer_Done font-size:20px
 
     %% Update User
     Start --> UU[PUT /auth/users]
+    style UU font-size:22px
     UU --> UU_Variants{Use Case}
+    style UU_Variants font-size:20px
     UU_Variants --> UU_Admin[Administrator Actions]
+    style UU_Admin font-size:20px
     UU_Variants --> UU_Customer[Customer Own Info]
+    style UU_Customer font-size:20px
 
     %% Delete User
     Start --> DU[DELETE /auth/users]
+    style DU font-size:22px
     DU --> DU_Auth[Check Role: administrator]
+    style DU_Auth font-size:20px
     DU_Auth --> DU_Delete[Delete User]
+    style DU_Delete font-size:20px
 
     %% User Details
     Start --> UD_Admin[GET /auth/users/id]
+    style UD_Admin font-size:22px
     UD_Admin --> UD_Admin_Auth[Check Role: administrator]
+    style UD_Admin_Auth font-size:20px
 
     Start --> UD_Customer[GET /auth/info]
+    style UD_Customer font-size:22px
     UD_Customer --> UD_Customer_Check[Check Owner Identity]
+    style UD_Customer_Check font-size:20px
 ```
 ---
 ## Concert Service
 ```mermaid
+%%{init: {"themeVariables": {"fontSize": "20px"}}}%%
 flowchart TD
-  Start([Concert Service]) 
+  Start([Concert Service])
+  style Start font-size:24px
 
   %% Create
   Start --> CreateConcert[POST_concerts]
+  style CreateConcert font-size:22px
   CreateConcert --> CC_Role[Check Role: organizer]
+  style CC_Role font-size:20px
   CC_Role --> CC_Validate[Validate Inputs]
+  style CC_Validate font-size:20px
   CC_Validate --> CC_Region[Determine Region]
+  style CC_Region font-size:20px
   CC_Region --> CC_Create[Create Concert]
+  style CC_Create font-size:20px
   CC_Create --> CC_Seats[Generate Seats Map]
+  style CC_Seats font-size:20px
   CC_Seats --> CC_Success[Return New Concert ID]
+  style CC_Success font-size:20px
   CC_Seats -->|Fail| CC_Rollback[Rollback Delete]
+  style CC_Rollback font-size:20px
 
   %% Update
   Start --> UpdateConcert[PUT_concerts_id]
+  style UpdateConcert font-size:22px
   UpdateConcert --> UC_Role[Check Role: organizer & isOwner]
+  style UC_Role font-size:20px
   UC_Role --> UC_Validate[Validate Inputs]
+  style UC_Validate font-size:20px
   UC_Validate --> UC_CheckExist[Check if Exists]
+  style UC_CheckExist font-size:20px
   UC_CheckExist --> UC_Update[Update Concert Fields]
+  style UC_Update font-size:20px
   UC_Update --> UC_Success[Return Updated Concert ID]
+  style UC_Success font-size:20px
 
   %% Delete
   Start --> DeleteConcert[DELETE_concerts_id]
+  style DeleteConcert font-size:22px
   DeleteConcert --> DC_Role[Check Role: organizer & isOwner]
+  style DC_Role font-size:20px
   DC_Role --> DC_CheckExist[Check if Exists]
+  style DC_CheckExist font-size:20px
   DC_CheckExist --> DC_SoftDelete[Set isDeleted=true]
+  style DC_SoftDelete font-size:20px
   DC_SoftDelete --> DC_Success[Return Updated Concert ID]
+  style DC_Success font-size:20px
 
   %% Details
   Start --> DetailOrganizer[GET_concerts_id_owner]
+  style DetailOrganizer font-size:22px
   DetailOrganizer --> DO_Role[Check Role: organizer & isOwner]
+  style DO_Role font-size:20px
   DO_Role --> DO_CheckExist[Check if Exists]
+  style DO_CheckExist font-size:20px
   DO_CheckExist --> DO_Return[Return Full Details]
+  style DO_Return font-size:20px
 
   Start --> DetailCustomer[GET_concerts_id]
-  DetailCustomer --> DC_Role[Check Role: customer]
-  DC_Role --> DC_Region[Check Region Match]
-  DC_Region --> DC_CheckExist[Check if Exists]
-  DC_CheckExist --> DC_Return[Return Details - No audit info]
+  style DetailCustomer font-size:22px
+  DetailCustomer --> DC_Role_C[Check Role: customer]
+  style DC_Role_C font-size:20px
+  DC_Role_C --> DC_Region[Check Region Match]
+  style DC_Region font-size:20px
+  DC_Region --> DC_CheckExist_C[Check if Exists]
+  style DC_CheckExist_C font-size:20px
+  DC_CheckExist_C --> DC_Return[Return Details - No audit info]
+  style DC_Return font-size:20px
 
   %% Search
   Start --> SearchOrganizer[POST_concerts_me]
+  style SearchOrganizer font-size:22px
   SearchOrganizer --> SO_Role[Check Role: organizer]
+  style SO_Role font-size:20px
   SO_Role --> SO_Query[Query Owner & Region All isDeleted]
+  style SO_Query font-size:20px
   SO_Query --> SO_Return[Return Page of Concerts]
+  style SO_Return font-size:20px
 
   Start --> SearchCustomer[POST_concerts]
+  style SearchCustomer font-size:22px
   SearchCustomer --> SC_Role[Check Role: customer]
+  style SC_Role font-size:20px
   SC_Role --> SC_Query[Query Region isDeleted=false]
+  style SC_Query font-size:20px
   SC_Query --> SC_Return[Return Page of Concerts]
-
+  style SC_Return font-size:20px
 ```
 ---
 ## Booking Service
 ```mermaid
+%%{init: {"themeVariables": {"fontSize": "20px"}}}%%
 flowchart TD
   Start([Booking Service])
+  style Start font-size:24px
 
   %% 1. Create Booking
   Start --> CreateBooking[POST_bookings]
+  style CreateBooking font-size:22px
   CreateBooking --> CB_Role[Check Role: customer]
+  style CB_Role font-size:20px
   CB_Role --> CB_Validate[Validate Inputs]
+  style CB_Validate font-size:20px
   CB_Validate --> CB_Region[Determine Region]
+  style CB_Region font-size:20px
   CB_Region --> CB_User[Get User ID from JWT]
+  style CB_User font-size:20px
   CB_User --> CB_Create[Create Booking]
+  style CB_Create font-size:20px
   CB_Create --> CB_Items[Create Booking Items]
+  style CB_Items font-size:20px
   CB_Items --> CB_Kafka[Send Kafka to Concert Service]
+  style CB_Kafka font-size:20px
   CB_Kafka --> CB_Success[Return New Booking ID]
+  style CB_Success font-size:20px
   CB_Kafka -->|Fail| CB_Rollback[Rollback: Delete Booking + Notify User]
+  style CB_Rollback font-size:20px
 
   %% 2. Update Booking
   Start --> UpdateBooking[PUT_bookings]
+  style UpdateBooking font-size:22px
   UpdateBooking --> UB_Role[Check Role: customer & isOwner]
+  style UB_Role font-size:20px
   UB_Role --> UB_Validate[Validate Inputs]
+  style UB_Validate font-size:20px
   UB_Validate --> UB_CheckExist[Check if Exists]
+  style UB_CheckExist font-size:20px
   UB_CheckExist --> UB_NewItems[Create New Items]
+  style UB_NewItems font-size:20px
   UB_NewItems --> UB_DelItems[Delete Items]
+  style UB_DelItems font-size:20px
   UB_DelItems --> UB_Kafka[Send Kafka to Concert Service]
+  style UB_Kafka font-size:20px
   UB_Kafka --> UB_Success[Return Updated Booking ID]
+  style UB_Success font-size:20px
   UB_Kafka -->|Fail| UB_Rollback[Rollback: Delete New Items, Restore Deleted Items + Notify User]
+  style UB_Rollback font-size:20px
 
   %% 3. Update Booking Status
   Start --> UpdateStatus[PATCH_bookings]
+  style UpdateStatus font-size:22px
   UpdateStatus --> US_Role[Check Role: organizer & isOwnerOfConcert]
+  style US_Role font-size:20px
   US_Role --> US_Validate[Validate Inputs]
+  style US_Validate font-size:20px
   US_Validate --> US_CheckExist[Check if Exists]
+  style US_CheckExist font-size:20px
   US_CheckExist --> US_Update[Update Status]
+  style US_Update font-size:20px
   US_Update --> US_Notify[Notify User]
+  style US_Notify font-size:20px
   US_Notify --> US_Success[Return Updated Booking ID]
+  style US_Success font-size:20px
 
   %% 4. Delete Booking
   Start --> DeleteBooking[DELETE_bookings]
+  style DeleteBooking font-size:22px
   DeleteBooking --> DB_Role[Check Role: customer & isOwner]
+  style DB_Role font-size:20px
   DB_Role --> DB_CheckExist[Check if Exists]
+  style DB_CheckExist font-size:20px
   DB_CheckExist --> DB_Delete[Delete Booking + Items]
+  style DB_Delete font-size:20px
   DB_Delete --> DB_Kafka[Send Kafka to Concert Service]
+  style DB_Kafka font-size:20px
   DB_Kafka --> DB_Success[Return Deleted Booking ID]
+  style DB_Success font-size:20px
   DB_Kafka -->|Fail| DB_Rollback[Rollback: Restore Booking + Notify User]
+  style DB_Rollback font-size:20px
 
   %% 5. Booking Details
   Start --> DetailsOrganizer[GET_bookings_id]
+  style DetailsOrganizer font-size:22px
   DetailsOrganizer --> DO_Role[Check Role: organizer & isOwnerOfConcert]
+  style DO_Role font-size:20px
   DO_Role --> DO_CheckExist[Check if Exists]
+  style DO_CheckExist font-size:20px
   DO_CheckExist --> DO_Return[Return Booking Details]
+  style DO_Return font-size:20px
 
   Start --> DetailsCustomer[GET_bookings_id_owner]
+  style DetailsCustomer font-size:22px
   DetailsCustomer --> DC_Role[Check Role: customer & isOwner]
+  style DC_Role font-size:20px
   DC_Role --> DC_Region[Check Region Match]
+  style DC_Region font-size:20px
   DC_Region --> DC_CheckExist[Check if Exists]
+  style DC_CheckExist font-size:20px
   DC_CheckExist --> DC_Return[Return Booking Details]
+  style DC_Return font-size:20px
 
   %% 6. Search Bookings
   Start --> SearchOrganizer[GET_bookings_concertId]
+  style SearchOrganizer font-size:22px
   SearchOrganizer --> SO_Role[Check Role: organizer]
+  style SO_Role font-size:20px
   SO_Role --> SO_Query[Query by Concert Owner & Region - All isDeleted]
+  style SO_Query font-size:20px
   SO_Query --> SO_Return[Return Page of Bookings]
+  style SO_Return font-size:20px
 
   Start --> SearchCustomer[GET_bookings_me]
+  style SearchCustomer font-size:22px
   SearchCustomer --> SC_Role[Check Role: customer]
+  style SC_Role font-size:20px
   SC_Role --> SC_Query[Query by Owner & Region - isDeleted=false]
+  style SC_Query font-size:20px
   SC_Query --> SC_Return[Return Page of Bookings]
+  style SC_Return font-size:20px
 ```
 ---
 # RBAC Graph for Keycloak Realm
