@@ -145,9 +145,9 @@ x-kafka-env:
   KAFKA_LISTENER_NAME_EXTERNAL_SSL_PRINCIPAL_MAPPING_RULES: RULE:^CN=([a-zA-Z0-9]*).*$$/$$1/L,DEFAULT
 
   # metrics reporter
-#  KAFKA_JMX_PORT: 9101
-#  KAFKA_JMX_HOSTNAME: localhost
-#  KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=kafka1 -Dcom.sun.management.jmxremote.rmi.port=9101
+  #  KAFKA_JMX_PORT: 9101
+  #  KAFKA_JMX_HOSTNAME: localhost
+  #  KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=kafka1 -Dcom.sun.management.jmxremote.rmi.port=9101
 
   # Others
   KAFKA_AUTO_CREATE_TOPICS_ENABLED: 'true'
@@ -170,7 +170,7 @@ x-kafka-env:
   KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
   KAFKA_OFFSETS_TOPIC_COMPRESSION_CODEC: 1      # gzip
 
-#  EXTRA_ARGS: "-javaagent:/usr/bin/jmx/jmx_prometheus_javaagent.jar=1234:/usr/bin/jmx/exporter.yml"
+  #  EXTRA_ARGS: "-javaagent:/usr/bin/jmx/jmx_prometheus_javaagent.jar=1234:/usr/bin/jmx/exporter.yml"
   KAFKA_OPTS: |
     -Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=${KAFKA_IDP_JWKS_ENDPOINT},${KAFKA_IDP_TOKEN_ENDPOINT},${IDP_AUTH_ENDPOINT},${IDP_DEVICE_AUTH_ENDPOINT}
   KAFKA_HEAP_OPTS: "-Xms${BROKER_HEAP} -Xmx${BROKER_HEAP}"
@@ -246,104 +246,14 @@ x-schema-registry-env:
   SCHEMA_REGISTRY_SASL_LOGIN_CALLBACK_HANDLER_CLASS: io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler
   SCHEMA_REGISTRY_SASL_SERVER_CALLBACK_HANDLER_CLASS: io.strimzi.kafka.oauth.server.JaasServerOauthValidatorCallbackHandler
 
-#  SCHEMA_REGISTRY_REST_AUTH_JMX_ENABLED: 'true'
-#  EXTRA_ARGS: "-javaagent:/usr/bin/jmx/jmx_prometheus_javaagent.jar=1234:/usr/bin/jmx/exporter.yml"
+  #  SCHEMA_REGISTRY_REST_AUTH_JMX_ENABLED: 'true'
+  #  EXTRA_ARGS: "-javaagent:/usr/bin/jmx/jmx_prometheus_javaagent.jar=1234:/usr/bin/jmx/exporter.yml"
   SCHEMA_REGISTRY_LEADER_ELIGIBILITY: 'true'
   SCHEMA_REGISTRY_MODE_MUTABILITY: 'true'
   SCHEMA_REGISTRY_DEBUG: 'true'
   KAFKA_HEAP_OPTS: "-Xms${SCHEMA_HEAP} -Xmx${SCHEMA_HEAP}"
 
-x-backend-env:
-  &backend-env
-  PROFILE: dev
-  HTTP_PORT: 8080
-  HTTP_TEST_PORT: 8081
-  HTTPS_PORT: 8082
-
-  KEY_STORE_PATH: /certs/keystore.p12
-  TRUST_STORE_PATH: /certs/truststore.p12
-  CERT_SECRET: ${CERT_SECRET}
-
-  POSTGRES_USER: ${POSTGRES_USER}
-  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-
-  MONGODB_USERNAME: ${MONGODB_USERNAME}
-  MONGODB_PASSWORD: ${MONGODB_PASSWORD}
-
-  KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID}
-  KAFKA_CLIENT_SECRET: ${KAFKA_CLIENT_SECRET}
-
-  KAFKA_SUPERUSER_CLIENT_ID: kafka
-  KAFKA_SUPERUSER_CLIENT_SECRET: kafka-secret
-
-  IDP_SERVER_URL: ${KAFKA_IDP_URL}
-  KAFKA_BOOTSTRAP_SERVERS: kafka1:39091
-  SCHEMA_REGISTRY_URL: https://schema1:8081/
-  KAFKA_IDP_TOKEN_ENDPOINT: ${KAFKA_IDP_TOKEN_ENDPOINT}
-
 services:
-  # --------- MongoDB ---------
-  mongodb:
-    image: mongo:${MONGO_DOCKER_TAG:-latest}
-    container_name: mongodb
-    ports:
-      - 27017:27017
-    networks:
-      - concertify-network
-    healthcheck:
-      test: echo 'db.runCommand({serverStatus:1}).ok' | mongosh admin -u ${MONGODB_USERNAME} -p ${MONGODB_PASSWORD} --quiet | grep 1
-      interval: 10s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
-    restart: always # unless-stopped
-    volumes:
-      - mongodb-data:/data/db
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
-
-  # --------- Mongo Express ---------
-  express:
-    image: mongo-express:${EXPRESS_DOCKER_TAG:-latest}
-    container_name: express
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    ports:
-      - 5051:8081
-    networks:
-      - concertify-network
-    restart: always # unless-stopped
-    environment:
-      ME_CONFIG_BASICAUTH: false
-      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGODB_USERNAME}
-      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGODB_PASSWORD}
-      ME_CONFIG_MONGODB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/
-
-  # --------- Postgres ---------
-  postgres:
-    image: postgres:${POSTGRES_DOCKER_TAG:-latest}
-    container_name: postgres
-    ports:
-      - "5432:5432"
-    networks:
-      - concertify-network
-    command: postgres -c 'max_connections=500'
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d postgres" ]
-      interval: 30s
-      timeout: 10s
-      start_period: 30s
-      retries: 3
-    restart: always # unless-stopped
-    volumes:
-      - ./postgres/init-db:/docker-entrypoint-initdb.d:ro
-      - postgres-data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-
   # --------- Keycloak ---------
   keycloak:
     image: quay.io/keycloak/keycloak:${KEYCLOAK_DOCKER_TAG:-latest}
@@ -368,7 +278,7 @@ services:
     ]
     restart: always # unless-stopped
     volumes:
-      - ./keycloak/realms-import.json:/opt/keycloak/data/import/realms-import.json
+      - ./keycloak/realms.dev.json:/opt/keycloak/data/import/realms.dev.json
       - ./keycloak/exports:/opt/keycloak/data/export
       - ./certs/keycloak/cert.pem:/opt/keycloak/conf/cert.pem:ro
       - ./certs/keycloak/key.pem:/opt/keycloak/conf/key.pem:ro
@@ -381,7 +291,7 @@ services:
       KC_PROXY: edge
       KC_CORS: 'true'
       KC_CORS_ORIGINS: '*'
-      KEYCLOAK_IMPORT: /opt/keycloak/data/import/realms-import.json
+      KEYCLOAK_IMPORT: /opt/keycloak/data/import/realms.dev.json
       KC_DB: postgres
       KC_DB_URL_HOST: postgres
       KC_DB_URL_PORT: 5432
@@ -419,8 +329,8 @@ services:
     depends_on:
       wait-for-keycloak:
         condition: service_completed_successfully
-#      prometheus:
-#        condition: service_healthy
+    #      prometheus:
+    #        condition: service_healthy
     ports:
       - "9101:9101"
       - "39091:39091"
@@ -446,7 +356,7 @@ services:
       - ./kafka/metrics/exporter.yml:/usr/bin/jmx/exporter.yml
       - ./certs/kafka1:/etc/kafka/secrets
     environment:
-      << : *kafka-env
+      <<: *kafka-env
       KAFKA_BROKER_ID: '1'
       KAFKA_LISTENERS: CONTROLLER://kafka1:19091,INTERNAL://kafka1:29091,EXTERNAL://kafka1:39091
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka1:29091,EXTERNAL://kafka1:39091
@@ -484,90 +394,10 @@ services:
       - ./certs/ca:/tmp/ca
       - ./certs/schema-registry1:/etc/schema-registry/secrets
     environment:
-      << : *schema-registry-env
+      <<: *schema-registry-env
       SCHEMA_REGISTRY_HOST_NAME: schema1
 
-  # --------- Backend services ---------
-  auth-service:
-    build: quarkus/auth-builder
-    container_name: auth-service
-    depends_on:
-      keycloak:
-        condition: service_healthy
-      kafka1:
-        condition: service_healthy
-    ports:
-      - "61000:8080" # HTTP
-      - "61001:8081" # HTTP TEST
-      - "61002:8082" # HTTPS
-      - "66661:5005" # DEBUG
-    networks:
-      - concertify-network
-    entrypoint: tail -F non_exist_file
-    restart: always # unless-stopped
-    volumes:
-      - ../src:/app
-      - ./certs/auth-service:/certs
-    environment:
-      << : *backend-env
-      APP_CLIENT_ID: ${AUTH_CLIENT_ID}
-      APP_CLIENT_SECRET: ${AUTH_CLIENT_SECRET}
-
-  concert-service:
-    build: quarkus/concert-builder
-    container_name: concert-service
-    depends_on:
-      keycloak:
-        condition: service_healthy
-      kafka1:
-        condition: service_healthy
-    ports:
-      - "62000:8080" # HTTP
-      - "62001:8081" # HTTP TEST
-      - "62002:8082" # HTTPS
-      - "66662:5005" # DEBUG
-    networks:
-      - concertify-network
-    entrypoint: tail -F non_exist_file
-    restart: always # unless-stopped
-    volumes:
-      - ../src:/app
-      - ./certs/concert-service:/certs
-    environment:
-      <<: *backend-env
-      APP_CLIENT_ID: ${CONCERT_CLIENT_ID}
-      APP_CLIENT_SECRET: ${CONCERT_CLIENT_SECRET}
-
-  booking-service:
-    build: quarkus/booking-builder
-    container_name: booking-service
-    depends_on:
-      keycloak:
-        condition: service_healthy
-      kafka1:
-        condition: service_healthy
-    ports:
-      - "63000:8080" # HTTP
-      - "63001:8081" # HTTP TEST
-      - "63002:8082" # HTTPS
-      - "66663:5005" # DEBUG
-    networks:
-      - concertify-network
-    entrypoint: tail -F non_exist_file
-    restart: always # unless-stopped
-    volumes:
-      - ../src:/app
-      - ./certs/booking-service:/certs
-    environment:
-      <<: *backend-env
-      APP_CLIENT_ID: ${BOOKING_CLIENT_ID}
-      APP_CLIENT_SECRET: ${BOOKING_CLIENT_SECRET}
-
 volumes:
-  mongodb-data:
-    driver: local
-  postgres-data:
-    driver: local
   kafka1-data:
     driver: local
 

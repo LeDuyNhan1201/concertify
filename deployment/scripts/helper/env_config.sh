@@ -23,6 +23,7 @@ export KAFKA_IDP_EXPECTED_ISSUER=https://keycloak:8443/realms/kafka
 export KAFKA_IDP_AUTH_ENDPOINT=https://keycloak:8443/realms/kafka/protocol/openid-connect/auth
 export KAFKA_IDP_DEVICE_AUTH_ENDPOINT=https://keycloak:8443/realms/kafka/protocol/openid-connect/auth/device
 export KAFKA_SUB_CLAIM_NAME=sub
+export KAFKA_SCOPE_CLAIM_NAME=scope
 export KAFKA_GROUP_CLAIM_NAME=groups
 export KAFKA_EXPECTED_AUDIENCE=account
 

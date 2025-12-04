@@ -44,7 +44,7 @@ services:
       retries: 3
     restart: always
     volumes:
-      - ./keycloak/test-realms.json:/opt/keycloak/data/import/realms-import.json
+      - ./keycloak/test-realms.json:/opt/keycloak/data/import/realms.dev.json
     environment:
       KC_HTTP_MANAGEMENT_PORT: 9990
       KC_METRICS_ENABLED: true
@@ -54,7 +54,7 @@ services:
       KC_PROXY: edge
       KC_CORS: 'true'
       KC_CORS_ORIGINS: '*'
-      KEYCLOAK_IMPORT: /opt/keycloak/data/import/realms-import.json
+      KEYCLOAK_IMPORT: /opt/keycloak/data/import/realms.dev.json
       KC_DB: postgres
       KC_DB_URL_HOST: postgres
       KC_DB_URL_PORT: 5432

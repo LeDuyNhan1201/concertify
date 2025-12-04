@@ -104,7 +104,7 @@ services:
   # --------- Logstash ---------
   logstash:
     build:
-      context: ./logstash
+      context: ../logstash
       args:
         LOGSTASH_DOCKER_TAG: ${LOGSTASH_DOCKER_TAG:-9.0.2}
     container_name: logstash
