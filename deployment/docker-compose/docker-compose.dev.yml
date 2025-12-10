@@ -360,7 +360,7 @@ services:
       "start",
       "--https-certificate-file=/opt/keycloak/conf/cert.pem",
       "--https-certificate-key-file=/opt/keycloak/conf/key.pem",
-      "--http-enabled=false",
+      "--http-enabled=true",
       "--https-port=8443",
       "--hostname-strict=false",
       "--health-enabled=true",

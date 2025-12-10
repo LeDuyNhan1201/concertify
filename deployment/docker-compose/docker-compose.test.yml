@@ -28,8 +28,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      keycloak_certgen:
-        condition: service_completed_successfully
     ports:
       - "8000:8000" # HTTP
       - "9990:9990" # Management port
@@ -83,8 +81,8 @@ services:
       KAFKA_LISTENERS: CONTROLLER://kafka1:19091,INTERNAL://kafka1:29091,EXTERNAL://kafka1:29092
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka1:29091,EXTERNAL://kafka1:29092
 
-      CLUSTER_ID: vHCgQyIrRHG8Jv27qI2h3Q
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      CLUSTER_ID: cluster-1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_PROCESS_ROLES: broker,controller
